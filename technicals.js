@@ -740,7 +740,9 @@ async function overlayLivePrices() {
       if (!marketOpen()) {
         noteEl.textContent = `● Market closed · showing today's close (live resumes 9:15 AM IST)`;
       } else {
-        const label = (src === 'kite' || src === 'kite-live') ? 'Kite real-time' : 'Google, ~15m delay';
+        const label = (src === 'kite' || src === 'kite-live') ? 'Kite real-time' 
+          : src === 'fyers' ? 'Fyers real-time' 
+          : 'Google, ~15m delay';
         noteEl.textContent = n ? `🟢 Live · ${n} updated ${t} (${label})` : 'Live prices unavailable right now';
       }
     }

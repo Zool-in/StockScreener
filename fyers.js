@@ -194,7 +194,7 @@ async function getLtp(symbols) {
     }).join(',');
 
     try {
-      const url = `${FYERS_BASE}/data/quotes/?symbols=${encodeURIComponent(fyersSyms)}`;
+      const url = `${FYERS_BASE}/data/quotes?symbols=${encodeURIComponent(fyersSyms)}`;
       const res = await request('GET', url, null, { Authorization: getAuthHeader() });
       if (res.s === 'ok' && res.d) {
         res.d.forEach(item => {
@@ -204,8 +204,12 @@ async function getLtp(symbols) {
             quotes[origin] = item.v.lp;
           }
         });
+      } else {
+        console.error('Fyers getLtp error:', res);
       }
-    } catch (_) {}
+    } catch (e) {
+      console.error('Fyers getLtp exception:', e.message);
+    }
   }
   return quotes;
 }
