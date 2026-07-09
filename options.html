@@ -937,16 +937,16 @@ async function runDynamicScan() {
           }
         } else if (strategy === 'bps') {
           // Bull Put Spread: High confidence uptrend (above 50 & 200 EMA, high ADX) + high premium
-          const adx = d.adx ? d.adx[d.adx.length-1].adx : 0;
-          if (d.cmp > e50 && d.cmp > e200 && adx > 25 && vol > 0.25) {
-            score = vol * 100 + adx; reason = `ADX ${adx.toFixed(0)} · HV ${(vol*100).toFixed(1)}%`;
+          const adxVal = adx(d.highs, d.lows, d.closes);
+          if (d.cmp > e50 && d.cmp > e200 && adxVal > 25 && vol > 0.25) {
+            score = vol * 100 + adxVal; reason = `ADX ${adxVal.toFixed(0)} · HV ${(vol*100).toFixed(1)}%`;
             results.push({ ticker, score, reason });
           }
         } else if (strategy === 'strangle') {
           // Short Strangle: Sideways/Flat trend (ADX < 20, between EMAs) + very high IV
-          const adx = d.adx ? d.adx[d.adx.length-1].adx : 0;
-          if (adx < 22 && vol > 0.35) {
-            score = vol * 100 - adx; reason = `Flat ADX ${adx.toFixed(0)} · Massive HV ${(vol*100).toFixed(1)}%`;
+          const adxVal = adx(d.highs, d.lows, d.closes);
+          if (adxVal < 22 && vol > 0.35) {
+            score = vol * 100 - adxVal; reason = `Flat ADX ${adxVal.toFixed(0)} · Massive HV ${(vol*100).toFixed(1)}%`;
             results.push({ ticker, score, reason });
           }
         } else if (strategy === 'wheel') {
