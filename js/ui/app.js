@@ -1,15 +1,15 @@
 // ─── Main App Entry Point ───────────────────────────────────────────────────
-import { AppState } from '../core/state.js';
-import { fetchOHLCV } from '../core/api.js';
-import { ema, rsi, adx } from '../core/math.js';
+import { AppState } from '../core/state.js?v=6';
+import { fetchOHLCV } from '../core/api.js?v=6';
+import { ema, rsi, adx } from '../core/math.js?v=6';
 
 // Strategy Modules (We will create these next)
-import * as swingStrats from '../strategies/swing.js';
-import * as intradayStrats from '../strategies/intraday.js';
-import * as optionStrats from '../strategies/options.js';
-import * as btstStrats from '../strategies/btst.js';
-import * as longTermStrats from '../strategies/longterm.js';
-import * as shortStrats from '../strategies/short.js';
+import * as swingStrats from '../strategies/swing.js?v=6';
+import * as intradayStrats from '../strategies/intraday.js?v=6';
+import * as optionStrats from '../strategies/options.js?v=6';
+import * as btstStrats from '../strategies/btst.js?v=6';
+import * as longTermStrats from '../strategies/longterm.js?v=6';
+import * as shortStrats from '../strategies/short.js?v=6';
 
 const DOM = {
   tickerInput: document.getElementById('tickerInput'),
