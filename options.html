@@ -163,6 +163,8 @@
     <div class="pills">
       <button class="pill on" data-strat="cc">Covered Call</button>
       <button class="pill" data-strat="csp">Cash Secured Put</button>
+      <button class="pill" data-strat="bps">Bull Put Spread</button>
+      <button class="pill" data-strat="strangle">Short Strangle</button>
       <button class="btn-scan-mini" id="btnScan" onclick="runDynamicScan()">🔍 Scan Best</button>
     </div>
   </div>
@@ -893,17 +895,27 @@ async function runDynamicScan() {
         let reason = '';
         
         if (strategy === 'cc') {
-          // Covered Call: Want neutral/bullish trend (CMP > 200 EMA), good volatility, RSI moderately high (60-75)
           if (d.cmp > e200 && rsiVal > 55 && rsiVal < 80) {
-            score = vol * 100; // prioritize high IV
-            reason = `RSI ${rsiVal} · HV ${(vol*100).toFixed(1)}%`;
+            score = vol * 100; reason = `RSI ${rsiVal} · HV ${(vol*100).toFixed(1)}%`;
             results.push({ ticker, score, reason });
           }
-        } else {
-          // Cash Secured Put: Want strong stock (CMP > 200 EMA) on a short-term pullback (RSI < 45, CMP < 50 EMA)
+        } else if (strategy === 'csp') {
           if (d.cmp > e200 && d.cmp < e50 && rsiVal < 45) {
-            score = vol * 100; // prioritize high IV
-            reason = `RSI ${rsiVal} · HV ${(vol*100).toFixed(1)}%`;
+            score = vol * 100; reason = `RSI ${rsiVal} · HV ${(vol*100).toFixed(1)}%`;
+            results.push({ ticker, score, reason });
+          }
+        } else if (strategy === 'bps') {
+          // Bull Put Spread: High confidence uptrend (above 50 & 200 EMA, high ADX) + high premium
+          const adx = d.adx ? d.adx[d.adx.length-1].adx : 0;
+          if (d.cmp > e50 && d.cmp > e200 && adx > 25 && vol > 0.25) {
+            score = vol * 100 + adx; reason = `ADX ${adx.toFixed(0)} · HV ${(vol*100).toFixed(1)}%`;
+            results.push({ ticker, score, reason });
+          }
+        } else if (strategy === 'strangle') {
+          // Short Strangle: Sideways/Flat trend (ADX < 20, between EMAs) + very high IV
+          const adx = d.adx ? d.adx[d.adx.length-1].adx : 0;
+          if (adx < 22 && vol > 0.35) {
+            score = vol * 100 - adx; reason = `Flat ADX ${adx.toFixed(0)} · Massive HV ${(vol*100).toFixed(1)}%`;
             results.push({ ticker, score, reason });
           }
         }
@@ -922,7 +934,7 @@ async function runDynamicScan() {
   if (top.length === 0) {
     container.innerHTML = `<div class="quick-label">No perfect candidates found right now.</div>`;
   } else {
-    const title = strategy === 'cc' ? 'Top Covered Calls:' : 'Top Cash Secured Puts:';
+    const title = strategy === 'cc' ? 'Top Covered Calls:' : strategy === 'csp' ? 'Top Cash Secured Puts:' : strategy === 'bps' ? 'Top Bull Put Spreads:' : 'Top Short Strangles:';
     let html = `<div class="quick-label">${title}</div>`;
     top.forEach(r => {
       html += `<div class="quick-badge" onclick="selectQuickTicker('${r.ticker}')">
@@ -941,6 +953,76 @@ function selectQuickTicker(ticker) {
   document.getElementById('tickerInput').value = ticker;
   analyze();
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  BULL PUT SPREAD
+// ════════════════════════════════════════════════════════════════════════════
+function bullPutSpread(b) {
+  const lot = LOT[b.ticker] || 500;
+  const K_sell = round50(b.cmp * 0.95);
+  const K_buy = round50(b.cmp * 0.90);
+  const spreadWidth = K_sell - K_buy;
+  
+  const p_sell = 0.4 * b.cmp * b.hv * Math.sqrt(T); 
+  const p_buy = p_sell * 0.3; // arbitrary approx for OTM hedge
+  const netPremium = p_sell - p_buy;
+  
+  const premTotal = netPremium * lot;
+  const maxLoss = (spreadWidth - netPremium) * lot;
+  const roi = (premTotal / maxLoss) * 100;
+  
+  let s = 6;
+  const reasons = ['Limits downside risk', 'Much higher ROI than CSP'];
+  const flags = [];
+  const why = `High-probability credit spread. Sell the ${inr(K_sell)} Put and buy the ${inr(K_buy)} Put to cap risk.`;
+
+  const setup = `<div class="card">
+    <h2><span class="num">3</span> Strategy Setup — Bull Put Spread</h2>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Sell Put (5% OTM)</div><div class="v v-accent">${inr(K_sell)}</div></div>
+      <div class="kv"><div class="k">Buy Put (10% OTM hedge)</div><div class="v v-accent">${inr(K_buy)}</div></div>
+      <div class="kv"><div class="k">Net Premium / share</div><div class="v">${inr2(netPremium)}</div></div>
+      <div class="kv"><div class="k">Net Credit / lot</div><div class="v v-green">${inr(premTotal)}</div></div>
+      <div class="kv"><div class="k">Max Risk (Capital Req)</div><div class="v v-red">${inr(maxLoss)}</div></div>
+      <div class="kv"><div class="k">ROI on Risk</div><div class="v v-green">${roi.toFixed(1)}%</div></div>
+    </div>
+    <div class="muted-note">A highly leveraged income trade. Requires vastly less capital than a Cash Secured Put, pushing your ROI much higher, but caps your losses entirely if the stock crashes.</div>
+  </div>`;
+
+  return verdictCard('Bull Put Spread', s, why, flags) + setup;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SHORT STRANGLE
+// ════════════════════════════════════════════════════════════════════════════
+function shortStrangle(b) {
+  const lot = LOT[b.ticker] || 500;
+  const K_call = round50(b.cmp * 1.07);
+  const K_put = round50(b.cmp * 0.93);
+  
+  const premium = 0.4 * b.cmp * b.hv * Math.sqrt(T) * 1.5; // Combined approx
+  const premTotal = premium * lot;
+  
+  let s = 7;
+  const reasons = ['Double premium collected', 'Capitalizing on massive IV'];
+  const flags = ['⚠ Unlimited upside risk if stock explodes higher'];
+  const why = `Sell both a ${inr(K_call)} Call and a ${inr(K_put)} Put. Perfect for range-bound sideways markets.`;
+
+  const setup = `<div class="card">
+    <h2><span class="num">3</span> Strategy Setup — Short Strangle</h2>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Sell Call (7% OTM)</div><div class="v v-accent">${inr(K_call)}</div></div>
+      <div class="kv"><div class="k">Sell Put (7% OTM)</div><div class="v v-accent">${inr(K_put)}</div></div>
+      <div class="kv"><div class="k">Combined Prem / share</div><div class="v">${inr2(premium)}</div></div>
+      <div class="kv"><div class="k">Total Credit / lot</div><div class="v v-green">${inr(premTotal)}</div></div>
+      <div class="kv"><div class="k">Profit Zone</div><div class="v v-accent">${inr(K_put - premium)} – ${inr(K_call + premium)}</div></div>
+    </div>
+    <div class="muted-note">As long as the stock stays between ${inr(K_put)} and ${inr(K_call)}, you keep the massive combined premium. Watch out for earnings gaps!</div>
+  </div>`;
+
+  return verdictCard('Short Strangle', s, why, flags) + setup;
+}
+
 </script>
 </body>
 </html>
