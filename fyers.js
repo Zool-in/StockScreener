@@ -261,8 +261,8 @@ async function getLtp(symbols) {
     if (res && res.s === 'ok' && res.d) {
       res.d.forEach(item => {
         if (item.v && item.v.lp) {
-          // map back to standard symbol
-          const origin = item.n.replace('NSE:', '').replace('-EQ', '').replace('-INDEX', '') + '.NS';
+          // map back to standard symbol (without .NS) so server.js can map it correctly
+          const origin = item.n.replace('NSE:', '').replace('-EQ', '').replace('-INDEX', '');
           quotes[origin] = item.v.lp;
         }
       });
