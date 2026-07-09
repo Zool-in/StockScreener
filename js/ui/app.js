@@ -1,6 +1,7 @@
 // ─── Main App Entry Point ───────────────────────────────────────────────────
 import { AppState } from '../core/state.js';
 import { fetchOHLCV } from '../core/api.js';
+import { ema, rsi, adx } from '../core/math.js';
 
 // Strategy Modules (We will create these next)
 import * as swingStrats from '../strategies/swing.js';
@@ -15,7 +16,7 @@ const DOM = {
   universePills: document.getElementById('universePills'),
   customTickerWrapper: document.getElementById('customTickerWrapper'),
   strategyPills: document.getElementById('strategyPills'),
-  timeframeSelect: document.getElementById('timeframeSelect'),
+  timeframePills: document.getElementById('timeframePills'),
   capitalInput: document.getElementById('capitalInput'),
   scanBtn: document.getElementById('scanBtn'),
   resultsArea: document.getElementById('resultsArea'),
@@ -69,7 +70,9 @@ async function init() {
     // Auto timeframe
     const tf = pill.dataset.tf;
     if (tf) {
-      DOM.timeframeSelect.value = tf;
+      Array.from(DOM.timeframePills.children).forEach(p => p.classList.remove('active'));
+      const activeTfPill = DOM.timeframePills.querySelector(`[data-val="${tf}"]`);
+      if (activeTfPill) activeTfPill.classList.add('active');
       AppState.setTimeframe(tf);
     }
   });
@@ -82,7 +85,14 @@ async function init() {
     }
   });
 
-  DOM.timeframeSelect.addEventListener('change', e => AppState.setTimeframe(e.target.value));
+  const tfPills = document.getElementById('timeframePills');
+  tfPills.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('pill')) return;
+    Array.from(tfPills.children).forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    AppState.setTimeframe(e.target.dataset.val);
+  });
+
   DOM.capitalInput.addEventListener('input', e => AppState.setCapital(e.target.value));
   DOM.scanBtn.addEventListener('click', runScan);
 
@@ -139,6 +149,8 @@ async function runScan() {
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Scanning...</span>`;
   DOM.resultsArea.innerHTML = '';
+  document.getElementById('adStrip').style.display = 'none';
+  document.getElementById('summaryBar').style.display = 'none';
   
   const results = [];
   const strategyId = AppState.strategy;
@@ -146,9 +158,14 @@ async function runScan() {
   for (let ticker of AppState.tickers) {
     try {
       const data = await fetchOHLCV(ticker, AppState.timeframe);
+      const n = data.closes.length;
+      if (n < 200) continue; // Need data
+
+      const curr = data.closes[n - 1];
+      const prev = data.closes[n - 2];
+      const chgPct = parseFloat(((curr - prev) / prev * 100).toFixed(2));
       
       let res = null;
-      // Route to correct strategy module
       if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
       else if (['minervini', 'darvas', 'rs', 'crsi'].includes(strategyId)) res = swingStrats.run(strategyId, data);
       else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(strategyId)) res = optionStrats.run(strategyId, data);
@@ -157,7 +174,26 @@ async function runScan() {
       else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
 
       if (res && res.isMatch) {
-        results.push({ ticker, data, ...res });
+        // Compute standard technicals for the card
+        const ema20 = ema(data.closes, 20);
+        const ema50 = ema(data.closes, 50);
+        const ema200 = ema(data.closes, 200);
+        const rsiVal = rsi(data.closes);
+        const adxVal = adx(data.highs, data.lows, data.closes);
+        
+        const recentVol = data.volumes[n - 1];
+        const avgVol = data.volumes.slice(n - 21, n - 1).reduce((a,b)=>a+b,0) / 20;
+        const vr = avgVol > 0 ? parseFloat((recentVol / avgVol).toFixed(2)) : 1;
+
+        // Entry, Stop, Target (defaults if not provided by strategy)
+        const entry = curr;
+        const stop = res.risk ? curr - res.risk : curr * 0.95;
+        const target = curr + ((curr - stop) * 2);
+
+        results.push({
+          ticker, data, ...res, 
+          chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, entry, stop, target
+        });
       }
     } catch (e) {
       console.error(`Skipping ${ticker}: `, e);
@@ -177,34 +213,85 @@ function renderResults(results) {
     return;
   }
 
+  // A/D Calculation
+  let advances = 0, declines = 0;
+  results.forEach(r => {
+    if (r.chgPct >= 0) advances++; else declines++;
+  });
+  const total = advances + declines;
+  
+  if (total > 0) {
+    const adStrip = document.getElementById('adStrip');
+    adStrip.style.display = 'flex';
+    adStrip.innerHTML = `
+      <div class="ad-green" style="width:${(advances/total)*100}%"></div>
+      <div class="ad-red" style="width:${(declines/total)*100}%"></div>
+    `;
+
+    const sumBar = document.getElementById('summaryBar');
+    sumBar.style.display = 'flex';
+    sumBar.innerHTML = `
+      <div class="sum-chip"><div class="sk">Scanned / Matched</div><div class="sv">${AppState.tickers.length} / ${results.length}</div></div>
+      <div class="sum-chip"><div class="sk">Advance / Decline</div><div class="sv"><span style="color:var(--green)">${advances}</span> : <span style="color:var(--red)">${declines}</span></div></div>
+      <div class="sum-chip"><div class="sk">Avg RSI</div><div class="sv">${Math.round(results.reduce((a,b)=>a+b.rsiVal,0)/results.length)}</div></div>
+    `;
+  }
+
   let html = '';
   results.forEach(r => {
-    // Determine position sizing based on AppState.capital and r.riskPerShare
-    let sizingHtml = '';
-    if (r.risk) {
-      const maxLoss = AppState.capital * 0.01; // 1% risk rule
-      const shares = Math.floor(maxLoss / r.risk);
-      sizingHtml = `<div class="kv"><div class="k">1% Risk Size</div><div class="v v-accent">${shares} shares</div></div>`;
-    } else if (r.margin) {
-      const lots = Math.floor(AppState.capital / r.margin);
-      sizingHtml = `<div class="kv"><div class="k">Max Lots</div><div class="v v-accent">${lots} lots</div></div>`;
-    }
+    const chgClass = r.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
+    const chgSign = r.chgPct >= 0 ? '+' : '';
+    
+    const rsiOk = r.rsiVal > 50 && r.rsiVal < 70, rsiWarn = r.rsiVal >= 70;
+    const adxOk = r.adxVal > 25, adxWarn = r.adxVal > 20;
+    const vrOk = r.vr >= 1.5, vrWarn = r.vr >= 1.0;
+    
+    // Default score visualizer if strategy doesn't return one
+    const score = r.score || 75; 
+    const barW = score;
+    const barCol = score >= 75 ? '#22d08a' : score >= 55 ? '#f5a623' : '#f05a5a';
+    const dotClass = (ok, warn) => ok ? 'dy' : warn ? 'dm' : 'dn';
+
+    const setupName = AppState.strategy.toUpperCase();
 
     html += `
-      <div class="card">
-        <div class="flex justify-between items-center" style="margin-bottom: 16px;">
-          <h2 style="color: var(--accent); font-size: 1.5rem;">${r.ticker}</h2>
-          <div class="badge badge-green">MATCH</div>
+      <div class="scard">
+        <div class="scard-accent" style="background:var(--accent)"></div>
+        <div class="scard-top">
+          <div>
+            <div class="scard-ticker">${r.ticker}</div>
+            <div class="scard-name">${r.data.meta?.shortName || r.ticker}</div>
+          </div>
+          <span class="score-badge ${score >= 75 ? 'score-s' : 'score-m'}">${score}/100</span>
         </div>
-        <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px;">CMP: ₹${r.data.cmp.toFixed(2)}</div>
+        <div class="price-row">
+          <span class="price">₹${r.curr.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+          <span class="chg ${chgClass}">${chgSign}${r.chgPct}%</span>
+        </div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:${barW}%;background:${barCol}"></div></div>
+        <span class="setup-tag tag-breakout">${setupName}</span>
         
-        <div style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
-          ${r.reason}
-        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3;">${r.reason}</div>
 
-        <div class="kv-grid">
-          ${sizingHtml}
-          ${r.metrics ? r.metrics.map(m => `<div class="kv"><div class="k">${m.name}</div><div class="v">${m.value}</div></div>`).join('') : ''}
+        <div class="indicator-grid">
+          <div class="ind"><div class="ik">RSI 14</div><div class="iv" style="color:${rsiOk?'var(--green)':rsiWarn?'var(--red)':'var(--muted)'}">${r.rsiVal}</div></div>
+          <div class="ind"><div class="ik">ADX 14</div><div class="iv" style="color:${adxOk?'var(--green)':adxWarn?'var(--amber)':'var(--muted)'}">${r.adxVal}</div></div>
+          <div class="ind"><div class="ik">Vol ×</div><div class="iv" style="color:${vrOk?'var(--green)':vrWarn?'var(--amber)':'var(--muted)'}">${r.vr}×</div></div>
+          <div class="ind"><div class="ik">EMA 20</div><div class="iv">₹${r.ema20.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="ind"><div class="ik">EMA 50</div><div class="iv">₹${r.ema50.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${r.ema200.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+        </div>
+        <div class="signal-dots">
+          <span class="dot-row"><span class="dot ${r.curr > r.ema200?'dy':'dn'}"></span>200 EMA</span>
+          <span class="dot-row"><span class="dot ${r.curr > r.ema50?'dy':'dn'}"></span>50 EMA</span>
+          <span class="dot-row"><span class="dot ${r.curr > r.ema20?'dy':'dn'}"></span>20 EMA</span>
+          <span class="dot-row"><span class="dot ${dotClass(rsiOk,rsiWarn)}"></span>RSI</span>
+          <span class="dot-row"><span class="dot ${dotClass(adxOk,adxWarn)}"></span>ADX</span>
+        </div>
+        <div class="levels">
+          <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div><div class="rr">−${(((r.curr-r.stop)/r.curr)*100).toFixed(1)}%</div></div>
+          <div class="lv lv-target"><div class="lk">Target</div><div class="lv2">₹${r.target.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div><div class="rr">${parseFloat((r.target-r.curr)/(r.curr-r.stop)).toFixed(1)}x RR</div></div>
         </div>
       </div>
     `;

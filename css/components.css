@@ -173,8 +173,9 @@
 .pill-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   margin-top: 8px;
+  max-width: 60%;
 }
 
 .pill {
@@ -208,3 +209,69 @@
 .hidden {
   display: none !important;
 }
+
+/* ─── Stock Card (Shadcn style) ─── */
+.scard { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; position: relative; overflow: hidden; }
+.scard:hover { border-color: var(--border2); }
+.scard-accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.scard-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.scard-ticker { font-size: 15px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+.scard-name { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.score-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.score-s { background: var(--green-dim); color: var(--green); border: 1px solid #1a5e3f; }
+.score-m { background: var(--amber-dim); color: var(--amber); border: 1px solid #5e3e10; }
+.score-w { background: var(--red-dim); color: var(--red); border: 1px solid #5e1010; }
+
+.price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.price-row .price { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+.price-row .chg { font-size: 12px; font-weight: 600; }
+.chg-pos { color: var(--green); }
+.chg-neg { color: var(--red); }
+
+.indicator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.ind { background: var(--surface); border-radius: 6px; padding: 6px 8px; }
+.ind .ik { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+.ind .iv { font-size: 13px; font-weight: 600; font-family: var(--mono); margin-top: 2px; }
+
+.setup-tag { display: inline-block; font-size: 10.5px; padding: 3px 8px; border-radius: 5px; margin-bottom: 8px; font-weight: 600; letter-spacing: .3px; }
+.tag-vcp { background: #3b2505; color: #f59e0b; border: 1px solid #784805; }
+.tag-vcp-short { background: #4a1515; color: #f87171; border: 1px solid #7f1d1d; }
+.tag-breakout { background: #0d2e2e; color: #2dcccc; border: 1px solid #1a5e5e; }
+.tag-pullback { background: #1e2d5e; color: #7faaff; border: 1px solid #2a4080; }
+.tag-rs { background: #2e1e4a; color: #c07fff; border: 1px solid #5e3a8a; }
+.tag-catalyst { background: #2e2010; color: var(--amber); border: 1px solid #5e4010; }
+.tag-weak { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+.signal-dots { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+.dot-row { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--muted); }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dy { background: var(--green); }
+.dm { background: var(--amber); }
+.dn { background: var(--red); }
+
+.levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.lv { background: var(--surface); border-radius: 6px; padding: 6px 8px; }
+.lv .lk { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+.lv .lv2 { font-size: 12px; font-weight: 700; font-family: var(--mono); margin-top: 2px; }
+.lv-entry .lv2 { color: var(--accent); }
+.lv-stop .lv2 { color: var(--red); }
+.lv-target .lv2 { color: var(--green); }
+.rr { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+.source-note { font-size: 10px; color: var(--muted); text-align: right; margin-top: 4px; }
+
+/* progress bar inside card */
+.score-bar { height: 3px; background: var(--border); border-radius: 2px; margin: 8px 0; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 2px; transition: width .6s ease; }
+
+/* ─── Summary strip ─── */
+.summary { display: flex; gap: 10px; padding: 12px 24px; flex-wrap: wrap; margin-bottom: 24px;}
+.sum-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; }
+.sum-chip .sk { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+.sum-chip .sv { font-size: 20px; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+/* ─── AD Strip ─── */
+.ad-strip { display: flex; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 8px;}
+.ad-green { background: var(--green); }
+.ad-red { background: var(--red); }
+.ad-gray { background: var(--border); }

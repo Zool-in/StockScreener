@@ -74,30 +74,33 @@
       </div>
 
       <!-- Execution Row -->
-      <div class="flex items-center gap-4" style="flex-wrap: wrap;">
-        <div class="input-group" style="flex-grow: 1; max-width: 200px;">
+      <div class="flex items-center gap-4" style="flex-wrap: wrap; margin-top: 24px;">
+        <div class="input-group">
           <label class="input-label">Timeframe Override</label>
-          <select id="timeframeSelect" class="select">
-            <option value="15m">15 Min</option>
-            <option value="1h">1 Hour</option>
-            <option value="1d" selected>1 Day</option>
-            <option value="1wk">1 Week</option>
-          </select>
+          <div class="pill-container" id="timeframePills" style="max-width:100%">
+            <div class="pill" data-val="15m">15m</div>
+            <div class="pill" data-val="1h">1h</div>
+            <div class="pill active" data-val="1d">1D</div>
+            <div class="pill" data-val="1wk">1W</div>
+          </div>
         </div>
 
-        <div class="input-group" style="flex-grow: 1; max-width: 200px;">
+        <div class="input-group" style="max-width: 150px; margin-left: auto;">
           <label class="input-label">Risk Capital (₹)</label>
-          <input type="number" id="capitalInput" class="input" value="100000" step="10000">
+          <input type="number" id="capitalInput" class="input" value="100000" step="10000" style="padding: 8px 12px; font-family: var(--mono)">
         </div>
 
-        <button id="scanBtn" class="btn" style="margin-top: auto; flex-grow: 1;">
+        <button id="scanBtn" class="btn" style="margin-top: auto; padding: 10px 24px;">
           <span>Run Scan</span>
         </button>
       </div>
 
     </div>
 
-    <!-- Scanner Results Area -->
+    <div class="ad-strip" id="adStrip" style="display:none"></div>
+    <div class="summary" id="summaryBar" style="display:none"></div>
+
+    <!-- Results Grid -->
     <div id="resultsArea" class="results-grid">
       <!-- Cards will be injected here via JS -->
       <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">
