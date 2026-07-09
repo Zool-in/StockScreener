@@ -217,6 +217,8 @@ async function runScan() {
         const s1 = (2 * pivot) - pHigh;
         const r2 = pivot + (pHigh - pLow);
         const s2 = pivot - (pHigh - pLow);
+        const r3 = pHigh + 2 * (pivot - pLow);
+        const s3 = pLow - 2 * (pHigh - pivot);
 
         // Entry, Stop, Targets
         const entry = res.entry || curr;
@@ -228,7 +230,7 @@ async function runScan() {
         results.push({
           ticker, data, ...res, 
           chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, 
-          entry, stop, t1, t2, s1, s2, r1, r2
+          entry, stop, t1, t2, s1, s2, s3, r1, r2, r3
         });
       }
     } catch (e) {
@@ -381,11 +383,13 @@ function renderResults(results) {
         </div>
         
         ${AppState.strategy === 'all' ? `
-        <div class="levels" style="grid-template-columns: repeat(4, 1fr);">
-          <div class="lv"><div class="lk">S2</div><div class="lv2">₹${r.s2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+        <div class="levels" style="grid-template-columns: repeat(3, 1fr);">
           <div class="lv"><div class="lk">S1</div><div class="lv2">₹${r.s1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv"><div class="lk">S2</div><div class="lv2">₹${r.s2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv"><div class="lk">S3</div><div class="lv2">₹${r.s3.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="lv"><div class="lk">R1</div><div class="lv2">₹${r.r1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="lv"><div class="lk">R2</div><div class="lv2">₹${r.r2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv"><div class="lk">R3</div><div class="lv2">₹${r.r3.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
         </div>
         ` : `
         <div class="levels" style="grid-template-columns: repeat(4, 1fr);">
