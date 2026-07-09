@@ -208,23 +208,32 @@ async function getLtp(symbols) {
       const b = s.replace(/\.NS$/i, '').toUpperCase();
       return b.includes('NIFTY') ? `NSE:${b.replace(/\s+/g, '')}-INDEX` : `NSE:${b}-EQ`;
     }).join(',');
-
-    try {
-      const url = `${FYERS_BASE}/data/quotes?symbols=${encodeURIComponent(fyersSyms)}`;
-      const res = await request('GET', url, null, { Authorization: getAuthHeader() });
-      if (res.s === 'ok' && res.d) {
-        res.d.forEach(item => {
-          if (item.v && item.v.lp) {
-            // map back to standard symbol
-            const origin = item.n.replace('NSE:', '').replace('-EQ', '').replace('-INDEX', '') + '.NS';
-            quotes[origin] = item.v.lp;
-          }
-        });
-      } else {
-        console.error('Fyers getLtp error:', res);
+    let res = null;
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      try {
+        const url = `${FYERS_BASE}/data/quotes?symbols=${encodeURIComponent(fyersSyms)}`;
+        res = await request('GET', url, null, { Authorization: getAuthHeader() });
+        break; // success
+      } catch (e) {
+        if (e.message === 'FYERS_RATE_LIMIT' && attempt < 4) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+          continue;
+        }
+        console.error(`Fyers getLtp exception (attempt ${attempt}):`, e.message);
+        break; // permanent error
       }
-    } catch (e) {
-      console.error('Fyers getLtp exception:', e.message);
+    }
+
+    if (res && res.s === 'ok' && res.d) {
+      res.d.forEach(item => {
+        if (item.v && item.v.lp) {
+          // map back to standard symbol
+          const origin = item.n.replace('NSE:', '').replace('-EQ', '').replace('-INDEX', '') + '.NS';
+          quotes[origin] = item.v.lp;
+        }
+      });
+    } else if (res) {
+      console.error('Fyers getLtp error:', res);
     }
   }
   return quotes;
