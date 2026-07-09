@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NSE Options Analyzer · Covered Call & Cash Secured Put</title>
+<style>
+  :root {
+    --bg: #0f1117; --surface: #181c27; --card: #1e2335; --border: #2a3047; --border2: #384060;
+    --text: #e8eaf0; --muted: #7c85a0; --accent: #4f7cff; --accent-dim: #1e2d5e;
+    --green: #22d08a; --green-dim: #0d2e1e; --red: #f05a5a; --red-dim: #2e1010;
+    --amber: #f5a623; --amber-dim: #2e2010;
+    --mono: 'JetBrains Mono','Fira Code','Courier New',monospace;
+    --sans: 'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; }
+
+  /* ─── Top nav (shared with screener) ─── */
+  .topnav { display: flex; align-items: center; gap: 4px; padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 20; }
+  .topnav .brand { font-size: 13px; font-weight: 700; letter-spacing: .5px; color: var(--text); margin-right: 18px; }
+  .topnav .brand span { color: var(--accent); }
+  .topnav a { text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 8px; transition: all .15s; }
+  .topnav a:hover { color: var(--text); background: var(--card); }
+  .topnav a.active { color: var(--accent); background: var(--accent-dim); }
+
+  /* ─── Header ─── */
+  .hdr { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); }
+  .hdr .eyebrow { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+  .hdr h1 { font-size: 18px; font-weight: 600; }
+  .hdr .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ─── Controls ─── */
+  .controls { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .ctl-group { display: flex; flex-direction: column; gap: 5px; }
+  .ctl-group label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .ctl-group input { background: var(--card); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 14px; padding: 10px 12px; outline: none; transition: border-color .15s; }
+  .ctl-group input:focus { border-color: var(--accent); }
+  #tickerInput { text-transform: uppercase; width: 220px; font-size: 15px; font-weight: 600; }
+  #resultsDate, #capitalInput { width: 170px; }
+  .btn-analyze { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 11px 24px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; letter-spacing: .3px; }
+  .btn-analyze:hover { opacity: .88; }
+  .btn-analyze:disabled { opacity: .4; cursor: not-allowed; }
+
+  .pills { display: flex; gap: 8px; }
+  .pill { font-size: 13px; padding: 9px 18px; border-radius: 22px; border: 1px solid var(--border2); cursor: pointer; background: transparent; color: var(--muted); font-weight: 600; transition: all .15s; }
+  .pill:hover { color: var(--text); }
+  .pill.on { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Layout ─── */
+  .wrap { padding: 18px 24px; max-width: 1100px; margin: 0 auto; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
+  .card > h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .card > h2 .num { background: var(--accent-dim); color: var(--accent); width: 22px; height: 22px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+
+  .kv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .kv { background: var(--surface); border-radius: 8px; padding: 9px 11px; }
+  .kv .k { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+  .kv .v { font-size: 15px; font-weight: 700; font-family: var(--mono); margin-top: 3px; }
+  .v-green { color: var(--green); } .v-red { color: var(--red); } .v-amber { color: var(--amber); } .v-accent { color: var(--accent); }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  table.tbl th, table.tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: var(--mono); }
+  table.tbl th { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; font-family: var(--sans); }
+  table.tbl td.num, table.tbl th.num { text-align: right; }
+
+  .scenario { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .scenario h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .scenario .desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .sc-a { border-left: 3px solid var(--green); }
+  .sc-b { border-left: 3px solid var(--amber); }
+  .sc-c { border-left: 3px solid var(--red); }
+
+  .verdict { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .verdict .score-ring { font-size: 26px; font-weight: 800; font-family: var(--mono); padding: 10px 18px; border-radius: 12px; }
+  .verdict .vtext { font-size: 15px; font-weight: 700; }
+  .verdict .why { font-size: 12.5px; color: var(--muted); line-height: 1.6; margin-top: 4px; flex-basis: 100%; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 20px; }
+  .b-strong { background: var(--green-dim); color: var(--green); border: 1px solid #1a5e3f; }
+  .b-good { background: var(--accent-dim); color: #7faaff; border: 1px solid #2a4080; }
+  .b-wait { background: var(--amber-dim); color: var(--amber); border: 1px solid #5e3e10; }
+  .b-avoid { background: var(--red-dim); color: var(--red); border: 1px solid #5e1010; }
+
+  .trend-tag { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+  .t-bull { background: var(--green-dim); color: var(--green); }
+  .t-side { background: var(--amber-dim); color: var(--amber); }
+  .t-bear { background: var(--red-dim); color: var(--red); }
+
+  /* collapsible */
+  details.coll { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+  details.coll > summary { list-style: none; cursor: pointer; padding: 16px 20px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  details.coll > summary::-webkit-details-marker { display: none; }
+  details.coll > summary::after { content: '▸'; margin-left: auto; color: var(--muted); transition: transform .15s; }
+  details.coll[open] > summary::after { transform: rotate(90deg); }
+  details.coll .coll-body { padding: 0 20px 18px; }
+
+  .greek { border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; margin-bottom: 11px; }
+  .greek h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .greek .gval { font-family: var(--mono); font-size: 12px; color: var(--accent); background: var(--surface); padding: 2px 8px; border-radius: 5px; }
+  .greek .gline { font-size: 12.5px; line-height: 1.6; margin-top: 5px; }
+  .greek .for { color: var(--green); } .greek .against { color: var(--red); } .greek .trig { color: var(--amber); }
+  .greek .desc { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+
+  .evt-red { color: var(--red); font-weight: 700; } .evt-amber { color: var(--amber); font-weight: 700; } .evt-green { color: var(--green); font-weight: 700; }
+
+  .wheel-diagram { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 14px 0; }
+  .wheel-node { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 10px 14px; font-size: 12px; font-weight: 600; text-align: center; }
+  .wheel-node.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+  .wheel-arrow { color: var(--muted); font-size: 18px; }
+
+  .note { font-size: 11.5px; color: var(--amber); background: var(--amber-dim); border: 1px solid #5e3e10; border-radius: 8px; padding: 9px 12px; margin: 10px 0; line-height: 1.5; }
+  .muted-note { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 8px; }
+
+  .empty { text-align: center; padding: 70px 20px; color: var(--muted); }
+  .empty .icon { font-size: 44px; margin-bottom: 12px; opacity: .4; }
+  .loading { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 50px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box { background: var(--red-dim); border: 1px solid #5e1010; border-radius: 12px; padding: 18px 20px; }
+  .error-box .et { font-size: 14px; font-weight: 700; color: var(--red); margin-bottom: 4px; }
+  .error-box .em { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  .disclaimer { padding: 16px 24px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.7; font-style: italic; max-width: 1100px; margin: 0 auto; }
+
+  @media (max-width: 640px) {
+    .controls { padding: 14px 16px; } .wrap { padding: 14px 16px; } .topnav { padding: 10px 16px; }
+    #tickerInput { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand">NSE <span>Toolkit</span></div>
+  <a href="/">📊 Screener</a>
+  <a href="/options.html" class="active">⚙ Options</a>
+  <a href="/btst.html">⚡ BTST</a>
+</nav>
+
+<div class="hdr">
+  <div class="eyebrow">NSE · Options Income · NSE Bhavcopy + live overlay</div>
+  <h1>Options Analyzer — Covered Call &amp; Cash Secured Put</h1>
+  <div class="sub">Live CMP · EMA/RSI/ADX · HV-based IV proxy · Greeks · Scenarios · The Wheel</div>
+</div>
+
+<div class="controls">
+  <div class="ctl-group">
+    <label>NSE F&amp;O ticker</label>
+    <input id="tickerInput" placeholder="INFY" value="INFY" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="ctl-group">
+    <label>Strategy</label>
+    <div class="pills">
+      <button class="pill on" data-strat="cc">Covered Call</button>
+      <button class="pill" data-strat="csp">Cash Secured Put</button>
+    </div>
+  </div>
+  <div class="ctl-group">
+    <label>Results date (optional)</label>
+    <input id="resultsDate" type="date">
+  </div>
+  <div class="ctl-group">
+    <label>Your capital (₹)</label>
+    <input id="capitalInput" type="number" value="500000" step="50000">
+  </div>
+  <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">▶ Analyze</button>
+</div>
+
+<div class="wrap" id="out">
+  <div class="empty">
+    <div class="icon">⚙</div>
+    <p>Enter an NSE F&amp;O ticker and pick a strategy</p>
+    <small>Covered Call = you own the stock &amp; sell upside · Cash Secured Put = you get paid to buy lower</small>
+  </div>
+</div>
+
+<div class="disclaimer">
+  Option premiums shown are estimates based on historical volatility — not live NSE option chain prices. Always verify actual premiums on Sensibull, NSE option chain, or your broker before executing any trade. Greeks are approximations. This tool is for educational and research purposes only. Not investment advice. The decision is yours.
+</div>
+
+<script>
+// ─── Config ────────────────────────────────────────────────────────────────
+// Served by the app's Node backend (server.js). Uses the same reliable data
+// layer as the screener: /api/chart (NSE Bhavcopy history) and /api/quotes
+// (live price overlay — Kite real-time when connected, else Google).
+const DTE = 25;                 // days to expiry assumed for estimates
+const T = DTE / 365;            // in years
+const RF = 0.07;                // India risk-free ~7%
+
+let strategy = 'cc';
+
+// NSE F&O lot sizes — fetched live from /api/lots (Kite NFO dump) on load, so
+// they're always current. This is only a fallback if that fetch fails.
+let LOT = {
+  RELIANCE:500, TCS:175, INFY:400, HDFCBANK:550, ICICIBANK:700, SBIN:750,
+  AXISBANK:625, WIPRO:3000, HCLTECH:350, MARUTI:50, TITAN:175, ITC:1600,
+  SUNPHARMA:350, BAJFINANCE:750, BLUESTARCO:325, BEL:1425, TATAMOTORS:700,
+  ULTRACEMCO:50, ADANIPORTS:400, COALINDIA:1350, ONGC:1150, NTPC:1500,
+  POWERGRID:3600, LT:175
+};
+let lotsSource = 'fallback list';
+// Fetch the live lot-size map once; merge over the fallback. Memoised.
+let lotsReady = null;
+function ensureLots() {
+  if (lotsReady) return lotsReady;
+  lotsReady = fetch('/api/lots').then(r => r.json()).then(j => {
+    if (j.lots && j.count) {
+      LOT = { ...LOT, ...j.lots };
+      lotsSource = `live NSE F&O · ${j.count} stocks · ${new Date(j.asOf).toLocaleDateString('en-IN')}`;
+    }
+  }).catch(() => { /* keep fallback */ });
+  return lotsReady;
+}
+document.addEventListener('DOMContentLoaded', ensureLots);
+
+// ─── Formatting ─────────────────────────────────────────────────────────────
+const inr  = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const inr2 = n => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pc   = n => (n >= 0 ? '' : '') + n.toFixed(2) + '%';
+const gp   = n => `<span class="v-green">${n}</span>`;
+const rp   = n => `<span class="v-red">${n}</span>`;
+
+// ─── Fetch OHLCV via app backend (Bhavcopy) + live price overlay ───────────
+async function fetchOHLCV(ticker) {
+  const sym = ticker.trim().toUpperCase() + '.NS';
+  const res = await fetch(`/api/chart?symbol=${encodeURIComponent(sym)}&interval=1d&range=1y`,
+    { signal: AbortSignal.timeout(20000) });
+  if (!res.ok) {
+    let m = `Server error (${res.status})`;
+    try { const j = await res.json(); if (j.error) m = j.error; } catch (_) {}
+    throw new Error(m);
+  }
+  const data = await res.json();
+  const chart = data?.chart?.result?.[0];
+  if (!chart) throw new Error('No data returned for ' + sym);
+  const q = chart.indicators.quote[0];
+  const meta = chart.meta;
+  const closes = q.close.filter(x => x != null);
+  const highs = q.high.filter(x => x != null);
+  const lows = q.low.filter(x => x != null);
+  const volumes = q.volume.filter(x => x != null);
+  if (closes.length < 30) throw new Error('Insufficient price history');
+
+  const lastClose = closes[closes.length - 1];
+  let cmp = meta.regularMarketPrice || lastClose;
+  let prevClose = closes[closes.length - 2];
+  let live = false;
+  // Overlay a live price for an accurate CMP (Bhavcopy alone is end-of-day).
+  try {
+    const qr = await fetch(`/api/quotes?symbols=${encodeURIComponent(sym)}`);
+    if (qr.ok) {
+      const qd = await qr.json();
+      const lp = qd.quotes && qd.quotes[ticker.toUpperCase()];
+      if (lp) { cmp = lp; prevClose = lastClose; live = true; } // day change vs last completed close
+    }
+  } catch (_) { /* live overlay is best-effort */ }
+
+  return {
+    ticker: ticker.toUpperCase(), sym, closes, highs, lows, volumes, cmp, prevClose, live,
+    name: meta.longName || meta.shortName || ticker.toUpperCase(),
+    wk52hi: meta.fiftyTwoWeekHigh || Math.max(...highs),
+    wk52lo: meta.fiftyTwoWeekLow || Math.min(...lows),
+  };
+}
+
+// ─── Technicals ─────────────────────────────────────────────────────────────
+function ema(arr, period) { const k = 2 / (period + 1); let e = arr[0]; for (let i = 0; i < arr.length; i++) e = arr[i] * k + e * (1 - k); return e; }
+function rsi(closes, period = 14) {
+  let g = 0, l = 0;
+  for (let i = 1; i <= period; i++) { const d = closes[i] - closes[i - 1]; if (d > 0) g += d; else l -= d; }
+  let ag = g / period, al = l / period;
+  for (let i = period + 1; i < closes.length; i++) { const d = closes[i] - closes[i - 1]; ag = (ag * (period - 1) + Math.max(d, 0)) / period; al = (al * (period - 1) + Math.max(-d, 0)) / period; }
+  if (al === 0) return 100;
+  return Math.round(100 - 100 / (1 + ag / al));
+}
+function adx(highs, lows, closes, period = 14) {
+  const n = closes.length; if (n < period + 2) return 20;
+  const pDM = [], mDM = [], trs = [];
+  for (let i = 1; i < n; i++) {
+    const up = highs[i] - highs[i - 1], dn = lows[i - 1] - lows[i];
+    pDM.push(up > dn && up > 0 ? up : 0); mDM.push(dn > up && dn > 0 ? dn : 0);
+    trs.push(Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]), Math.abs(lows[i] - closes[i - 1])));
+  }
+  let sTR = trs.slice(0, period).reduce((a, b) => a + b, 0);
+  let sP = pDM.slice(0, period).reduce((a, b) => a + b, 0);
+  let sM = mDM.slice(0, period).reduce((a, b) => a + b, 0);
+  const dx = [];
+  for (let i = period; i < trs.length; i++) {
+    sTR = sTR - sTR / period + trs[i]; sP = sP - sP / period + pDM[i]; sM = sM - sM / period + mDM[i];
+    const dp = sP / sTR * 100, dm = sM / sTR * 100;
+    dx.push(Math.abs(dp - dm) / (dp + dm) * 100);
+  }
+  return Math.round(dx.slice(-period).reduce((a, b) => a + b, 0) / period);
+}
+function volRatio(volumes) { const r = volumes[volumes.length - 1]; const a = volumes.slice(-21, -1).reduce((x, y) => x + y, 0) / 20; return +(r / a).toFixed(2); }
+// 30-day historical volatility (annualised, decimal) — IV proxy
+function hv30(closes) {
+  const c = closes.slice(-31); const rets = [];
+  for (let i = 1; i < c.length; i++) rets.push(Math.log(c[i] / c[i - 1]));
+  const m = rets.reduce((a, b) => a + b, 0) / rets.length;
+  const v = rets.reduce((a, b) => a + (b - m) ** 2, 0) / (rets.length - 1);
+  return Math.sqrt(v) * Math.sqrt(252);
+}
+
+// ─── Black-Scholes helpers (for Greeks) ────────────────────────────────────
+function erf(x) { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; }
+function normCDF(x) { return 0.5 * (1 + erf(x / Math.SQRT2)); }
+function bsGreeks(S, K, sigma, type) {
+  const sq = sigma * Math.sqrt(T);
+  const d1 = (Math.log(S / K) + (RF + sigma * sigma / 2) * T) / sq;
+  const pdf = Math.exp(-d1 * d1 / 2) / Math.sqrt(2 * Math.PI);
+  const gamma = pdf / (S * sq);
+  const vega = S * pdf * Math.sqrt(T) / 100;              // per +1% IV
+  const delta = type === 'call' ? normCDF(d1) : normCDF(d1) - 1;
+  return { delta, gamma, vega };
+}
+const round50 = x => Math.round(x / 50) * 50;
+
+// ─── Trend classifier ───────────────────────────────────────────────────────
+function trend(cmp, e20, e50, e200, rsiVal) {
+  if (cmp > e20 && cmp > e50 && cmp > e200 && e20 >= e50) return { t: 'Bullish', cls: 't-bull' };
+  if (cmp < e200 && cmp < e50) return { t: 'Bearish', cls: 't-bear' };
+  return { t: 'Sideways', cls: 't-side' };
+}
+
+// ─── Master compute ─────────────────────────────────────────────────────────
+function computeBase(raw) {
+  const { closes, highs, lows, volumes, cmp, prevClose, wk52hi, wk52lo } = raw;
+  const e20 = ema(closes, 20), e50 = ema(closes, 50), e200 = ema(closes, Math.min(200, closes.length));
+  const rsiVal = rsi(closes), adxVal = adx(highs, lows, closes), vr = volRatio(volumes);
+  const hv = hv30(closes);               // decimal annualised vol (IV proxy)
+  const ivPct = +(hv * 100).toFixed(1);
+  const chgPct = +((cmp - prevClose) / prevClose * 100).toFixed(2);
+  const rangePos = Math.round((cmp - wk52lo) / (wk52hi - wk52lo) * 100);
+  const nearHi = (wk52hi - cmp) / wk52hi;   // fraction below 52wk high
+  const nearLo = (cmp - wk52lo) / wk52lo;    // fraction above 52wk low
+  const tr = trend(cmp, e20, e50, e200, rsiVal);
+  return { ...raw, e20, e50, e200, rsiVal, adxVal, vr, hv, ivPct, chgPct, rangePos, nearHi, nearLo, tr,
+    aboveAll: cmp > e20 && cmp > e50 && cmp > e200, above200: cmp > e200 };
+}
+
+// days to results (from optional input); null if not given
+function daysToResults() {
+  const v = document.getElementById('resultsDate').value;
+  if (!v) return null;
+  const d = Math.ceil((new Date(v) - new Date()) / 86400000);
+  return d;
+}
+
+// ─── SNAPSHOT (shared) ──────────────────────────────────────────────────────
+function snapshotCard(b) {
+  const chgCls = b.chgPct >= 0 ? 'v-green' : 'v-red';
+  return `<div class="card">
+    <h2><span class="num">1</span> Stock Snapshot</h2>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Live CMP</div><div class="v">${inr2(b.cmp)}</div></div>
+      <div class="kv"><div class="k">Day change</div><div class="v ${chgCls}">${b.chgPct >= 0 ? '+' : ''}${b.chgPct}%</div></div>
+      <div class="kv"><div class="k">52-wk high</div><div class="v">${inr(b.wk52hi)}</div></div>
+      <div class="kv"><div class="k">52-wk low</div><div class="v">${inr(b.wk52lo)}</div></div>
+      <div class="kv"><div class="k">Range position</div><div class="v v-accent">${b.rangePos}%</div></div>
+      <div class="kv"><div class="k">EMA 20</div><div class="v">${inr(b.e20)}</div></div>
+      <div class="kv"><div class="k">EMA 50</div><div class="v">${inr(b.e50)}</div></div>
+      <div class="kv"><div class="k">EMA 200</div><div class="v">${inr(b.e200)}</div></div>
+      <div class="kv"><div class="k">RSI 14</div><div class="v">${b.rsiVal}</div></div>
+      <div class="kv"><div class="k">ADX 14</div><div class="v">${b.adxVal}</div></div>
+      <div class="kv"><div class="k">Volume ratio</div><div class="v">${b.vr}×</div></div>
+      <div class="kv"><div class="k">IV proxy (HV30)</div><div class="v v-accent">${b.ivPct}%</div></div>
+    </div>
+    <div style="margin-top:12px"><span class="trend-tag ${b.tr.cls}">Trend: ${b.tr.t}</span></div>
+  </div>`;
+}
+
+// ─── Verdict helper ─────────────────────────────────────────────────────────
+function verdictBadge(score) {
+  if (score >= 8) return { txt: 'Strong Sell', cls: 'b-strong', col: 'var(--green)' };
+  if (score >= 6) return { txt: 'Good', cls: 'b-good', col: '#7faaff' };
+  if (score >= 4) return { txt: 'Wait', cls: 'b-wait', col: 'var(--amber)' };
+  return { txt: 'Avoid', cls: 'b-avoid', col: 'var(--red)' };
+}
+function verdictCard(title, score, why, flags) {
+  const v = verdictBadge(score);
+  const ringBg = score >= 8 ? 'var(--green-dim)' : score >= 6 ? 'var(--accent-dim)' : score >= 4 ? 'var(--amber-dim)' : 'var(--red-dim)';
+  return `<div class="card">
+    <h2><span class="num">2</span> ${title}</h2>
+    <div class="verdict">
+      <div class="score-ring" style="background:${ringBg};color:${v.col}">${score}/10</div>
+      <div><div class="vtext" style="color:${v.col}">${v.txt}</div>
+        <span class="badge ${v.cls}">${v.txt}</span></div>
+      <div class="why">${why}</div>
+    </div>
+    ${flags.length ? flags.map(f => `<div class="note">${f}</div>`).join('') : ''}
+  </div>`;
+}
+
+// ─── Theta decay table (sqrt-time) ──────────────────────────────────────────
+function decayRows(premium) {
+  let rows = '';
+  for (let d = DTE; d >= 1; d--) {
+    if (d <= 7 || d === DTE || d % 5 === 0) {
+      const rem = premium * Math.sqrt(d / DTE);
+      const remPrev = premium * Math.sqrt((d + 1) / DTE);
+      const dayTheta = remPrev - rem;
+      const hot = d <= 7;
+      rows += `<tr>${hot ? '<td class="evt-red">' : '<td>'}Day ${d}${d <= 7 ? ' ⚡' : ''}</td>
+        <td class="num">${inr2(rem)}</td><td class="num">${inr2(dayTheta)}</td></tr>`;
+    }
+  }
+  return rows;
+}
+
+// ─── Event risk (shared table) ──────────────────────────────────────────────
+function eventStatus(days) {
+  if (days == null) return { txt: 'Not set', cls: 'evt-green' };
+  if (days < 0) return { txt: `${-days}d ago`, cls: 'evt-green' };
+  if (days < 7) return { txt: `${days} days away`, cls: 'evt-red' };
+  if (days <= 14) return { txt: `${days} days away`, cls: 'evt-amber' };
+  return { txt: `${days} days away`, cls: 'evt-green' };
+}
+function eventRiskSection(b, dRes, forPut) {
+  const rs = eventStatus(dRes);
+  const impact = forPut
+    ? 'IV spikes before → put premium inflates → wait & sell AFTER results. IV crush after → premium collapses → best time to sell puts.'
+    : 'IV spikes before → premium inflates → wait, sell AFTER results. IV crushes after → premium collapses → best time to sell calls.';
+  return `<details class="coll">
+    <summary><span class="num" style="background:var(--accent-dim)">6</span> News &amp; Event Risk Assessment</summary>
+    <div class="coll-body">
+      <table class="tbl">
+        <tr><th>Event</th><th>Status</th><th>Impact on premium</th><th>Action</th></tr>
+        <tr><td>Results (±14 days)</td><td class="${rs.cls}">${rs.txt}</td>
+          <td>IV inflates before, crushes after</td><td>${dRes != null && dRes >= 0 && dRes < 14 ? 'Wait — sell AFTER results' : 'Clear window'}</td></tr>
+        <tr><td>RBI Policy</td><td class="evt-green">Not imminent</td>
+          <td>Banking/NBFC delta risk spikes</td><td>Roll/close bank names before meeting</td></tr>
+        <tr><td>Union Budget</td><td class="evt-green">Not imminent</td>
+          <td>Sector moves (FMCG/Defence/Infra)</td><td>Avoid budget-sensitive names 2 wks prior</td></tr>
+        <tr><td>Global (Fed / oil / geopolitics)</td><td class="evt-amber">Monitor</td>
+          <td>VIX spike inflates all premiums</td><td>Opportunity to sell into spike; watch delta</td></tr>
+        <tr><td>Political / Elections</td><td class="evt-green">Not imminent</td>
+          <td>Sector rotation</td><td>Exit options on affected sectors</td></tr>
+      </table>
+      <div class="muted-note">${impact}</div>
+      <div class="muted-note">Colour code — <span class="evt-red">Red &lt; 7 days</span> · <span class="evt-amber">Amber 7–14 days</span> · <span class="evt-green">Green &gt; 14 days</span>. Enter a results date above to score event risk.</div>
+    </div>
+  </details>`;
+}
+
+// ─── Position sizing (shared) ───────────────────────────────────────────────
+function positionSizing(b, lot, perLotCash, premiumTotal, forPut) {
+  const capital = +document.getElementById('capitalInput').value || 500000;
+  const maxLots = Math.floor(capital / perLotCash);
+  const income = maxLots * premiumTotal;
+  const deployed = maxLots * perLotCash;
+  const depPct = capital > 0 ? (deployed / capital * 100) : 0;
+  const risk10 = maxLots * lot * b.cmp * 0.10;
+  const risk20 = maxLots * lot * b.cmp * 0.20;
+  const ctx = forPut ? 'cash-secured' : 'covered';
+  return `<div class="card">
+    <h2><span class="num">8</span> Position Sizing Calculator</h2>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Capital needed / lot</div><div class="v">${inr(perLotCash)}</div></div>
+      <div class="kv"><div class="k">Max lots (${ctx})</div><div class="v v-accent">${maxLots}</div></div>
+      <div class="kv"><div class="k">Premium income (all lots)</div><div class="v v-green">${inr(income)}</div></div>
+      <div class="kv"><div class="k">Capital deployed</div><div class="v">${inr(deployed)} (${depPct.toFixed(0)}%)</div></div>
+      <div class="kv"><div class="k">Risk / lot if −10%</div><div class="v v-red">${inr(risk10 / (maxLots || 1))}</div></div>
+      <div class="kv"><div class="k">Risk / lot if −20%</div><div class="v v-red">${inr(risk20 / (maxLots || 1))}</div></div>
+    </div>
+    <div class="muted-note">With ${inr(capital)}, you can comfortably run <b>${maxLots} lot${maxLots === 1 ? '' : 's'}</b> deploying <b>${depPct.toFixed(0)}%</b> of capital, collecting <b class="v-green">${inr(income)}</b> in estimated premium this cycle.</div>
+  </div>`;
+}
+
+// ─── Greeks section (shared shell) ──────────────────────────────────────────
+function greeksSection(b, K, premium, lot, greek, forPut) {
+  const dailyTheta0 = (premium - premium * Math.sqrt((DTE - 1) / DTE)) * lot;
+  const ivUp = premium * (b.ivPct + 5) / b.ivPct;                    // +5% IV effect
+  const deltaTxt = forPut
+    ? `<h4>DELTA <span class="gval">${greek.delta.toFixed(2)} (negative)</span></h4>
+       <div class="desc">Rate the option price changes per ₹1 move in the stock.</div>
+       <div class="gline"><span class="for">FOR you:</span> Stock rises → put goes worthless → you keep the premium.</div>
+       <div class="gline"><span class="against">AGAINST you:</span> Stock falls → put delta grows more negative → your short put loses money.</div>
+       <div class="gline"><span class="trig">Trigger:</span> Stock moves within 2% of your ${inr(K)} strike. <b>Roll down when |delta| &gt; 0.50.</b></div>`
+    : `<h4>DELTA <span class="gval">${greek.delta.toFixed(2)}</span></h4>
+       <div class="desc">Rate the option price changes per ₹1 move in the stock (~0.25–0.35 for a 5% OTM call).</div>
+       <div class="gline"><span class="for">FOR you:</span> Stock flat or down → delta stays low → the call you sold loses value.</div>
+       <div class="gline"><span class="against">AGAINST you:</span> Stock surges → delta rises toward 1 → call price explodes.</div>
+       <div class="gline"><span class="trig">Trigger:</span> Stock within 2% of your ${inr(K)} strike. <b>Roll up immediately when delta &gt; 0.50.</b></div>`;
+  return `<details class="coll">
+    <summary><span class="num" style="background:var(--accent-dim)">5</span> Greeks — Real-Time Impact</summary>
+    <div class="coll-body">
+      <div class="greek">${deltaTxt}</div>
+      <div class="greek">
+        <h4>THETA <span class="gval">≈ ${inr(dailyTheta0)}/day now</span></h4>
+        <div class="desc">Time decay — your income engine. Every day the option loses value, you profit.</div>
+        <div class="gline"><span class="for">FOR you:</span> Each day that passes bleeds premium in your favour. Accelerates in the last 7 days.</div>
+        <div class="gline"><span class="against">AGAINST you:</span> Only if the stock moves against you faster than time decays.</div>
+        <table class="tbl">
+          <tr><th>Day to expiry</th><th class="num">Est. premium left</th><th class="num">Theta that day</th></tr>
+          ${decayRows(premium)}
+        </table>
+      </div>
+      <div class="greek">
+        <h4>VEGA <span class="gval">${greek.vega.toFixed(2)} / +1% IV</span></h4>
+        <div class="desc">Sensitivity to implied volatility. Current IV proxy: <b>${b.ivPct}%</b>.</div>
+        <div class="gline"><span class="for">FOR you:</span> IV drops post-event → option price collapses → buy back cheap.</div>
+        <div class="gline"><span class="against">AGAINST you:</span> IV spikes on news → option inflates → expensive to exit.</div>
+        <div class="gline"><span class="trig">A +5% IV spike</span> would move this option from ~${inr2(premium)} to ~<b>${inr2(ivUp)}</b> per share. Trigger events: RBI policy, Budget, US Fed, results, geopolitics, INR moves.</div>
+      </div>
+      <div class="greek">
+        <h4>GAMMA <span class="gval">${greek.gamma.toFixed(4)}</span></h4>
+        <div class="desc">Acceleration of delta — the hidden danger near expiry.</div>
+        <div class="gline"><span class="against">AGAINST you:</span> When the stock is near the strike AND expiry is near, gamma explodes — delta swings violently.</div>
+        <div class="gline"><span class="trig">HIGH GAMMA ALERT:</span> Last 5 days + stock within 3% of ${inr(K)}. <b>Exit or roll before entering this zone.</b></div>
+      </div>
+    </div>
+  </details>`;
+}
+
+// ─── Rolling section (shared shell) ─────────────────────────────────────────
+function rollingSection(b, K, premium, lot, forPut) {
+  const buyback = premium * 1.6;                       // assume moved against → costs more
+  const newStrike = forPut ? round50(K * 0.97) : round50(K * 1.03);
+  const newCredit = premium * 1.15;
+  const net = newCredit - buyback;
+  const rollOutCredit = premium * 1.9;
+  const rollOutNet = rollOutCredit - buyback;
+  return `<div class="card">
+    <h2><span class="num">7</span> Rolling Strategy (when the trade goes wrong)</h2>
+    <div class="scenario">
+      <h3>${forPut ? 'Roll Down' : 'Roll Up'} ${forPut ? '(stock falling)' : '(stock approaching strike)'}</h3>
+      <table class="tbl">
+        <tr><td>Buy back current ${inr(K)} option</td><td class="num v-red">−${inr(buyback * lot)}</td></tr>
+        <tr><td>Sell new ${inr(newStrike)} option</td><td class="num v-green">+${inr(newCredit * lot)}</td></tr>
+        <tr><td><b>Net ${net >= 0 ? 'credit' : 'debit'}</b></td><td class="num ${net >= 0 ? 'v-green' : 'v-red'}"><b>${net >= 0 ? '+' : '−'}${inr(Math.abs(net) * lot)}</b></td></tr>
+      </table>
+      <div class="muted-note">New effective strike ${inr(newStrike)} — ${forPut ? 'lowers your assignment price' : 'raises your cap, buys breathing room'}.</div>
+    </div>
+    <div class="scenario">
+      <h3>Roll Out (same strike, +1 month)</h3>
+      <table class="tbl">
+        <tr><td>Buy back current month ${inr(K)}</td><td class="num v-red">−${inr(buyback * lot)}</td></tr>
+        <tr><td>Sell next month ${inr(K)}</td><td class="num v-green">+${inr(rollOutCredit * lot)}</td></tr>
+        <tr><td><b>Net credit</b> · +30 days</td><td class="num ${rollOutNet >= 0 ? 'v-green' : 'v-red'}"><b>${rollOutNet >= 0 ? '+' : '−'}${inr(Math.abs(rollOutNet) * lot)}</b></td></tr>
+      </table>
+    </div>
+    <div class="scenario">
+      <h3>${forPut ? 'Roll Down &amp; Out' : 'Roll Up &amp; Out'} (best of both)</h3>
+      <div class="muted-note">Combine the moves: buy back current, sell the new ${inr(newStrike)} strike in next month for a net ${(rollOutNet) >= 0 ? 'credit' : 'small debit'}. ${forPut ? 'Lower assignment price with more time to recover.' : 'Higher cap and more premium runway.'} ${forPut ? 'Or accept assignment and pivot to selling covered calls on the shares.' : ''}</div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  COVERED CALL
+// ════════════════════════════════════════════════════════════════════════════
+function coveredCall(b) {
+  const lot = LOT[b.ticker];
+  const K = round50(b.cmp * 1.05);
+  const premium = 0.4 * b.cmp * b.hv * Math.sqrt(T);       // per share, spec formula
+  const premTotal = premium * lot;
+  const premYield = premium / b.cmp * 100;
+  const annYield = premYield * (365 / DTE);
+  const breakeven = b.cmp - premium;
+  const maxProfit = (K - b.cmp + premium) * lot;
+  const effExit = K + premium;
+  const lotValue = b.cmp * lot;
+  const dRes = daysToResults();
+  const greek = bsGreeks(b.cmp, K, b.hv, 'call');
+
+  // ── score ──
+  let s = 0; const reasons = [], flags = [];
+  if (b.rsiVal >= 55 && b.rsiVal <= 70) { s += 2; reasons.push('RSI in the 55–70 momentum sweet spot'); }
+  if (b.adxVal > 25) { s += 2; reasons.push('strong trend (ADX>25) means fatter premium'); }
+  if (b.ivPct > 20) { s += 2; reasons.push('elevated IV (' + b.ivPct + '%) — good premium environment'); }
+  if (b.nearHi <= 0.15) { s += 2; reasons.push('within 15% of 52-wk high (strength)'); }
+  if (b.aboveAll) { s += 1; reasons.push('clean uptrend above all 3 EMAs'); }
+  if (b.vr > 1.5) { s += 1; reasons.push('above-average volume'); }
+  if (b.rsiVal > 75) { s -= 3; flags.push('⚠ RSI ' + b.rsiVal + ' is overbought — a pullback would spike your sold call. Consider waiting.'); }
+  if (dRes != null && dRes >= 0 && dRes <= 14) { s -= 2; flags.push('⚠ Results ~' + dRes + ' days away — IV event risk. Selling before results means an IV crush works in your favour, but a gap move can hurt.'); }
+  s = Math.max(0, Math.min(10, s));
+  const why = `${b.ticker} is ${b.tr.t.toLowerCase()} with RSI ${b.rsiVal}, ADX ${b.adxVal} and an IV proxy of ${b.ivPct}%. ${reasons.length ? 'Positives: ' + reasons.slice(0, 3).join(', ') + '.' : 'Few positives right now.'} ${flags.length ? 'But note the flags below.' : 'A reasonable covered-call backdrop.'}`;
+
+  // ── scenarios ──
+  const scA = `<div class="scenario sc-a">
+    <h3>Scenario A — Stock stays below ${inr(K)} at expiry</h3>
+    <div class="desc">The call expires worthless. You keep everything and keep your shares.</div>
+    <table class="tbl">
+      <tr><td>Premium kept</td><td class="num v-green">+${inr(premTotal)}</td></tr>
+      <tr><td>Shares retained</td><td class="num">${lot.toLocaleString('en-IN')}</td></tr>
+      <tr><td>Monthly yield</td><td class="num v-green">${premYield.toFixed(2)}%</td></tr>
+      <tr><td>Annualised yield</td><td class="num v-green">${annYield.toFixed(1)}%</td></tr>
+    </table>
+    <div class="muted-note">Best case for an income seller — simply sell another call next cycle. The wheel keeps turning.</div>
+  </div>`;
+
+  const subs = [10, 20, 30].map(up => {
+    const px = b.cmp * (1 + up / 100);
+    const stockPL = (K - b.cmp) * lot;
+    const totalPL = stockPL + premTotal;
+    const missed = (px - effExit) * lot;
+    return `<tr><td>+${up}% → ${inr(px)}</td><td class="num v-green">+${inr(totalPL)}</td>
+      <td class="num v-amber">${inr(missed)}</td></tr>`;
+  }).join('');
+  const scB = `<div class="scenario sc-b">
+    <h3>Scenario B — Stock rises above ${inr(K)} (called away)</h3>
+    <div class="desc">Your shares are sold at the strike. You still keep the premium — but your upside is capped.</div>
+    <table class="tbl">
+      <tr><td>Shares called away at</td><td class="num">${inr(K)}</td></tr>
+      <tr><td>Premium already kept</td><td class="num v-green">+${inr(premTotal)}</td></tr>
+      <tr><td>Effective exit (strike+prem)</td><td class="num">${inr2(effExit)}</td></tr>
+      <tr><td>Stock P&amp;L (strike−CMP)×lot</td><td class="num">${inr((K - b.cmp) * lot)}</td></tr>
+      <tr><td><b>Total P&amp;L</b></td><td class="num v-green"><b>+${inr((K - b.cmp) * lot + premTotal)}</b></td></tr>
+    </table>
+    <table class="tbl" style="margin-top:8px">
+      <tr><th>If expiry is…</th><th class="num">Your total P&amp;L</th><th class="num">Missed upside</th></tr>
+      ${subs}
+    </table>
+    <div class="muted-note">You capped your upside at ${inr(effExit)} effective. <b>This is the trade-off</b> — you swapped unlimited gains for guaranteed premium.</div>
+  </div>`;
+
+  const crash = [10, 20, 30].map(dn => {
+    const px = b.cmp * (1 - dn / 100);
+    const stockLoss = (px - b.cmp) * lot;
+    const net = stockLoss + premTotal;
+    return `<tr><td>−${dn}% → ${inr(px)}</td><td class="num v-red">${inr(stockLoss)}</td>
+      <td class="num v-green">+${inr(premTotal)}</td><td class="num ${net < 0 ? 'v-red' : 'v-green'}">${inr(net)}</td></tr>`;
+  }).join('');
+  const scC = `<div class="scenario sc-c">
+    <h3>Scenario C — Stock crashes</h3>
+    <div class="desc">You still own the shares (unrealised loss), but the premium cushions the fall.</div>
+    <table class="tbl">
+      <tr><th>Move</th><th class="num">Stock loss</th><th class="num">Premium cushion</th><th class="num">Net</th></tr>
+      ${crash}
+    </table>
+    <div class="muted-note">Breakeven is <b>${inr2(breakeven)}</b> (CMP − premium). Below that you're net negative on the position. Action: roll the call down to collect more premium, or hold if you believe in the stock.</div>
+  </div>`;
+
+  const setup = `<div class="card">
+    <h2><span class="num">3</span> Strategy Setup — 5% OTM Covered Call</h2>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Lot size</div><div class="v">${lot.toLocaleString('en-IN')}</div></div>
+      <div class="kv"><div class="k">Shares for 1 call</div><div class="v">${lot.toLocaleString('en-IN')}</div></div>
+      <div class="kv"><div class="k">Value of 1 lot @ CMP</div><div class="v">${inr(lotValue)}</div></div>
+      <div class="kv"><div class="k">Suggested strike (5% OTM)</div><div class="v v-accent">${inr(K)}</div></div>
+      <div class="kv"><div class="k">Est. premium / share</div><div class="v">${inr2(premium)}</div></div>
+      <div class="kv"><div class="k">Total premium / lot</div><div class="v v-green">${inr(premTotal)}</div></div>
+      <div class="kv"><div class="k">Premium yield</div><div class="v v-green">${premYield.toFixed(2)}%</div></div>
+      <div class="kv"><div class="k">Annualised yield</div><div class="v v-green">${annYield.toFixed(1)}%</div></div>
+      <div class="kv"><div class="k">Breakeven</div><div class="v">${inr2(breakeven)}</div></div>
+      <div class="kv"><div class="k">Max profit / lot</div><div class="v v-green">${inr(maxProfit)}</div></div>
+      <div class="kv"><div class="k">Effective exit if called</div><div class="v">${inr2(effExit)}</div></div>
+    </div>
+    <div class="note">Estimated premium — verify live on NSE option chain or Sensibull before trading.</div>
+    <div class="muted-note">Lot size source: ${lotsSource}.</div>
+  </div>`;
+
+  const scenarios = `<div class="card"><h2><span class="num">4</span> All 3 Scenarios (exact ₹)</h2>${scA}${scB}${scC}</div>`;
+
+  return snapshotCard(b)
+    + verdictCard('Is this a good time to sell a Covered Call?', s, why, flags)
+    + setup + scenarios
+    + greeksSection(b, K, premium, lot, greek, false)
+    + eventRiskSection(b, dRes, false)
+    + rollingSection(b, K, premium, lot, false)
+    + positionSizing(b, lot, lotValue, premTotal, false)
+    + wheelSection(b, lot, premTotal, 'cc');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  CASH SECURED PUT
+// ════════════════════════════════════════════════════════════════════════════
+function cashSecuredPut(b) {
+  const lot = LOT[b.ticker];
+  const K = round50(b.cmp * 0.95);
+  const premium = 0.4 * b.cmp * b.hv * Math.sqrt(T);
+  const premTotal = premium * lot;
+  const cashReq = K * lot;
+  const premYield = premium / K * 100;
+  const annYield = premYield * (365 / DTE);
+  const effBuy = K - premium;
+  const discount = (b.cmp - effBuy) / b.cmp * 100;
+  const dRes = daysToResults();
+  const greek = bsGreeks(b.cmp, K, b.hv, 'put');
+
+  let s = 0; const reasons = [], flags = [];
+  if (b.rsiVal >= 35 && b.rsiVal <= 50) { s += 2; reasons.push('RSI ' + b.rsiVal + ' — healthy pullback, good entry zone'); }
+  if (b.nearLo >= 0.10 && b.nearLo <= 0.20) { s += 2; reasons.push('near the 52-wk low accumulation zone'); }
+  if (b.ivPct > 25) { s += 2; reasons.push('high IV (' + b.ivPct + '%) — rich put premium'); }
+  if (b.above200) { s += 2; reasons.push('still above the 200 EMA — long-term uptrend intact'); }
+  if (b.adxVal < 20) { s += 1; reasons.push('low ADX — range-bound, likely to stay above strike'); }
+  s += 1; reasons.push('only sell puts on stocks you want to own'); // "would you own it" nudge
+  if (b.rsiVal < 30) { s -= 3; flags.push('⚠ RSI ' + b.rsiVal + ' — stock is free-falling. Don\'t catch a falling knife; wait for it to stabilise.'); }
+  if (dRes != null && dRes >= 0 && dRes <= 14) { s -= 2; flags.push('⚠ Results ~' + dRes + ' days away — a bad print can gap the stock below your strike.'); }
+  if (!b.above200) { s -= 2; flags.push('⚠ Below the 200 EMA — the long-term trend is broken, so assignment risk is higher.'); }
+  s = Math.max(0, Math.min(10, s));
+  const why = `${b.ticker} trades at ${inr(b.cmp)} with RSI ${b.rsiVal}, ${b.above200 ? 'above' : 'below'} its 200 EMA and IV proxy ${b.ivPct}%. ${reasons.length ? 'Positives: ' + reasons.slice(0, 3).join(', ') + '.' : ''} ${flags.length ? 'Weigh the flags below before selling.' : 'A reasonable spot to get paid to buy lower.'}`;
+
+  const scA = `<div class="scenario sc-a">
+    <h3>Scenario A — Stock stays above ${inr(K)} (put expires worthless)</h3>
+    <div class="desc">You keep the premium, your secured cash is freed, no stock bought.</div>
+    <table class="tbl">
+      <tr><td>Premium kept</td><td class="num v-green">+${inr(premTotal)}</td></tr>
+      <tr><td>Cash returned</td><td class="num">${inr(cashReq)}</td></tr>
+      <tr><td>Monthly yield on cash</td><td class="num v-green">${premYield.toFixed(2)}%</td></tr>
+      <tr><td>Annualised yield</td><td class="num v-green">${annYield.toFixed(1)}%</td></tr>
+    </table>
+    <div class="muted-note">Sell again next month — the wheel continues.</div>
+  </div>`;
+
+  const assign = [5, 10, 15].map(dn => {
+    const px = b.cmp * (1 - dn / 100);
+    const pl = (px - effBuy) * lot;
+    const cheaper = (b.cmp - effBuy) / b.cmp * 100;
+    return `<tr><td>−${dn}% → ${inr(px)}</td><td class="num">${inr(effBuy)}</td>
+      <td class="num ${pl < 0 ? 'v-red' : 'v-green'}">${inr(pl)}</td><td class="num v-green">${cheaper.toFixed(1)}% cheaper</td></tr>`;
+  }).join('');
+  const scB = `<div class="scenario sc-b">
+    <h3>Scenario B — Stock falls to ${inr(K)} (assigned)</h3>
+    <div class="desc">You buy the shares at the strike — but your true cost is lower thanks to the premium.</div>
+    <table class="tbl">
+      <tr><th>Move</th><th class="num">Eff. buy price</th><th class="num">Unreal. P&amp;L</th><th class="num">vs buying at CMP</th></tr>
+      ${assign}
+    </table>
+    <div class="muted-note">Effective buy price <b>${inr2(effBuy)}</b> (strike − premium), a <b>${discount.toFixed(1)}%</b> discount to today's CMP. Now you own it — <b>switch to the Covered Call tab and sell calls on these shares.</b></div>
+  </div>`;
+
+  const crash = [20, 30, 40].map(dn => {
+    const px = b.cmp * (1 - dn / 100);
+    const loss = (px - K) * lot;                    // beyond assignment
+    const net = (px - effBuy) * lot;
+    return `<tr><td>−${dn}% → ${inr(px)}</td><td class="num">${inr(K)}</td>
+      <td class="num v-red">${inr(net)}</td><td class="num v-green">+${inr(premTotal)}</td></tr>`;
+  }).join('');
+  const scC = `<div class="scenario sc-c">
+    <h3>Scenario C — Stock crashes hard (well below ${inr(K)})</h3>
+    <div class="desc">You're assigned at the strike and the stock keeps falling — a deep unrealised loss.</div>
+    <table class="tbl">
+      <tr><th>Move</th><th class="num">Assigned at</th><th class="num">Net P&amp;L</th><th class="num">Premium cushion</th></tr>
+      ${crash}
+    </table>
+    <div class="muted-note">Rolling option: <b>roll down &amp; out</b> — buy back the put, sell a lower strike next month for a net credit to lower your cost further. <b>This is exactly why you only sell puts on stocks you'd genuinely hold long term.</b></div>
+  </div>`;
+
+  const setup = `<div class="card">
+    <h2><span class="num">3</span> Strategy Setup — 5% OTM Cash Secured Put</h2>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Lot size</div><div class="v">${lot.toLocaleString('en-IN')}</div></div>
+      <div class="kv"><div class="k">Suggested strike (5% OTM)</div><div class="v v-accent">${inr(K)}</div></div>
+      <div class="kv"><div class="k">Est. put premium / share</div><div class="v">${inr2(premium)}</div></div>
+      <div class="kv"><div class="k">Total premium / lot</div><div class="v v-green">${inr(premTotal)}</div></div>
+      <div class="kv"><div class="k">Cash to secure</div><div class="v">${inr(cashReq)}</div></div>
+      <div class="kv"><div class="k">Yield on secured cash</div><div class="v v-green">${premYield.toFixed(2)}%</div></div>
+      <div class="kv"><div class="k">Annualised yield</div><div class="v v-green">${annYield.toFixed(1)}%</div></div>
+      <div class="kv"><div class="k">Eff. buy if assigned</div><div class="v">${inr2(effBuy)}</div></div>
+      <div class="kv"><div class="k">Discount to CMP</div><div class="v v-green">${discount.toFixed(1)}%</div></div>
+    </div>
+    <div class="note">Estimated premium — verify live on NSE option chain or Sensibull before trading.</div>
+    <div class="muted-note">Lot size source: ${lotsSource}.</div>
+  </div>`;
+
+  const scenarios = `<div class="card"><h2><span class="num">4</span> All 3 Scenarios (exact ₹)</h2>${scA}${scB}${scC}</div>`;
+
+  return snapshotCard(b)
+    + verdictCard('Is this a good time to sell a Cash Secured Put?', s, why, flags)
+    + setup + scenarios
+    + greeksSection(b, K, premium, lot, greek, true)
+    + eventRiskSection(b, dRes, true)
+    + rollingSection(b, K, premium, lot, true)
+    + positionSizing(b, lot, cashReq, premTotal, true)
+    + wheelSection(b, lot, premTotal, 'csp');
+}
+
+// ─── The Wheel ──────────────────────────────────────────────────────────────
+function wheelSection(b, lot, premTotal, phase) {
+  const nodes = ['Sell CSP', 'Assigned', 'Sell Covered Call', 'Called Away', '↺ Sell CSP'];
+  const activeIdx = phase === 'csp' ? 0 : 2;
+  const diagram = nodes.map((n, i) => `<div class="wheel-node ${i === activeIdx ? 'active' : ''}">${n}</div>`
+  ).join('<span class="wheel-arrow">→</span>');
+
+  // 12-month cumulative premium projection (1 lot)
+  let rows = '', cum = 0;
+  for (let m = 1; m <= 12; m++) { cum += premTotal; if (m <= 3 || m % 3 === 0 || m === 12) rows += `<tr><td>Month ${m}</td><td class="num v-green">+${inr(premTotal)}</td><td class="num v-green">${inr(cum)}</td></tr>`; }
+  const annual = premTotal * 12;
+  const crash20 = b.cmp * lot * 0.20;
+  const monthsToCover = crash20 / premTotal;
+
+  return `<div class="card">
+    <h2><span class="num">∞</span> The Wheel Strategy</h2>
+    <div class="muted-note">Current phase: <b class="v-accent">${phase === 'csp' ? 'Cash Secured Put (getting paid to buy)' : 'Covered Call (getting paid to hold)'}</b></div>
+    <div class="wheel-diagram">${diagram}</div>
+    <table class="tbl">
+      <tr><th>Month</th><th class="num">Premium (1 lot)</th><th class="num">Cumulative</th></tr>
+      ${rows}
+    </table>
+    <div class="kv-grid" style="margin-top:12px">
+      <div class="kv"><div class="k">Projected 12-mo income / lot</div><div class="v v-green">${inr(annual)}</div></div>
+      <div class="kv"><div class="k">A 20% crash costs</div><div class="v v-red">${inr(crash20)}</div></div>
+      <div class="kv"><div class="k">Months of premium to cover it</div><div class="v v-amber">${monthsToCover.toFixed(1)} months</div></div>
+    </div>
+    <div class="muted-note">Break-even math: at ${inr(premTotal)}/month, roughly <b>${monthsToCover.toFixed(1)} months</b> of collected premium offsets a one-off 20% drawdown in the stock — the core resilience of running the wheel consistently.</div>
+  </div>`;
+}
+
+// ─── Orchestration ──────────────────────────────────────────────────────────
+async function analyze() {
+  const ticker = document.getElementById('tickerInput').value.trim().toUpperCase();
+  const out = document.getElementById('out');
+  const btn = document.getElementById('analyzeBtn');
+  if (!ticker) return;
+
+  await ensureLots(); // make sure lot sizes are the current NSE F&O values
+
+  if (!(ticker in LOT)) {
+    out.innerHTML = `<div class="error-box"><div class="et">⚠ ${ticker} — Not in F&amp;O list</div>
+      <div class="em">This stock has no NSE F&amp;O (options) contract, so there's no lot size. The list is refreshed live from NSE (${Object.keys(LOT).length} F&amp;O stocks). Examples: RELIANCE, INFY, BLUESTARCO, TATAMOTORS.</div></div>`;
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = '⏳ Analyzing…';
+  out.innerHTML = `<div class="loading"><div class="spinner"></div> Fetching ${ticker}.NS live data…</div>`;
+  try {
+    const raw = await fetchOHLCV(ticker);
+    const b = computeBase(raw);
+    out.innerHTML = strategy === 'cc' ? coveredCall(b) : cashSecuredPut(b);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    out.innerHTML = `<div class="error-box"><div class="et">⚠ Could not analyze ${ticker}</div>
+      <div class="em">${e.message || 'Data fetch failed'}. The data server may be busy — wait a moment and try again.</div></div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '▶ Analyze';
+  }
+}
+
+// ─── Pills & shortcuts ──────────────────────────────────────────────────────
+document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => {
+  document.querySelectorAll('.pill').forEach(x => x.classList.remove('on'));
+  p.classList.add('on');
+  strategy = p.dataset.strat;
+  if (document.querySelector('.card, .error-box')) analyze(); // re-run if we already have a result
+}));
+document.getElementById('tickerInput').addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
+document.getElementById('resultsDate').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
+document.getElementById('capitalInput').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
+</script>
+</body>
+</html>

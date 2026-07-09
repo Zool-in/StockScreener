@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Data cache — regenerable (NSE Bhavcopy files, live quotes, broker sessions)
+.cache/
+
+# Broker secrets — NEVER commit real credentials
+kite-config.json
+fyers-config.json
+*.session.json
+
+# Local tooling / editor / OS
+.claude/
+.DS_Store
+*.log
+npm-debug.log*

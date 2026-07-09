@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NSE BTST Scanner · Buy Today Sell Tomorrow</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* BTST-specific additions (base theme comes from styles.css) */
+  .btst-risk { background: var(--red-dim); border: 1px solid #5e1010; border-radius: 8px; padding: 8px 11px; font-size: 11px; color: #ff9a9a; margin-bottom: 8px; line-height: 1.5; }
+  .cs-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+  .cs-fill { height: 100%; border-radius: 3px; }
+  .deliv-hot { color: var(--green); } .deliv-mid { color: var(--amber); } .deliv-low { color: var(--muted); }
+  .verdict-tag { display:inline-block; font-size: 10.5px; padding: 3px 9px; border-radius: 5px; font-weight: 700; letter-spacing: .3px; margin-bottom: 8px; }
+  .vt-strong { background: var(--green-dim); color: var(--green); border: 1px solid #1a5e3f; }
+  .vt-good { background: var(--accent-dim); color: #7faaff; border: 1px solid #2a4080; }
+  .vt-watch { background: var(--amber-dim); color: var(--amber); border: 1px solid #5e3e10; }
+  .vt-skip { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+  .info-banner { padding: 10px 24px; background: var(--accent-dim); border-bottom: 1px solid var(--border); font-size: 11.5px; color: #a9c0ff; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand">NSE <span>Toolkit</span></div>
+  <a href="/">📊 Screener</a>
+  <a href="/options.html">⚙ Options</a>
+  <a href="/btst.html" class="active">⚡ BTST</a>
+</nav>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="eyebrow">NSE · Buy Today Sell Tomorrow · NSE Bhavcopy + Delivery %</div>
+    <h1>BTST Momentum Scanner</h1>
+    <div class="sub">Ranks stocks that closed strong today as next-day continuation candidates</div>
+  </div>
+  <div class="live-dot" id="mktDot"><span id="mktBlip"></span> <span id="mktLabel">EOD signal</span></div>
+</div>
+
+<div class="info-banner">
+  ⏱ This is a <b>post-close scan</b> on official NSE end-of-day data — it surfaces stocks that <b>closed strong today</b> to buy at <b>tomorrow's open</b> (a next-day momentum play). True intraday "buy near close" BTST needs live data — connect Kite for that.
+</div>
+
+<div class="input-panel">
+  <div class="input-group">
+    <label>NSE tickers (one per line or comma-separated)</label>
+    <div class="presets">
+      <span class="presets-label">Load:</span>
+      <button type="button" class="preset-pill" data-idx="nifty50">Nifty 50</button>
+      <button type="button" class="preset-pill" data-idx="nifty100">Nifty 100</button>
+      <button type="button" class="preset-pill" data-idx="nifty500">Nifty 500</button>
+      <button type="button" class="preset-pill" data-idx="etf">ETFs</button>
+      <button type="button" class="preset-pill" data-idx="all">All NSE</button>
+      <span class="presets-count" id="presetsCount"></span>
+    </div>
+    <textarea id="tickerInput" placeholder="RELIANCE&#10;TCS&#10;INFY">RELIANCE
+TCS
+INFY
+HDFCBANK
+ICICIBANK
+BEL
+TITAN
+SUNPHARMA
+MARUTI
+BLUESTARCO</textarea>
+  </div>
+  <div class="controls">
+    <button class="btn-scan" id="scanBtn" onclick="runScan()">▶ Run BTST scan</button>
+    <button class="btn-clear" onclick="clearResults()">Clear</button>
+  </div>
+</div>
+
+<div class="filter-bar" id="filterBar" style="display:none">
+  <button class="filter-pill on" data-f="all">All</button>
+  <button class="filter-pill" data-f="Strong">Strong</button>
+  <button class="filter-pill" data-f="Good">Good</button>
+  <button class="filter-pill" data-f="Watch">Watch</button>
+  <span class="sort-label">Sort by</span>
+  <select class="sort-sel" id="sortSel" onchange="renderResults()">
+    <option value="score">BTST score ↓</option>
+    <option value="cs">Closing strength</option>
+    <option value="deliv">Delivery %</option>
+    <option value="chg">Day change</option>
+  </select>
+</div>
+
+<div class="summary" id="summaryBar" style="display:none"></div>
+<div class="grid" id="resultsGrid">
+  <div class="empty">
+    <div class="icon">⚡</div>
+    <p>Load a list and run the BTST scan</p>
+    <small>Closing strength · volume surge · delivery % · breakout — ranked for next-day follow-through</small>
+  </div>
+</div>
+
+<div class="disclaimer" id="disclaimer" style="display:none">
+  BTST carries <b>overnight gap risk</b> — your position has no stop-loss protection while the market is closed, and bad news can gap the stock down at open. Signals are from official NSE Bhavcopy (end-of-day) plus delivery %; premiums/targets are algorithmic estimates, not advice. This is a next-day momentum scan, not a live intraday signal. Educational and research use only — not investment advice. Always confirm on your broker before trading.
+</div>
+
+<script>
+const API_BASE = '/api/chart';
+let allResults = [];
+let activeFilter = 'all';
+
+// ─── Fetch OHLCV (+ delivery %) from the app backend ───────────────────────
+async function fetchOHLCV(ticker) {
+  const sym = ticker.trim().toUpperCase() + '.NS';
+  const res = await fetch(`${API_BASE}?symbol=${encodeURIComponent(sym)}&interval=1d&range=3mo`,
+    { signal: AbortSignal.timeout(75000) });
+  if (!res.ok) {
+    let msg = `Server error (${res.status})`;
+    try { const j = await res.json(); if (j.error) msg = j.error; } catch (_) {}
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  const chart = data?.chart?.result?.[0];
+  if (!chart) throw new Error('No data returned');
+  const q = chart.indicators.quote[0];
+  const meta = chart.meta;
+  return {
+    ticker: ticker.toUpperCase(), sym,
+    opens: q.open, highs: q.high, lows: q.low, closes: q.close, volumes: q.volume,
+    delivPer: meta.delivPer, delivAvg: meta.delivPerAvg20, meta,
+  };
+}
+
+// ─── Technicals ─────────────────────────────────────────────────────────────
+function ema(arr, p) { const k = 2 / (p + 1); let e = arr[0]; for (let i = 0; i < arr.length; i++) e = arr[i] * k + e * (1 - k); return e; }
+function rsi(c, p = 14) {
+  let g = 0, l = 0; for (let i = 1; i <= p; i++) { const d = c[i] - c[i - 1]; if (d > 0) g += d; else l -= d; }
+  let ag = g / p, al = l / p;
+  for (let i = p + 1; i < c.length; i++) { const d = c[i] - c[i - 1]; ag = (ag * (p - 1) + Math.max(d, 0)) / p; al = (al * (p - 1) + Math.max(-d, 0)) / p; }
+  if (al === 0) return 100; return Math.round(100 - 100 / (1 + ag / al));
+}
+function adx(hs, ls, cs, p = 14) {
+  const n = cs.length; if (n < p + 2) return 20; const pDM = [], mDM = [], trs = [];
+  for (let i = 1; i < n; i++) { const up = hs[i] - hs[i - 1], dn = ls[i - 1] - ls[i]; pDM.push(up > dn && up > 0 ? up : 0); mDM.push(dn > up && dn > 0 ? dn : 0); trs.push(Math.max(hs[i] - ls[i], Math.abs(hs[i] - cs[i - 1]), Math.abs(ls[i] - cs[i - 1]))); }
+  let sTR = trs.slice(0, p).reduce((a, b) => a + b, 0), sP = pDM.slice(0, p).reduce((a, b) => a + b, 0), sM = mDM.slice(0, p).reduce((a, b) => a + b, 0); const dx = [];
+  for (let i = p; i < trs.length; i++) { sTR = sTR - sTR / p + trs[i]; sP = sP - sP / p + pDM[i]; sM = sM - sM / p + mDM[i]; const dp = sP / sTR * 100, dm = sM / sTR * 100; dx.push(Math.abs(dp - dm) / (dp + dm) * 100); }
+  return Math.round(dx.slice(-p).reduce((a, b) => a + b, 0) / p);
+}
+const inr = n => '₹' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+// NSE trades Mon–Fri 09:15–15:30 IST. Closed = prices are settled, not "live".
+function marketOpen() {
+  const ist = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  const day = ist.getDay(), m = ist.getHours() * 60 + ist.getMinutes();
+  return day >= 1 && day <= 5 && m >= 555 && m <= 930;
+}
+
+// ─── BTST compute & score ───────────────────────────────────────────────────
+function compute(raw) {
+  const { closes, highs, lows, opens, volumes, delivPer, delivAvg } = raw;
+  const finite = closes.filter(Number.isFinite);
+  if (finite.length < 25) throw new Error('Insufficient price history');
+  const n = closes.length;
+  const c = closes[n - 1], h = highs[n - 1], l = lows[n - 1], o = opens[n - 1], prev = closes[n - 2];
+  const chgPct = +((c - prev) / prev * 100).toFixed(2);
+
+  // Closing strength: where in today's range did it close (1 = at the high)
+  const cs = h > l ? (c - l) / (h - l) : 0.5;
+  const csPct = Math.round(cs * 100);
+
+  // Volume surge vs 20-day average
+  const vAvg = volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20;
+  const vr = +(volumes[n - 1] / vAvg).toFixed(2);
+
+  // Delivery % + surge
+  const dp = delivPer;                       // today's delivery %
+  const dpSurge = (dp != null && delivAvg) ? +(dp / delivAvg).toFixed(2) : null;
+
+  // Breakout: today's close vs prior 20-day high (excl today)
+  const hi20 = Math.max(...highs.slice(-21, -1));
+  const newHigh = c >= hi20;
+  const nearHigh = c >= hi20 * 0.99;
+
+  const e20 = ema(closes, 20), e50 = ema(closes, 50), e200 = ema(closes, Math.min(200, n));
+  const rsiVal = rsi(closes), adxVal = adx(highs, lows, closes);
+  const above20 = c > e20, above50 = c > e50, above200 = c > e200;
+
+  // ── Score 0–100 ──
+  let score = 0;
+  if (cs > 0.8) score += 25; else if (cs > 0.65) score += 16; else if (cs > 0.5) score += 6;
+  if (chgPct > 2) score += 15; else if (chgPct > 1) score += 10; else if (chgPct > 0.3) score += 5; else if (chgPct < 0) score -= 5;
+  if (vr > 2) score += 20; else if (vr > 1.5) score += 12; else if (vr > 1) score += 5;
+  if (dp != null) { if (dp >= 60) score += 20; else if (dp >= 45) score += 12; else if (dp >= 30) score += 6; }
+  else score += 6; // no delivery data — don't over-penalise
+  if (newHigh) score += 15; else if (nearHigh) score += 8;
+  if (above20 && above50) score += 5;
+  if (rsiVal >= 55 && rsiVal <= 72) score += 5;
+  if (above200) score += 5;
+  score = Math.max(0, Math.min(100, score));
+
+  // ── Flags ──
+  const flags = [];
+  if (rsiVal > 80) flags.push('RSI ' + rsiVal + ' overbought — profit-booking gap-down risk');
+  if (cs < 0.4) flags.push('Closed weak (bottom of range) — poor BTST setup');
+  if (chgPct < 0) flags.push('Closed red — not a momentum candidate');
+
+  // ── Verdict ──
+  let verdict = 'Skip', vt = 'vt-skip';
+  if (score >= 75) { verdict = 'Strong'; vt = 'vt-strong'; }
+  else if (score >= 60) { verdict = 'Good'; vt = 'vt-good'; }
+  else if (score >= 45) { verdict = 'Watch'; vt = 'vt-watch'; }
+
+  // ── Levels ── entry is a confirmation TRIGGER above today's high (only buy
+  // tomorrow if momentum follows through); stop below today's low.
+  const cmpClose = +c.toFixed(2);
+  const entry = +(h * 1.001).toFixed(2);           // just above today's high
+  const entryBasis = 'buy above today\'s high';
+  const stop = +(l * 0.997).toFixed(2);
+  const t1 = +(entry * 1.01).toFixed(2), t2 = +(entry * 1.02).toFixed(2), t3 = +(entry * 1.03).toFixed(2);
+  const rr = +((t2 - entry) / (entry - stop)).toFixed(1);
+
+  return {
+    ticker: raw.ticker, name: raw.meta?.longName || raw.ticker,
+    cmp: cmpClose, liveCmp: null, chgPct, cs, csPct, vr, dp, dpSurge,
+    newHigh, nearHigh, hi20: +hi20.toFixed(2), rsiVal, adxVal, above20, above50, above200,
+    e20: +e20.toFixed(2), e50: +e50.toFixed(2),
+    score, verdict, vt, flags, entry, entryBasis, stop, t1, t2, t3, rr,
+    fetchedAt: new Date().toLocaleTimeString('en-IN'),
+  };
+}
+
+// ─── Render one card ────────────────────────────────────────────────────────
+function scoreClass(s) { return s >= 75 ? 'score-s' : s >= 60 ? 'score-m' : 'score-w'; }
+function csColor(cs) { return cs > 0.8 ? 'var(--green)' : cs > 0.55 ? 'var(--amber)' : 'var(--red)'; }
+function delivCls(dp) { return dp == null ? 'deliv-low' : dp >= 55 ? 'deliv-hot' : dp >= 40 ? 'deliv-mid' : 'deliv-low'; }
+function dotc(ok, warn) { return ok ? 'dy' : warn ? 'dm' : 'dn'; }
+
+function cardHTML(d) {
+  const chgCls = d.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
+  const priceShown = d.liveCmp != null ? d.liveCmp : d.cmp;
+  const gap = d.liveCmp != null ? ((d.liveCmp - d.cmp) / d.cmp * 100) : null;
+  const accent = d.score >= 75 ? '#22d08a' : d.score >= 60 ? '#7faaff' : d.score >= 45 ? '#f5a623' : '#384060';
+  const csOk = d.cs > 0.8, csWarn = d.cs > 0.55;
+  const vrOk = d.vr > 2, vrWarn = d.vr > 1.3;
+  const dpOk = d.dp != null && d.dp >= 55, dpWarn = d.dp != null && d.dp >= 40;
+  return `
+  <div class="scard" data-verdict="${d.verdict}" data-score="${d.score}" data-cs="${d.csPct}" data-deliv="${d.dp || 0}" data-chg="${d.chgPct}">
+    <div class="scard-accent" style="background:${accent}"></div>
+    <div class="scard-top">
+      <div><div class="scard-ticker">${d.ticker}</div>
+        <div class="scard-name">${(d.name || '').slice(0, 28)}</div></div>
+      <span class="score-badge ${scoreClass(d.score)}">${d.score}/100</span>
+    </div>
+    <div class="price-row">
+      <span class="price">${inr(priceShown)}</span>
+      <span class="chg ${chgCls}">${d.chgPct >= 0 ? '+' : ''}${d.chgPct}%</span>
+      ${gap != null && marketOpen() ? `<span style="font-size:10px;font-weight:700;margin-left:auto;color:${gap >= 0 ? 'var(--green)' : 'var(--red)'}">${gap >= 0 ? '▲' : '▼'} ${gap.toFixed(2)}% vs close</span>` : ''}
+    </div>
+    <span class="verdict-tag ${d.vt}">${d.verdict === 'Skip' ? 'Skip' : d.verdict + ' BTST'}</span>
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:2px">Closing strength — ${d.csPct}% ${d.cs > 0.8 ? '(closed at highs)' : d.cs < 0.4 ? '(closed weak)' : ''}</div>
+    <div class="cs-bar"><div class="cs-fill" style="width:${d.csPct}%;background:${csColor(d.cs)}"></div></div>
+    <div class="indicator-grid" style="margin-top:10px">
+      <div class="ind"><div class="ik">Vol surge</div><div class="iv" style="color:${vrOk ? 'var(--green)' : vrWarn ? 'var(--amber)' : 'var(--muted)'}">${d.vr}×</div></div>
+      <div class="ind"><div class="ik">Delivery %</div><div class="iv ${delivCls(d.dp)}">${d.dp != null ? d.dp + '%' : '—'}</div></div>
+      <div class="ind"><div class="ik">Deliv surge</div><div class="iv">${d.dpSurge != null ? d.dpSurge + '×' : '—'}</div></div>
+      <div class="ind"><div class="ik">RSI 14</div><div class="iv">${d.rsiVal}</div></div>
+      <div class="ind"><div class="ik">ADX 14</div><div class="iv">${d.adxVal}</div></div>
+      <div class="ind"><div class="ik">20d high</div><div class="iv" style="color:${d.newHigh ? 'var(--green)' : 'var(--muted)'}">${inr(d.hi20)}</div></div>
+    </div>
+    <div class="signal-dots">
+      <span class="dot-row"><span class="dot ${dotc(csOk, csWarn)}"></span>Closing strength</span>
+      <span class="dot-row"><span class="dot ${dotc(vrOk, vrWarn)}"></span>Volume surge</span>
+      <span class="dot-row"><span class="dot ${dotc(dpOk, dpWarn)}"></span>Delivery</span>
+      <span class="dot-row"><span class="dot ${d.newHigh ? 'dy' : d.nearHigh ? 'dm' : 'dn'}"></span>Breakout</span>
+      <span class="dot-row"><span class="dot ${dotc(d.above20 && d.above50, d.above20)}"></span>Above EMAs</span>
+    </div>
+    <div class="levels">
+      <div class="lv lv-entry"><div class="lk">Entry (trigger)</div><div class="lv2">${inr(d.entry)}</div><div class="rr">${d.entryBasis}</div></div>
+      <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">${inr(d.stop)}</div><div class="rr">−${(((d.entry - d.stop) / d.entry) * 100).toFixed(1)}%</div></div>
+      <div class="lv lv-target"><div class="lk">Targets 1/2/3%</div><div class="lv2" style="font-size:11px">${inr(d.t1)} · ${inr(d.t2)} · ${inr(d.t3)}</div><div class="rr">${d.rr}× R:R @2%</div></div>
+    </div>
+    <div class="btst-risk">⚠ Overnight gap risk — no stop protection while markets are closed. Size small; exit at open or your target.</div>
+    ${d.flags.length ? d.flags.map(f => `<div class="btst-risk">⚠ ${f}</div>`).join('') : ''}
+    <div class="source-note">NSE Bhavcopy (EOD)${d.liveCmp != null ? (marketOpen() ? ' + live' : ' + latest close') : ''} · ${d.fetchedAt}</div>
+  </div>`;
+}
+
+// ─── Render ─────────────────────────────────────────────────────────────────
+function renderResults() {
+  const grid = document.getElementById('resultsGrid');
+  const sortBy = document.getElementById('sortSel')?.value || 'score';
+  let data = [...allResults].filter(d => d.type !== 'error' && d.type !== 'loading');
+  const errors = allResults.filter(d => d.type === 'error');
+  if (activeFilter !== 'all') data = data.filter(d => d.verdict === activeFilter);
+  data.sort((a, b) => sortBy === 'cs' ? b.cs - a.cs : sortBy === 'deliv' ? (b.dp || 0) - (a.dp || 0) : sortBy === 'chg' ? b.chgPct - a.chgPct : b.score - a.score);
+
+  const done = allResults.filter(d => d.type !== 'loading');
+  const strong = data.filter(d => d.verdict === 'Strong').length;
+  const good = data.filter(d => d.verdict === 'Good').length;
+  const hiDeliv = data.filter(d => d.dp != null && d.dp >= 55).length;
+  const avgCs = data.length ? Math.round(data.reduce((a, d) => a + d.csPct, 0) / data.length) : 0;
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="sum-chip"><div class="sk">Scanned</div><div class="sv">${done.length}</div></div>
+    <div class="sum-chip"><div class="sk">Strong BTST</div><div class="sv" style="color:var(--green)">${strong}</div></div>
+    <div class="sum-chip"><div class="sk">Good</div><div class="sv" style="color:#7faaff">${good}</div></div>
+    <div class="sum-chip"><div class="sk">High delivery</div><div class="sv">${hiDeliv}</div></div>
+    <div class="sum-chip"><div class="sk">Avg closing str.</div><div class="sv">${avgCs || '—'}%</div></div>`;
+
+  let html = data.map(cardHTML).join('');
+  html += errors.map(e => `<div class="error-card"><div class="et">⚠ ${e.ticker}</div><div class="em">${e.msg}</div></div>`).join('');
+  if (!html) html = `<div class="empty" style="grid-column:1/-1"><div class="icon">🔍</div><p>No stocks match this filter</p></div>`;
+  grid.innerHTML = html;
+}
+
+// ─── Live overlay (optional, for gap-from-close) ────────────────────────────
+async function overlayLive() {
+  const targets = allResults.filter(d => !d.type);
+  if (!targets.length || targets.length > 150) return;
+  try {
+    const syms = targets.map(d => d.ticker + '.NS').join(',');
+    const r = await fetch(`/api/quotes?symbols=${encodeURIComponent(syms)}`);
+    const j = await r.json(); const q = j.quotes || {};
+    for (const d of targets) { const p = q[d.ticker.toUpperCase()]; if (p != null) d.liveCmp = +p.toFixed(2); }
+    renderResults();
+  } catch (_) {}
+}
+
+// ─── Scan (pooled + throttled) ──────────────────────────────────────────────
+async function runScan() {
+  const tickers = document.getElementById('tickerInput').value.split(/[\n,]+/).map(t => t.trim().toUpperCase()).filter(Boolean);
+  if (!tickers.length) return;
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = true; btn.textContent = '⏳ Scanning…';
+  allResults = tickers.map(t => ({ type: 'loading', ticker: t }));
+  document.getElementById('filterBar').style.display = 'flex';
+  document.getElementById('summaryBar').style.display = 'flex';
+  document.getElementById('disclaimer').style.display = 'block';
+  document.getElementById('resultsGrid').innerHTML = tickers.length > 60
+    ? `<div class="loading-card"><div class="spinner"></div><div class="loading-text">Scanning ${tickers.length} stocks…</div></div>`
+    : tickers.map(t => `<div class="loading-card"><div class="spinner"></div><div class="loading-text">Fetching ${t}.NS…</div></div>`).join('');
+
+  const liveGrid = tickers.length <= 150; let lastRender = 0, done = 0;
+  const throttle = tickers.length > 300 ? 1200 : 400;
+  const maybeRender = () => { if (liveGrid) { const now = Date.now(); if (now - lastRender > throttle) { lastRender = now; renderResults(); } } btn.textContent = `⏳ ${done}/${tickers.length}…`; };
+
+  let cursor = 0; const POOL = Math.min(12, tickers.length);
+  async function worker() {
+    while (cursor < tickers.length) {
+      const idx = cursor++, ticker = tickers[idx];
+      try { allResults[idx] = compute(await fetchOHLCV(ticker)); }
+      catch (e) { allResults[idx] = { type: 'error', ticker, msg: e.message || 'Fetch failed' }; }
+      done++; maybeRender();
+    }
+  }
+  await Promise.all(Array.from({ length: POOL }, worker));
+  btn.disabled = false; btn.textContent = '▶ Run BTST scan';
+  renderResults();
+  overlayLive();
+}
+function clearResults() {
+  allResults = [];
+  document.getElementById('resultsGrid').innerHTML = `<div class="empty"><div class="icon">⚡</div><p>Load a list and run the BTST scan</p><small>Closing strength · volume surge · delivery % · breakout — ranked for next-day follow-through</small></div>`;
+  document.getElementById('filterBar').style.display = 'none';
+  document.getElementById('summaryBar').style.display = 'none';
+  document.getElementById('disclaimer').style.display = 'none';
+}
+
+// ─── Presets & filters ──────────────────────────────────────────────────────
+async function loadPreset(index) {
+  const countEl = document.getElementById('presetsCount');
+  document.querySelectorAll('.preset-pill').forEach(p => p.disabled = true);
+  countEl.textContent = 'loading…';
+  try {
+    const r = await fetch(`/api/symbols?index=${encodeURIComponent(index)}`);
+    const d = await r.json();
+    if (!r.ok || !d.symbols) throw new Error(d.error || 'Failed');
+    document.getElementById('tickerInput').value = d.symbols.join('\n');
+    countEl.textContent = `${d.count} loaded` + (d.count > 300 ? ' — big scan' : '');
+  } catch (e) { countEl.textContent = 'error: ' + e.message; }
+  finally { document.querySelectorAll('.preset-pill').forEach(p => p.disabled = false); }
+}
+// Auto-scan a default universe on load so BTST candidates show immediately.
+async function autoScanDefault() {
+  try { await loadPreset('nifty50'); await runScan(); } catch (_) {}
+}
+document.addEventListener('DOMContentLoaded', autoScanDefault);
+
+function updateMarketDot() {
+  const label = document.getElementById('mktLabel'), blip = document.getElementById('mktBlip');
+  if (!label) return;
+  if (marketOpen()) { label.textContent = 'Market open · live'; if (blip) blip.style.background = 'var(--green)'; }
+  else { label.textContent = 'Market closed · today\'s close'; if (blip) blip.style.background = 'var(--muted)'; }
+}
+document.addEventListener('DOMContentLoaded', updateMarketDot);
+setInterval(updateMarketDot, 60000);
+
+document.addEventListener('click', e => {
+  const pill = e.target.closest('.preset-pill');
+  if (pill) { loadPreset(pill.dataset.idx); return; }
+  if (e.target.classList.contains('filter-pill')) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('on'));
+    e.target.classList.add('on'); activeFilter = e.target.dataset.f; renderResults();
+  }
+});
+</script>
+</body>
+</html>

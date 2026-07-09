@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NSE Swing Screener</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --card: #1e2335;
+    --border: #2a3047;
+    --border2: #384060;
+    --text: #e8eaf0;
+    --muted: #7c85a0;
+    --accent: #4f7cff;
+    --accent-dim: #1e2d5e;
+    --green: #22d08a;
+    --green-dim: #0d2e1e;
+    --red: #f05a5a;
+    --red-dim: #2e1010;
+    --amber: #f5a623;
+    --amber-dim: #2e2010;
+    --mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; }
+
+  /* ─── Header ─── */
+  .hdr { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .hdr-left .eyebrow { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+  .hdr-left h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+  .hdr-left .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .live-dot { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .live-dot span:first-child { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+
+  /* ─── Input panel ─── */
+  .input-panel { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .input-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 220px; }
+  .input-group label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .input-group textarea {
+    background: var(--card); border: 1px solid var(--border2); border-radius: 8px; color: var(--text);
+    font-family: var(--mono); font-size: 12px; padding: 9px 12px; resize: vertical; min-height: 72px;
+    outline: none; transition: border-color .15s;
+  }
+  .input-group textarea:focus { border-color: var(--accent); }
+  .input-group textarea::placeholder { color: var(--muted); }
+  .controls { display: flex; flex-direction: column; gap: 8px; }
+  .btn-scan {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: opacity .15s; letter-spacing: .3px;
+  }
+  .btn-scan:hover { opacity: .85; }
+  .btn-scan:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-clear { background: transparent; color: var(--muted); border: 1px solid var(--border2); border-radius: 8px; padding: 8px 16px; font-size: 12px; cursor: pointer; }
+  .btn-clear:hover { color: var(--text); border-color: var(--border); }
+
+  /* ─── Filter bar ─── */
+  .filter-bar { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filter-pill { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border2); cursor: pointer; background: transparent; color: var(--muted); transition: all .15s; }
+  .filter-pill:hover { color: var(--text); }
+  .filter-pill.on { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .sort-label { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .sort-sel { background: var(--card); border: 1px solid var(--border2); color: var(--muted); border-radius: 6px; padding: 5px 8px; font-size: 12px; cursor: pointer; }
+
+  /* ─── Summary strip ─── */
+  .summary { display: flex; gap: 10px; padding: 12px 24px; flex-wrap: wrap; }
+  .sum-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; }
+  .sum-chip .sk { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .sum-chip .sv { font-size: 20px; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+  /* ─── Results grid ─── */
+  .grid { padding: 16px 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+
+  /* ─── Stock card ─── */
+  .scard { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; position: relative; overflow: hidden; }
+  .scard:hover { border-color: var(--border2); }
+  .scard-accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .scard-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .scard-ticker { font-size: 15px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+  .scard-name { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .score-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .score-s { background: var(--green-dim); color: var(--green); border: 1px solid #1a5e3f; }
+  .score-m { background: var(--amber-dim); color: var(--amber); border: 1px solid #5e3e10; }
+  .score-w { background: var(--red-dim); color: var(--red); border: 1px solid #5e1010; }
+
+  .price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+  .price-row .price { font-size: 20px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+  .price-row .chg { font-size: 12px; font-weight: 600; }
+  .chg-pos { color: var(--green); }
+  .chg-neg { color: var(--red); }
+
+  .indicator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+  .ind { background: var(--surface); border-radius: 6px; padding: 6px 8px; }
+  .ind .ik { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+  .ind .iv { font-size: 13px; font-weight: 600; font-family: var(--mono); margin-top: 2px; }
+
+  .setup-tag { display: inline-block; font-size: 10.5px; padding: 3px 8px; border-radius: 5px; margin-bottom: 8px; font-weight: 600; letter-spacing: .3px; }
+  .tag-vcp { background: #3b2505; color: #f59e0b; border: 1px solid #784805; }
+  .tag-vcp-short { background: #4a1515; color: #f87171; border: 1px solid #7f1d1d; }
+  .tag-breakout { background: #0d2e2e; color: #2dcccc; border: 1px solid #1a5e5e; }
+  .tag-pullback { background: #1e2d5e; color: #7faaff; border: 1px solid #2a4080; }
+  .tag-rs { background: #2e1e4a; color: #c07fff; border: 1px solid #5e3a8a; }
+  .tag-catalyst { background: #2e2010; color: var(--amber); border: 1px solid #5e4010; }
+  .tag-weak { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+  .signal-dots { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+  .dot-row { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--muted); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dy { background: var(--green); }
+  .dm { background: var(--amber); }
+  .dn { background: var(--red); }
+
+  .levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+  .lv { background: var(--surface); border-radius: 6px; padding: 6px 8px; }
+  .lv .lk { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+  .lv .lv2 { font-size: 12px; font-weight: 700; font-family: var(--mono); margin-top: 2px; }
+  .lv-entry .lv2 { color: var(--accent); }
+  .lv-stop .lv2 { color: var(--red); }
+  .lv-target .lv2 { color: var(--green); }
+  .rr { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+  .source-note { font-size: 10px; color: var(--muted); text-align: right; margin-top: 4px; }
+
+  /* ─── States ─── */
+  .empty { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty .icon { font-size: 40px; margin-bottom: 12px; opacity: .4; }
+  .empty p { font-size: 14px; }
+  .empty small { font-size: 12px; opacity: .7; }
+
+  .loading-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+  .error-card { background: var(--red-dim); border: 1px solid #5e1010; border-radius: 12px; padding: 12px 16px; }
+  .error-card .et { font-size: 12px; font-weight: 600; color: var(--red); }
+  .error-card .em { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .disclaimer { padding: 12px 24px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.6; font-style: italic; }
+
+  /* progress bar inside card */
+  .score-bar { height: 3px; background: var(--border); border-radius: 2px; margin: 8px 0; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; transition: width .6s ease; }
+
+  /* ─── Top nav (shared with options analyzer) ─── */
+  .topnav { display: flex; align-items: center; gap: 4px; padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 20; }
+  .topnav .brand { font-size: 13px; font-weight: 700; letter-spacing: .5px; color: var(--text); margin-right: 18px; }
+  .topnav .brand span { color: var(--accent); }
+  .topnav a { text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 8px; transition: all .15s; }
+  .topnav a:hover { color: var(--text); background: var(--card); }
+  .topnav a.active { color: var(--accent); background: var(--accent-dim); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand">NSE <span>Toolkit</span></div>
+  <a href="nse-swing-screener.html" class="active">📊 Screener</a>
+  <a href="nse-options-analyzer.html">⚙ Options</a>
+</nav>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="eyebrow">NSE · Real-time via Yahoo Finance</div>
+    <h1>Swing Trade Screener</h1>
+    <div class="sub">Live OHLCV · Computed: EMA 20/50/200, RSI, ADX, Volume ratio, Setup scoring</div>
+  </div>
+  <div class="live-dot"><span></span> Live data</div>
+</div>
+
+<div class="input-panel">
+  <div class="input-group">
+    <label>NSE tickers (one per line or comma-separated)</label>
+    <textarea id="tickerInput" placeholder="RELIANCE&#10;TCS&#10;INFY&#10;HDFCBANK&#10;ICICIBANK&#10;BEL&#10;TITAN&#10;WIPRO">RELIANCE
+TCS
+INFY
+HDFCBANK
+ICICIBANK
+BEL
+TITAN
+WIPRO
+SUNPHARMA
+MARUTI</textarea>
+  </div>
+  <div class="controls">
+    <button class="btn-scan" id="scanBtn" onclick="runScan()">▶ Run scan</button>
+    <button class="btn-clear" onclick="clearResults()">Clear</button>
+  </div>
+</div>
+
+<div class="filter-bar" id="filterBar" style="display:none">
+  <button class="filter-pill on" data-f="all">All</button>
+  <button class="filter-pill" data-f="VCP / Coiled">VCP / Coiled</button>
+  <button class="filter-pill" data-f="VCP Breakdown">VCP Breakdown</button>
+  <button class="filter-pill" data-f="Breakout">Breakout</button>
+  <button class="filter-pill" data-f="Pullback">Pullback</button>
+  <button class="filter-pill" data-f="RS Leader">RS Leader</button>
+  <button class="filter-pill" data-f="Weak">Skip</button>
+  <span class="sort-label">Sort by</span>
+  <select class="sort-sel" id="sortSel" onchange="renderResults()">
+    <option value="score">Score ↓</option>
+    <option value="rsi">RSI</option>
+    <option value="chg">Day change</option>
+  </select>
+</div>
+
+<div class="summary" id="summaryBar" style="display:none"></div>
+<div class="grid" id="resultsGrid">
+  <div class="empty">
+    <div class="icon">📡</div>
+    <p>Enter NSE tickers and hit Run scan</p>
+    <small>Fetches live data · computes technicals · scores swing setups</small>
+  </div>
+</div>
+<div class="disclaimer" id="disclaimer" style="display:none">
+  Data source: Yahoo Finance (via allorigins proxy). Price and volume are live; RSI, ADX, EMA computed from 90-day OHLCV. ADX is approximate (simplified Wilder method). Scores are algorithmic, not financial advice. Always verify at Screener.in or TradingView before trading. This tool is for educational and research purposes only — not investment advice.
+</div>
+
+<script>
+const PROXY = 'https://api.allorigins.win/get?url=';
+const YF_BASE = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+
+let allResults = [];
+let activeFilter = 'all';
+
+// ─── Fetch OHLCV from Yahoo Finance ───────────────────────────────────────
+async function fetchOHLCV(ticker) {
+  const sym = ticker.trim().toUpperCase() + '.NS';
+  const url = YF_BASE + encodeURIComponent(sym) + '?interval=1d&range=3mo';
+  const proxy = PROXY + encodeURIComponent(url);
+  const res = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+  if (!res.ok) throw new Error('Network error');
+  const json = await res.json();
+  const data = JSON.parse(json.contents);
+  const chart = data?.chart?.result?.[0];
+  if (!chart) throw new Error('No data returned');
+  const ts = chart.timestamp;
+  const q = chart.indicators.quote[0];
+  const meta = chart.meta;
+  const closes = q.close, highs = q.high, lows = q.low, volumes = q.volume, opens = q.open;
+  return { ticker: ticker.toUpperCase(), sym, closes, highs, lows, volumes, opens, ts, meta };
+}
+
+// ─── EMA ──────────────────────────────────────────────────────────────────
+function ema(arr, period) {
+  const k = 2 / (period + 1);
+  let emaArr = [];
+  let e = arr[0];
+  for (let i = 0; i < arr.length; i++) {
+    e = arr[i] * k + e * (1 - k);
+    emaArr.push(e);
+  }
+  return emaArr;
+}
+
+// ─── RSI(14) ──────────────────────────────────────────────────────────────
+function rsi(closes, period = 14) {
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const d = closes[i] - closes[i - 1];
+    if (d > 0) gains += d; else losses -= d;
+  }
+  let avgGain = gains / period, avgLoss = losses / period;
+  for (let i = period + 1; i < closes.length; i++) {
+    const d = closes[i] - closes[i - 1];
+    avgGain = (avgGain * (period - 1) + Math.max(d, 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + Math.max(-d, 0)) / period;
+  }
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return Math.round(100 - 100 / (1 + rs));
+}
+
+// ─── ADX(14) simplified ───────────────────────────────────────────────────
+function adx(highs, lows, closes, period = 14) {
+  const n = closes.length;
+  if (n < period + 2) return 20;
+  let plusDMs = [], minusDMs = [], trs = [];
+  for (let i = 1; i < n; i++) {
+    const upMove = highs[i] - highs[i - 1];
+    const downMove = lows[i - 1] - lows[i];
+    plusDMs.push(upMove > downMove && upMove > 0 ? upMove : 0);
+    minusDMs.push(downMove > upMove && downMove > 0 ? downMove : 0);
+    const tr = Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]), Math.abs(lows[i] - closes[i - 1]));
+    trs.push(tr);
+  }
+  let smoothTR = trs.slice(0, period).reduce((a, b) => a + b, 0);
+  let smoothPlus = plusDMs.slice(0, period).reduce((a, b) => a + b, 0);
+  let smoothMinus = minusDMs.slice(0, period).reduce((a, b) => a + b, 0);
+  let dxArr = [];
+  for (let i = period; i < trs.length; i++) {
+    smoothTR = smoothTR - smoothTR / period + trs[i];
+    smoothPlus = smoothPlus - smoothPlus / period + plusDMs[i];
+    smoothMinus = smoothMinus - smoothMinus / period + minusDMs[i];
+    const diPlus = (smoothPlus / smoothTR) * 100;
+    const diMinus = (smoothMinus / smoothTR) * 100;
+    const dx = Math.abs(diPlus - diMinus) / (diPlus + diMinus) * 100;
+    dxArr.push(dx);
+  }
+  const adxVal = dxArr.slice(-period).reduce((a, b) => a + b, 0) / period;
+  return Math.round(adxVal);
+}
+
+// ─── Volume ratio (last day vs 20-day avg) ────────────────────────────────
+function volRatio(volumes) {
+  const recent = volumes[volumes.length - 1];
+  const avg = volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20;
+  return parseFloat((recent / avg).toFixed(2));
+}
+
+// ─── 52-week position ─────────────────────────────────────────────────────
+function weekPos(closes) {
+  const hi = Math.max(...closes);
+  const lo = Math.min(...closes);
+  const curr = closes[closes.length - 1];
+  return Math.round(((curr - lo) / (hi - lo)) * 100);
+}
+
+// ─── Consolidation detection (low range in last 10 days) ──────────────────
+function isConsolidating(closes, highs, lows) {
+  const n = closes.length;
+  const slice_hi = highs.slice(n - 12, n - 1);
+  const slice_lo = lows.slice(n - 12, n - 1);
+  const rangeHi = Math.max(...slice_hi);
+  const rangeLo = Math.min(...slice_lo);
+  return (rangeHi - rangeLo) / rangeLo < 0.06;
+}
+
+// ─── Main compute ─────────────────────────────────────────────────────────
+function compute(raw) {
+  const { closes, highs, lows, volumes, ticker, meta } = raw;
+  const n = closes.length;
+  const curr = closes[n - 1];
+  const prev = closes[n - 2];
+  const chgPct = parseFloat(((curr - prev) / prev * 100).toFixed(2));
+
+  const ema20arr = ema(closes, 20);
+  const ema50arr = ema(closes, 50);
+  const ema200arr = ema(closes, Math.min(200, n));
+  const ema20 = ema20arr[n - 1];
+  const ema50 = ema50arr[n - 1];
+  const ema200 = ema200arr[n - 1];
+
+  const rsiVal = rsi(closes);
+  const adxVal = adx(highs, lows, closes);
+  const vr = volRatio(volumes);
+  const wkPos = weekPos(closes);
+  const consol = isConsolidating(closes, highs, lows);
+
+  const above20 = curr > ema20;
+  const above50 = curr > ema50;
+  const above200 = curr > ema200;
+
+  // Breakout signal: was below 20 EMA in last 3 days, now above, on volume
+  const recentBreakout = closes[n - 2] < ema20arr[n - 2] && curr > ema20 && vr > 1.5;
+  // Pullback: above 200 EMA, curr close to 20 EMA (within 2%)
+  const pullback = above200 && Math.abs(curr - ema20) / curr < 0.025 && rsiVal < 60 && rsiVal > 40;
+  // RS leader: above 200, RSI > 55, held well
+  const rsLeader = above200 && rsiVal > 55 && adxVal > 22;
+
+  // ── Setup classification ──
+  let setup = 'Weak';
+  if (recentBreakout || (consol && vr > 1.8 && above50)) setup = 'Breakout';
+  else if (pullback) setup = 'Pullback';
+  else if (rsLeader) setup = 'RS Leader';
+
+  // ── Score (0–100) ──
+  let score = 0;
+  if (above200) score += 20;
+  if (above50) score += 10;
+  if (above20) score += 5;
+  if (rsiVal > 50 && rsiVal < 70) score += 15;
+  else if (rsiVal >= 70) score += 5;
+  if (adxVal > 25) score += 15;
+  else if (adxVal > 20) score += 8;
+  if (vr >= 1.5) score += 15;
+  else if (vr >= 1.0) score += 8;
+  if (setup === 'Breakout') score += 20;
+  else if (setup === 'Pullback') score += 15;
+  else if (setup === 'RS Leader') score += 12;
+  score = Math.min(score, 100);
+
+  // ── Levels ──
+  const recentLow = Math.min(...lows.slice(n - 5));
+  const recentHigh = Math.max(...highs.slice(n - 5));
+  const stop = parseFloat((recentLow * 0.99).toFixed(2));
+  const riskPct = (curr - stop) / curr;
+  const target = parseFloat((curr + curr * riskPct * 2).toFixed(2));
+  const rrRatio = parseFloat((target - curr) / (curr - stop)).toFixed(1);
+
+  // Name from meta
+  const name = meta?.longName || meta?.shortName || ticker;
+
+  return {
+    ticker, name, curr: parseFloat(curr.toFixed(2)), chgPct,
+    ema20: parseFloat(ema20.toFixed(2)), ema50: parseFloat(ema50.toFixed(2)), ema200: parseFloat(ema200.toFixed(2)),
+    rsi: rsiVal, adx: adxVal, vr, wkPos, above20, above50, above200,
+    setup, score, stop, target, rrRatio,
+    currency: meta?.currency || 'INR',
+    fetchedAt: new Date().toLocaleTimeString('en-IN')
+  };
+}
+
+// ─── Render one card ──────────────────────────────────────────────────────
+function scoreClass(s) { return s >= 75 ? 'score-s' : s >= 55 ? 'score-m' : 'score-w'; }
+function setupTagClass(s) {
+  return s === 'Breakout' ? 'tag-breakout' : s === 'Pullback' ? 'tag-pullback' : s === 'RS Leader' ? 'tag-rs' : 'tag-weak';
+}
+function accentColor(s) {
+  return s === 'Breakout' ? '#2dcccc' : s === 'Pullback' ? '#7faaff' : s === 'RS Leader' ? '#c07fff' : '#384060';
+}
+function dotClass(ok, warn) { return ok ? 'dy' : warn ? 'dm' : 'dn'; }
+
+function cardHTML(d) {
+  const chgClass = d.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
+  const chgSign = d.chgPct >= 0 ? '+' : '';
+  const barW = d.score;
+  const barCol = d.score >= 75 ? '#22d08a' : d.score >= 55 ? '#f5a623' : '#f05a5a';
+  const rsiOk = d.rsi > 50 && d.rsi < 70, rsiWarn = d.rsi >= 70;
+  const adxOk = d.adx > 25, adxWarn = d.adx > 20;
+  const vrOk = d.vr >= 1.5, vrWarn = d.vr >= 1.0;
+  return `
+  <div class="scard" data-setup="${d.setup}" data-score="${d.score}" data-rsi="${d.rsi}" data-chg="${d.chgPct}">
+    <div class="scard-accent" style="background:${accentColor(d.setup)}"></div>
+    <div class="scard-top">
+      <div>
+        <div class="scard-ticker">${d.ticker}</div>
+        <div class="scard-name">${d.name.length > 28 ? d.name.slice(0,28)+'…' : d.name}</div>
+      </div>
+      <span class="score-badge ${scoreClass(d.score)}">${d.score}/100</span>
+    </div>
+    <div class="price-row">
+      <span class="price">₹${d.curr.toLocaleString('en-IN')}</span>
+      <span class="chg ${chgClass}">${chgSign}${d.chgPct}%</span>
+    </div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:${barW}%;background:${barCol}"></div></div>
+    <span class="setup-tag ${setupTagClass(d.setup)}">${d.setup}</span>
+    <div class="indicator-grid">
+      <div class="ind"><div class="ik">RSI 14</div><div class="iv" style="color:${rsiOk?'var(--green)':rsiWarn?'var(--red)':'var(--muted)'}">${d.rsi}</div></div>
+      <div class="ind"><div class="ik">ADX 14</div><div class="iv" style="color:${adxOk?'var(--green)':adxWarn?'var(--amber)':'var(--muted)'}">${d.adx}</div></div>
+      <div class="ind"><div class="ik">Vol ×</div><div class="iv" style="color:${vrOk?'var(--green)':vrWarn?'var(--amber)':'var(--muted)'}">${d.vr}×</div></div>
+      <div class="ind"><div class="ik">EMA 20</div><div class="iv">₹${d.ema20.toLocaleString('en-IN')}</div></div>
+      <div class="ind"><div class="ik">EMA 50</div><div class="iv">₹${d.ema50.toLocaleString('en-IN')}</div></div>
+      <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${d.ema200.toLocaleString('en-IN')}</div></div>
+    </div>
+    <div class="signal-dots">
+      <span class="dot-row"><span class="dot ${d.above200?'dy':'dn'}"></span>200 EMA</span>
+      <span class="dot-row"><span class="dot ${d.above50?'dy':'dn'}"></span>50 EMA</span>
+      <span class="dot-row"><span class="dot ${d.above20?'dy':'dn'}"></span>20 EMA</span>
+      <span class="dot-row"><span class="dot ${dotClass(rsiOk,rsiWarn)}"></span>RSI zone</span>
+      <span class="dot-row"><span class="dot ${dotClass(adxOk,adxWarn)}"></span>ADX trend</span>
+      <span class="dot-row"><span class="dot ${dotClass(vrOk,vrWarn)}"></span>Volume</span>
+    </div>
+    <div class="levels">
+      <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${d.curr.toLocaleString('en-IN')}</div></div>
+      <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">₹${d.stop.toLocaleString('en-IN')}</div><div class="rr">−${(((d.curr-d.stop)/d.curr)*100).toFixed(1)}%</div></div>
+      <div class="lv lv-target"><div class="lk">Target</div><div class="lv2">₹${d.target.toLocaleString('en-IN')}</div><div class="rr">${d.rrRatio}× R:R</div></div>
+    </div>
+    <div class="source-note">Yahoo Finance · ${d.fetchedAt}</div>
+  </div>`;
+}
+
+// ─── Render results ────────────────────────────────────────────────────────
+function renderResults() {
+  const grid = document.getElementById('resultsGrid');
+  const sortBy = document.getElementById('sortSel')?.value || 'score';
+  let data = [...allResults].filter(d => d.type !== 'error' && d.type !== 'loading');
+  const errors = allResults.filter(d => d.type === 'error');
+
+  if (activeFilter !== 'all') data = data.filter(d => d.setup === activeFilter);
+
+  data.sort((a, b) => {
+    if (sortBy === 'score') return b.score - a.score;
+    if (sortBy === 'rsi') return b.rsi - a.rsi;
+    if (sortBy === 'chg') return b.chgPct - a.chgPct;
+    return 0;
+  });
+
+  const strong = data.filter(d => d.score >= 75).length;
+  const breakouts = data.filter(d => d.setup === 'Breakout').length;
+  const above200 = data.filter(d => d.above200).length;
+  const avgRsi = data.length ? Math.round(data.reduce((a,d)=>a+d.rsi,0)/data.length) : 0;
+
+  const sumBar = document.getElementById('summaryBar');
+  sumBar.innerHTML = `
+    <div class="sum-chip"><div class="sk">Scanned</div><div class="sv">${allResults.filter(d=>d.type!=='loading').length}</div></div>
+    <div class="sum-chip"><div class="sk">Strong (75+)</div><div class="sv" style="color:var(--green)">${strong}</div></div>
+    <div class="sum-chip"><div class="sk">Breakouts</div><div class="sv" style="color:#2dcccc">${breakouts}</div></div>
+    <div class="sum-chip"><div class="sk">Above 200 EMA</div><div class="sv">${above200}</div></div>
+    <div class="sum-chip"><div class="sk">Avg RSI</div><div class="sv">${avgRsi || '—'}</div></div>
+  `;
+
+  let html = data.map(cardHTML).join('');
+  html += errors.map(e => `<div class="error-card"><div class="et">⚠ ${e.ticker}</div><div class="em">${e.msg}</div></div>`).join('');
+  if (!html) html = `<div class="empty" style="grid-column:1/-1"><div class="icon">🔍</div><p>No stocks match this filter</p></div>`;
+  grid.innerHTML = html;
+}
+
+// ─── Run scan ─────────────────────────────────────────────────────────────
+async function runScan() {
+  const raw = document.getElementById('tickerInput').value;
+  const tickers = raw.split(/[\n,]+/).map(t => t.trim().toUpperCase()).filter(Boolean);
+  if (!tickers.length) return;
+
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Scanning…';
+
+  allResults = tickers.map(t => ({ type: 'loading', ticker: t }));
+  document.getElementById('filterBar').style.display = 'flex';
+  document.getElementById('summaryBar').style.display = 'flex';
+  document.getElementById('disclaimer').style.display = 'block';
+
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = tickers.map(t => `
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-text">Fetching ${t}.NS…</div>
+    </div>`).join('');
+
+  const promises = tickers.map(async (ticker, idx) => {
+    try {
+      const raw = await fetchOHLCV(ticker);
+      const result = compute(raw);
+      allResults[idx] = result;
+    } catch (e) {
+      allResults[idx] = { type: 'error', ticker, msg: e.message || 'Fetch failed — check ticker or try again' };
+    }
+    renderResults();
+  });
+
+  await Promise.allSettled(promises);
+  btn.disabled = false;
+  btn.textContent = '▶ Run scan';
+  renderResults();
+}
+
+function clearResults() {
+  allResults = [];
+  document.getElementById('resultsGrid').innerHTML = `<div class="empty"><div class="icon">📡</div><p>Enter NSE tickers and hit Run scan</p><small>Fetches live data · computes technicals · scores swing setups</small></div>`;
+  document.getElementById('filterBar').style.display = 'none';
+  document.getElementById('summaryBar').style.display = 'none';
+  document.getElementById('disclaimer').style.display = 'none';
+}
+
+// ─── Filter pills ──────────────────────────────────────────────────────────
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('filter-pill')) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('on'));
+    e.target.classList.add('on');
+    activeFilter = e.target.dataset.f;
+    renderResults();
+  }
+});
+</script>
+</body>
+</html>
