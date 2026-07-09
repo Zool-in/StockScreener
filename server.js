@@ -529,6 +529,21 @@ const server = http.createServer((req, res) => {
   if (p === '/fyers/status') {
     const s = fyers.status();
     s.debugEnv = Object.keys(process.env).filter(k => k.includes('FYERS'));
+    
+    // Add a live test fetch to diagnose why getLtp is failing
+    if (s.connected) {
+      try {
+        const url = 'https://api-t1.fyers.in/data/quotes?symbols=NSE:RELIANCE-EQ';
+        const session = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '.cache', 'fyers-session.json')));
+        const auth = `${process.env.FYERS_APP_ID}:${session.access_token}`;
+        
+        const r = await fetch(url, { headers: { 'Authorization': auth } });
+        s.debugQuoteRaw = await r.text();
+      } catch (e) {
+        s.debugQuoteError = e.message;
+      }
+    }
+    
     return sendJSON(res, 200, s);
   }
   if (p === '/fyers/login') {
