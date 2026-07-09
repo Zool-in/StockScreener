@@ -295,8 +295,24 @@ function renderResults(results) {
     const barCol = score >= 75 ? '#22d08a' : score >= 55 ? '#f5a623' : '#f05a5a';
     const dotClass = (ok, warn) => ok ? 'dy' : warn ? 'dm' : 'dn';
 
-    const setupName = AppState.strategy.toUpperCase();
-
+    const strategyLabels = {
+      all: 'Raw Data',
+      ttm: 'TTM Squeeze + ORB',
+      btst: 'BTST Momentum',
+      rsi: 'Connors RSI',
+      vcp: 'Minervini VCP',
+      darvas: 'Darvas Box',
+      rs: 'Relative Strength',
+      'vcp-breakdown': 'VCP Breakdown',
+      'bear-call': 'Bear Call Spread',
+      'bull-put': 'Bull Put Spread',
+      'short-strangle': 'Short Strangle',
+      'iv-crush': 'Earnings IV Crush',
+      wheel: 'The Wheel / CSP',
+      stage2: 'Stan Weinstein Stage 2',
+      wyckoff: 'Wyckoff Stopping Vol'
+    };
+    const setupName = strategyLabels[AppState.strategy] || AppState.strategy.toUpperCase();
     html += `
       <div class="scard">
         <div class="scard-accent" style="background:var(--accent)"></div>
