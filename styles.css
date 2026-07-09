@@ -55,14 +55,16 @@ body { background: var(--bg); color: var(--text); font-family: var(--sans); font
 .live-dot span:first-child { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
 
-.mmi-status {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--card); padding: 4px 10px;
+.mmi-container {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); padding: 4px 12px;
   border-radius: 12px; border: 1px solid var(--border);
-  font-size: 13px; font-weight: 600;
 }
-.mmi-val { font-size: 15px; }
-.mmi-mood { color: var(--muted); font-size: 12px; font-weight: 500; }
+.mmi-gauge { display: flex; align-items: center; justify-content: center; }
+.mmi-info { display: flex; flex-direction: column; line-height: 1.2; }
+.mmi-val { font-size: 14px; font-weight: 700; }
+.mmi-mood { color: var(--muted); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+#mmiNeedle { transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 /* ─── Input panel ─── */
 .input-panel { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }

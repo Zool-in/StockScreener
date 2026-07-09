@@ -652,7 +652,8 @@ function renderResults() {
 
   const sumBar = document.getElementById('summaryBar');
   sumBar.innerHTML = `
-    <div class="sum-chip"><div class="sk">A/D</div><div class="sv" style="color:${adColor}">${advances} / ${declines}</div></div>
+    <div class="sum-chip"><div class="sk">Advances</div><div class="sv" style="color:var(--green)">${advances}</div></div>
+    <div class="sum-chip"><div class="sk">Declines</div><div class="sv" style="color:var(--red)">${declines}</div></div>
     <div class="sum-chip"><div class="sk">Scanned</div><div class="sv">${allResults.filter(d=>d.type!=='loading').length}</div></div>
     <div class="sum-chip"><div class="sk">Strong (75+)</div><div class="sv" style="color:var(--green)">${strong}</div></div>
     <div class="sum-chip"><div class="sk">Breakouts</div><div class="sv" style="color:#2dcccc">${breakouts}</div></div>
@@ -776,7 +777,9 @@ async function runScan() {
   allResults = tickers.map(t => ({ type: 'loading', ticker: t }));
   document.getElementById('filterBar').style.display = 'flex';
   document.getElementById('sizingBar').style.display = 'flex';
-  document.getElementById('summaryBar').style.display = 'flex';
+  const sumBar = document.getElementById('summaryBar');
+  sumBar.style.display = 'flex';
+  sumBar.innerHTML = '<div style="color:var(--muted); font-size:13px; padding:10px 0;">Calculating metrics...</div>';
   document.getElementById('disclaimer').style.display = 'block';
 
   const grid = document.getElementById('resultsGrid');
@@ -886,6 +889,7 @@ async function fetchMMI() {
   const mmiContainer = document.getElementById('mmiStatus');
   const mmiValEl = document.getElementById('mmiVal');
   const mmiMoodEl = document.getElementById('mmiMood');
+  const needle = document.getElementById('mmiNeedle');
   if (!mmiContainer || !mmiValEl) return;
 
   try {
@@ -896,6 +900,9 @@ async function fetchMMI() {
     mmiContainer.style.display = 'flex';
     mmiValEl.textContent = data.value;
     mmiMoodEl.textContent = data.mood;
+
+    const angle = (data.value / 100) * 180 - 90;
+    if (needle) needle.setAttribute('transform', `rotate(${angle}, 50, 50)`);
 
     if (data.value < 30) { mmiValEl.style.color = 'var(--red)'; }
     else if (data.value < 50) { mmiValEl.style.color = 'var(--amber)'; }

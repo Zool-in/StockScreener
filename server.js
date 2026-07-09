@@ -214,19 +214,22 @@ async function handleChart(res, reqUrl) {
   // 1) PRIMARY (default) source: NSE official Bhavcopy — free, authoritative,
   // end-of-day. Reliable even from IPs that Yahoo/NSE-web block. Perfect for a
   // daily/swing screener. See bhavcopy.js.
-  try {
-    const bbody = await bhavcopy.fetchChart(symbol, interval, range);
-    // No per-symbol cache write here: the Bhavcopy day-files are already cached
-    // on disk, so re-assembling is cheap and this avoids thousands of tiny
-    // writes during a full-market scan.
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store',
-      'X-Data-Source': 'nse-bhavcopy',
-    });
-    return res.end(bbody);
-  } catch (e) {
-    firstErr = firstErr ? `${firstErr}; bhav: ${e.message}` : `bhav: ${e.message}`;
+  // Note: Bhavcopy only provides 1d data. If requesting intraday/weekly, skip it.
+  if (interval === '1d') {
+    try {
+      const bbody = await bhavcopy.fetchChart(symbol, interval, range);
+      // No per-symbol cache write here: the Bhavcopy day-files are already cached
+      // on disk, so re-assembling is cheap and this avoids thousands of tiny
+      // writes during a full-market scan.
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Data-Source': 'nse-bhavcopy',
+      });
+      return res.end(bbody);
+    } catch (e) {
+      firstErr = firstErr ? `${firstErr}; bhav: ${e.message}` : `bhav: ${e.message}`;
+    }
   }
 
   // Fast path: a recent cached copy is served immediately. Daily OHLCV that's
