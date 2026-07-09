@@ -849,11 +849,21 @@ document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () =
   p.classList.add('on');
   strategy = p.dataset.strat;
   document.getElementById('quickSelect').innerHTML = ''; // clear old scan results
-  if (document.querySelector('.card, .error-box')) analyze(); // re-run if we already have a result
+  
+  // If the user already analyzed a specific ticker, re-run that ticker.
+  // Otherwise, automatically run the dynamic market scan for the selected strategy!
+  if (document.querySelector('.card, .error-box') && document.getElementById('tickerInput').value.trim()) {
+    analyze(); 
+  } else {
+    runDynamicScan();
+  }
 }));
 document.getElementById('tickerInput').addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
 document.getElementById('resultsDate').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
 document.getElementById('capitalInput').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
+
+// Auto-run the scan on page load!
+document.addEventListener('DOMContentLoaded', runDynamicScan);
 
 // ─── Options Scanner Feature ────────────────────────────────────────────────
 const NIFTY50 = ['ADANIENT', 'ADANIPORTS', 'APOLLOHOSP', 'ASIANPAINT', 'AXISBANK', 'BAJAJ-AUTO', 'BAJFINANCE', 'BAJAJFINSV', 'BPCL', 'BHARTIARTL', 'BRITANNIA', 'CIPLA', 'COALINDIA', 'DIVISLAB', 'DRREDDY', 'EICHERMOT', 'GRASIM', 'HCLTECH', 'HDFCBANK', 'HDFCLIFE', 'HEROMOTOCO', 'HINDALCO', 'HINDUNILVR', 'ICICIBANK', 'ITC', 'INDUSINDBK', 'INFY', 'JSWSTEEL', 'KOTAKBANK', 'LT', 'M&M', 'MARUTI', 'NTPC', 'NESTLEIND', 'ONGC', 'POWERGRID', 'RELIANCE', 'SBILIFE', 'SBIN', 'SUNPHARMA', 'TCS', 'TATACONSUM', 'TATAMOTORS', 'TATASTEEL', 'TECHM', 'TITAN', 'ULTRACEMCO', 'WIPRO'];
