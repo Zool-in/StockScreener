@@ -86,10 +86,11 @@ async function fetchIndex(key) {
   return out;
 }
 
-// index: 'nifty50' | 'nifty100' | 'nifty200' | 'nifty500' | 'niftytotal' | 'etf' | 'all'
+// index: 'nifty50' | 'nifty100' | 'nifty200' | 'nifty500' | 'niftytotal' | 'etf' | 'fno' | 'all'
 async function getList(index) {
   if (index === 'all') return bhavcopy.listSymbols();
   if (index === 'etf') return ETF_LIST.slice();
+  if (index === 'fno') return Object.keys(await require('./lots').getLots());
   if (!INDEX_FILES[index]) throw new Error(`Unknown index "${index}"`);
   return fetchIndex(index);
 }
