@@ -97,8 +97,8 @@ async function init() {
   DOM.scanBtn.addEventListener('click', runScan);
 
   // Initial Data Load (Nifty 50)
-  AppState.setStrategy('ttm_orb');
-  AppState.setTimeframe('15m');
+  AppState.setStrategy('all');
+  AppState.setTimeframe('1d');
   
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Loading NIFTY50...</span>`;
@@ -172,6 +172,7 @@ async function runScan() {
       else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
       else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
       else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
+      else if (strategyId === 'all') res = { isMatch: true, reason: 'Unfiltered metrics view' };
 
       if (res && res.isMatch) {
         // Compute standard technicals for the card

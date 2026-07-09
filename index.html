@@ -47,8 +47,11 @@
       <div style="margin-bottom: 24px;">
         <label class="input-label">Algorithmic Strategy</label>
         <div class="pill-container" id="strategyPills">
+          <!-- Default -->
+          <div class="pill active" data-val="all" data-tf="1d">All Stocks <span class="badge badge-muted">RAW</span></div>
+          
           <!-- Intraday / Short Term -->
-          <div class="pill active" data-val="ttm_orb" data-tf="15m">TTM Squeeze + ORB <span class="badge badge-muted">15m</span></div>
+          <div class="pill" data-val="ttm_orb" data-tf="15m">TTM Squeeze + ORB <span class="badge badge-muted">15m</span></div>
           <div class="pill" data-val="btst" data-tf="1d">BTST Momentum <span class="badge badge-muted">1d</span></div>
           <div class="pill" data-val="crsi" data-tf="1d">Connors RSI <span class="badge badge-muted">1d</span></div>
           
