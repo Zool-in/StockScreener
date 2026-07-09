@@ -406,9 +406,16 @@ async function handleQuotes(res, reqUrl) {
       misses = list.filter(s => out[norm(s)] == null);
   }
 
-  // 4) Google (~15 min delayed) for whatever remains.
+  // 4) Google (~15 min delayed) for whatever remains, but bounded by a strict 4-second timeout
   if (misses.length) {
-    try { Object.assign(out, await livequote.getQuotes(misses.slice(0, 300), 10)); } catch (_) {}
+    try {
+      const getGq = livequote.getQuotes(misses.slice(0, 300), 10);
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Google fallback timeout')), 4000));
+      const res = await Promise.race([getGq, timeout]);
+      Object.assign(out, res);
+    } catch (e) {
+      console.error('Google fallback error/timeout:', e.message);
+    }
   }
 
   const source = bridgeHits ? 'kite-live'

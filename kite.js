@@ -185,10 +185,18 @@ async function fetchChart(symbol, interval, range) {
   const url = `${KITE_BASE}/instruments/historical/${token}/day`
     + `?from=${encodeURIComponent(fmtDate(from))}&to=${encodeURIComponent(fmtDate(to))}`;
 
-  const r = await request('GET', url, {
-    headers: { 'Authorization': `token ${CONFIG.apiKey}:${s.access_token}` },
-    timeoutMs: 15000,
-  });
+  let r = null;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    r = await request('GET', url, {
+      headers: { 'Authorization': `token ${CONFIG.apiKey}:${s.access_token}` },
+      timeoutMs: 15000,
+    });
+    if (r.status === 429 && attempt < 4) {
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      continue;
+    }
+    break;
+  }
   let parsed;
   try { parsed = JSON.parse(r.body); } catch (_) { parsed = {}; }
   if (r.status === 403) {
@@ -247,12 +255,23 @@ async function getLtp(symbols) {
   for (let i = 0; i < uniq.length; i += 400) {
     const batch = uniq.slice(i, i + 400);
     const qs = batch.map(sy => `i=NSE:${encodeURIComponent(sy)}`).join('&');
-    const r = await request('GET', `${KITE_BASE}/quote/ltp?${qs}`, {
-      headers: { 'Authorization': `token ${CONFIG.apiKey}:${s.access_token}` },
-    });
+    let r = null;
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      r = await request('GET', `${KITE_BASE}/quote/ltp?${qs}`, {
+        headers: { 'Authorization': `token ${CONFIG.apiKey}:${s.access_token}` },
+      });
+      if (r.status === 429 && attempt < 4) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        continue;
+      }
+      break;
+    }
     let parsed; try { parsed = JSON.parse(r.body); } catch (_) { parsed = {}; }
     if (r.status === 403) { try { fs.unlinkSync(SESSION_FILE); } catch (_) {} throw new Error('Kite session rejected'); }
-    if (r.status !== 200 || parsed.status !== 'success') throw new Error(parsed.message || `Kite LTP failed (${r.status})`);
+    if (r.status !== 200 || parsed.status !== 'success') {
+      console.error(`Kite LTP failed (${r.status})`, parsed.message);
+      continue; // Skip batch rather than failing everything
+    }
     for (const [key, val] of Object.entries(parsed.data || {})) {
       const sym = key.replace(/^NSE:/, '');
       if (val && val.last_price != null) out[sym] = val.last_price;
