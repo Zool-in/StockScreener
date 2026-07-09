@@ -124,8 +124,12 @@
 
   .quick-select { display: flex; align-items: center; gap: 8px; margin: 12px auto 20px; max-width: 1100px; flex-wrap: wrap; padding: 0 24px; }
   .quick-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; white-space: nowrap; margin-right: 4px; }
-  .quick-badge { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .quick-badge { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
   .quick-badge:hover { background: var(--border); border-color: var(--border2); color: #fff; transform: translateY(-1px); }
+  .quick-badge .b-sub { font-size: 10px; color: var(--muted); font-weight: 400; }
+  .btn-scan-mini { background: transparent; border: 1px solid var(--accent); color: var(--accent); font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; padding: 0 12px; border-radius: 6px; margin-left: 8px; transition: 0.15s; }
+  .btn-scan-mini:hover { background: var(--accent-dim); }
+  .btn-scan-mini:disabled { opacity: 0.5; cursor: wait; }
 
   @media (max-width: 640px) {
     .controls { padding: 14px 16px; } .wrap { padding: 14px 16px; } .topnav { padding: 10px 16px; }
@@ -159,6 +163,7 @@
     <div class="pills">
       <button class="pill on" data-strat="cc">Covered Call</button>
       <button class="pill" data-strat="csp">Cash Secured Put</button>
+      <button class="btn-scan-mini" id="btnScan" onclick="runDynamicScan()">🔍 Scan Best</button>
     </div>
   </div>
   <div class="ctl-group">
@@ -843,35 +848,89 @@ document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () =
   document.querySelectorAll('.pill').forEach(x => x.classList.remove('on'));
   p.classList.add('on');
   strategy = p.dataset.strat;
-  renderQuickSelect();
+  document.getElementById('quickSelect').innerHTML = ''; // clear old scan results
   if (document.querySelector('.card, .error-box')) analyze(); // re-run if we already have a result
 }));
 document.getElementById('tickerInput').addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
 document.getElementById('resultsDate').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
 document.getElementById('capitalInput').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
 
-// ─── Quick Select Feature ───────────────────────────────────────────────────
-const CC_STOCKS = ['RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ITC', 'LT', 'BHARTIARTL', 'HUL', 'SBIN', 'ASIANPAINT'];
-const CSP_STOCKS = ['BAJFINANCE', 'TATAMOTORS', 'ICICIBANK', 'VEDL', 'ADANIENT', 'TATASTEEL', 'SUNPHARMA', 'AXISBANK', 'HAL', 'ZOMATO'];
+// ─── Options Scanner Feature ────────────────────────────────────────────────
+const NIFTY50 = ['ADANIENT', 'ADANIPORTS', 'APOLLOHOSP', 'ASIANPAINT', 'AXISBANK', 'BAJAJ-AUTO', 'BAJFINANCE', 'BAJAJFINSV', 'BPCL', 'BHARTIARTL', 'BRITANNIA', 'CIPLA', 'COALINDIA', 'DIVISLAB', 'DRREDDY', 'EICHERMOT', 'GRASIM', 'HCLTECH', 'HDFCBANK', 'HDFCLIFE', 'HEROMOTOCO', 'HINDALCO', 'HINDUNILVR', 'ICICIBANK', 'ITC', 'INDUSINDBK', 'INFY', 'JSWSTEEL', 'KOTAKBANK', 'LT', 'M&M', 'MARUTI', 'NTPC', 'NESTLEIND', 'ONGC', 'POWERGRID', 'RELIANCE', 'SBILIFE', 'SBIN', 'SUNPHARMA', 'TCS', 'TATACONSUM', 'TATAMOTORS', 'TATASTEEL', 'TECHM', 'TITAN', 'ULTRACEMCO', 'WIPRO'];
 
-function renderQuickSelect() {
+async function runDynamicScan() {
+  const btn = document.getElementById('btnScan');
   const container = document.getElementById('quickSelect');
-  const stocks = strategy === 'cc' ? CC_STOCKS : CSP_STOCKS;
-  const label = strategy === 'cc' ? 'Top Covered Calls:' : 'Top Cash Secured Puts:';
-  
-  let html = `<div class="quick-label">${label}</div>`;
-  stocks.forEach(ticker => {
-    html += `<div class="quick-badge" onclick="selectQuickTicker('${ticker}')">${ticker}</div>`;
-  });
-  container.innerHTML = html;
+  btn.disabled = true;
+  btn.textContent = '⏳ Scanning...';
+  container.innerHTML = `<div class="quick-label">Scanning Nifty 50...</div>`;
+
+  let results = [];
+  let cursor = 0;
+  const POOL = 3;
+
+  async function worker() {
+    while (cursor < NIFTY50.length) {
+      const ticker = NIFTY50[cursor++];
+      try {
+        const d = await fetchOHLCV(ticker);
+        const rsiVal = rsi(d.closes);
+        const e200 = ema(d.closes, 200);
+        const e50 = ema(d.closes, 50);
+        const vol = hv30(d.closes);
+        
+        let score = 0;
+        let reason = '';
+        
+        if (strategy === 'cc') {
+          // Covered Call: Want neutral/bullish trend (CMP > 200 EMA), good volatility, RSI moderately high (60-75)
+          if (d.cmp > e200 && rsiVal > 55 && rsiVal < 80) {
+            score = vol * 100; // prioritize high IV
+            reason = `RSI ${rsiVal} · HV ${(vol*100).toFixed(1)}%`;
+            results.push({ ticker, score, reason });
+          }
+        } else {
+          // Cash Secured Put: Want strong stock (CMP > 200 EMA) on a short-term pullback (RSI < 45, CMP < 50 EMA)
+          if (d.cmp > e200 && d.cmp < e50 && rsiVal < 45) {
+            score = vol * 100; // prioritize high IV
+            reason = `RSI ${rsiVal} · HV ${(vol*100).toFixed(1)}%`;
+            results.push({ ticker, score, reason });
+          }
+        }
+      } catch (e) {
+        // skip failed fetches silently during scan
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: POOL }, worker));
+
+  // Sort by score descending and take top 6
+  results.sort((a, b) => b.score - a.score);
+  const top = results.slice(0, 6);
+
+  if (top.length === 0) {
+    container.innerHTML = `<div class="quick-label">No perfect candidates found right now.</div>`;
+  } else {
+    const title = strategy === 'cc' ? 'Top Covered Calls:' : 'Top Cash Secured Puts:';
+    let html = `<div class="quick-label">${title}</div>`;
+    top.forEach(r => {
+      html += `<div class="quick-badge" onclick="selectQuickTicker('${r.ticker}')">
+        <div>${r.ticker}</div>
+        <div class="b-sub">${r.reason}</div>
+      </div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔍 Scan Best';
 }
 
 function selectQuickTicker(ticker) {
   document.getElementById('tickerInput').value = ticker;
   analyze();
 }
-
-renderQuickSelect();
 </script>
 </body>
 </html>
