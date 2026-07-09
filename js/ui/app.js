@@ -1,7 +1,7 @@
 // ─── Main App Entry Point ───────────────────────────────────────────────────
 import { AppState } from '../core/state.js?v=6';
 import { fetchOHLCV } from '../core/api.js?v=6';
-import { ema, rsi, adx } from '../core/math.js?v=6';
+import { ema, rsi, adx, macd, cci } from '../core/math.js?v=7';
 
 // Strategy Modules (We will create these next)
 import * as swingStrats from '../strategies/swing.js?v=6';
@@ -315,6 +315,10 @@ async function runScan() {
         const ema200 = ema(data.closes, 200);
         const rsiVal = rsi(data.closes);
         const adxVal = adx(data.highs, data.lows, data.closes);
+        const macdData = macd(data.closes);
+        const macdVal = macdData.macd;
+        const macdHist = macdData.hist;
+        const cciVal = cci(data.highs, data.lows, data.closes, 34);
         
         const recentVol = data.volumes[n - 1];
         const avgVol = data.volumes.slice(n - 21, n - 1).reduce((a,b)=>a+b,0) / 20;
@@ -344,7 +348,7 @@ async function runScan() {
 
         results.push({
           ticker, data, ...res, 
-          chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, 
+          chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, macdVal, macdHist, cciVal,
           entry, stop, t1, t2, s1, s2, s3, r1, r2, r3
         });
       }
@@ -536,6 +540,8 @@ function renderResults(results) {
           <div class="ind"><div class="ik">EMA 20</div><div class="iv">₹${r.ema20.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="ind"><div class="ik">EMA 50</div><div class="iv">₹${r.ema50.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${r.ema200.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="ind"><div class="ik">MACD</div><div class="iv" style="color:${r.macdHist >= 0 ? 'var(--green)' : 'var(--red)'}">${r.macdVal.toFixed(2)}</div></div>
+          <div class="ind"><div class="ik">CCI 34</div><div class="iv" style="color:${r.cciVal > 100 ? 'var(--green)' : r.cciVal < -100 ? 'var(--red)' : 'var(--muted)'}">${r.cciVal.toFixed(1)}</div></div>
         </div>
         <div class="signal-dots">
           <span class="dot-row"><span class="dot ${r.curr > r.ema200?'dy':'dn'}"></span>200 EMA</span>

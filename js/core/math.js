@@ -174,3 +174,62 @@ export function connorsRSI(closes) {
   
   return (rsi3 + streakRsi + pctRank) / 3;
 }
+
+// MACD
+export function macd(closes, fast = 12, slow = 26, signal = 9) {
+  if (closes.length < slow) return { macd: 0, signal: 0, hist: 0 };
+  const macdLine = [];
+  
+  const kFast = 2 / (fast + 1);
+  const kSlow = 2 / (slow + 1);
+  let eFast = closes[0];
+  let eSlow = closes[0];
+  
+  for(let i=0; i<closes.length; i++) {
+    eFast = closes[i] * kFast + eFast * (1 - kFast);
+    eSlow = closes[i] * kSlow + eSlow * (1 - kSlow);
+    macdLine.push(eFast - eSlow);
+  }
+  
+  const macdVal = macdLine[macdLine.length - 1];
+  
+  const kSig = 2 / (signal + 1);
+  let eSig = macdLine[0];
+  for(let i=0; i<macdLine.length; i++) {
+    eSig = macdLine[i] * kSig + eSig * (1 - kSig);
+  }
+  
+  return {
+    macd: macdVal,
+    signal: eSig,
+    hist: macdVal - eSig
+  };
+}
+
+// CCI
+export function cci(highs, lows, closes, period = 34) {
+  const n = closes.length;
+  if (n < period) return 0;
+  
+  const tp = [];
+  for(let i=0; i<n; i++) {
+    tp.push((highs[i] + lows[i] + closes[i]) / 3);
+  }
+  
+  const currentTP = tp[n-1];
+  
+  let sumTP = 0;
+  for(let i=n-period; i<n; i++) {
+    sumTP += tp[i];
+  }
+  const smaTP = sumTP / period;
+  
+  let meanDev = 0;
+  for(let i=n-period; i<n; i++) {
+    meanDev += Math.abs(tp[i] - smaTP);
+  }
+  meanDev = meanDev / period;
+  
+  if (meanDev === 0) return 0;
+  return (currentTP - smaTP) / (0.015 * meanDev);
+}
