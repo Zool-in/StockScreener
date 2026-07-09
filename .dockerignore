@@ -1,0 +1,8 @@
+.git
+.cache
+node_modules
+.claude
+*.log
+.DS_Store
+kite-config.json
+fyers-config.json
