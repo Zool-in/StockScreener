@@ -200,7 +200,12 @@ async function init() {
     AppState.setTimeframe(e.target.dataset.val);
   });
 
-  DOM.capitalInput.addEventListener('input', e => AppState.setCapital(e.target.value));
+  DOM.capitalInput.addEventListener('input', e => {
+    AppState.setCapital(e.target.value);
+    if (AppState.results && AppState.results.length > 0) {
+      renderResults(AppState.results);
+    }
+  });
   DOM.scanBtn.addEventListener('click', runScan);
 
   // Initial Data Load (Nifty 50)
@@ -374,6 +379,7 @@ async function runScan() {
     console.error("Failed to fetch live quotes", e);
   }
 
+  AppState.setResults(results);
   renderResults(results);
   
   DOM.scanBtn.disabled = false;
