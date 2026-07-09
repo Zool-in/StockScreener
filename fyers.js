@@ -57,6 +57,9 @@ function request(method, endpoint, body = null, headers = {}) {
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
+          if (res.statusCode === 429) {
+            return reject(new Error('FYERS_RATE_LIMIT'));
+          }
           if (res.statusCode >= 400 || parsed.s === 'error') {
             return reject(new Error(`Fyers error ${res.statusCode}: ${parsed.message || data}`));
           }
@@ -154,7 +157,20 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
   const from = to - (days * 24 * 60 * 60);
 
   const url = `${FYERS_BASE}/data/history?symbol=${encodeURIComponent(fyersSym)}&resolution=${resolution}&date_format=0&range_from=${from}&range_to=${to}&cont_flag=1`;
-  const res = await request('GET', url, null, { Authorization: getAuthHeader() });
+  
+  let res;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      res = await request('GET', url, null, { Authorization: getAuthHeader() });
+      break;
+    } catch (e) {
+      if (e.message === 'FYERS_RATE_LIMIT' && attempt < 4) {
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // exponential backoff
+        continue;
+      }
+      throw e;
+    }
+  }
 
   if (res.s !== 'ok' || !res.candles) throw new Error('No history found');
 

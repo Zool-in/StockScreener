@@ -809,9 +809,9 @@ async function runScan() {
     btn.textContent = `⏳ ${done}/${tickers.length}…`;
   };
 
-  // Bounded concurrency pool — workers pull from a shared cursor.
+  // Bounded concurrency pool to respect strict API rate limits (Fyers allows 10 req/sec).
   let cursor = 0;
-  const POOL = Math.min(12, tickers.length);
+  const POOL = Math.min(3, tickers.length);
   async function worker() {
     while (cursor < tickers.length) {
       const idx = cursor++;
