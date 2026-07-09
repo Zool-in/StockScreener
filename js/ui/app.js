@@ -296,7 +296,7 @@ function renderResults(results) {
     const dotClass = (ok, warn) => ok ? 'dy' : warn ? 'dm' : 'dn';
 
     const strategyLabels = {
-      all: 'Raw Data',
+      all: 'All Stocks',
       ttm: 'TTM Squeeze + ORB',
       btst: 'BTST Momentum',
       rsi: 'Connors RSI',
