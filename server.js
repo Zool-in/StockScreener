@@ -537,8 +537,18 @@ const server = http.createServer((req, res) => {
         const session = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '.cache', 'fyers-session.json')));
         const auth = `${process.env.FYERS_APP_ID}:${session.access_token}`;
         
-        const r = await fetch(url, { headers: { 'Authorization': auth } });
-        s.debugQuoteRaw = await r.text();
+        // Use promise chain since this is a synchronous request listener
+        fetch(url, { headers: { 'Authorization': auth } })
+          .then(r => r.text())
+          .then(raw => {
+            s.debugQuoteRaw = raw;
+            sendJSON(res, 200, s);
+          })
+          .catch(e => {
+            s.debugQuoteError = e.message;
+            sendJSON(res, 200, s);
+          });
+        return; // wait for fetch to complete before sending response
       } catch (e) {
         s.debugQuoteError = e.message;
       }
