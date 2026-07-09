@@ -120,7 +120,7 @@ async function fetchOHLCV(ticker) {
   return {
     ticker: ticker.toUpperCase(), sym,
     opens: q.open, highs: q.high, lows: q.low, closes: q.close, volumes: q.volume,
-    delivPer: meta.delivPer, delivAvg: meta.delivPerAvg20, meta,
+    delivPer: meta?.delivPer, delivAvg: meta?.delivPerAvg20, meta,
   };
 }
 
