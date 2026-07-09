@@ -526,7 +526,11 @@ const server = http.createServer((req, res) => {
   }
   if (p === '/kite/callback') return handleKiteCallback(res, reqUrl);
 
-  if (p === '/fyers/status') return sendJSON(res, 200, fyers.status());
+  if (p === '/fyers/status') {
+    const s = fyers.status();
+    s.debugEnv = Object.keys(process.env).filter(k => k.includes('FYERS'));
+    return sendJSON(res, 200, s);
+  }
   if (p === '/fyers/login') {
     if (!fyers.isConfigured()) return sendJSON(res, 400, { error: 'Fyers not configured' });
     res.writeHead(302, { Location: fyers.loginUrl() });
