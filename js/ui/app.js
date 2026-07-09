@@ -19,7 +19,86 @@ const DOM = {
   timeframePills: document.getElementById('timeframePills'),
   capitalInput: document.getElementById('capitalInput'),
   scanBtn: document.getElementById('scanBtn'),
+  scanBtn: document.getElementById('scanBtn'),
   resultsArea: document.getElementById('resultsArea'),
+};
+
+const STRATEGY_INFO = {
+  ttm_orb: {
+    name: 'TTM Squeeze + ORB',
+    desc: 'Combines the TTM Squeeze (Bollinger Bands narrowing inside Keltner Channels indicating low volatility) with an Opening Range Breakout (ORB) on surging volume. It looks for explosive moves out of tight consolidation.',
+    example: 'Entry: Breakout of current High\nStop: 1% below entry\nTarget: High momentum intraday run'
+  },
+  btst: {
+    name: 'BTST Momentum',
+    desc: 'Buy Today, Sell Tomorrow (BTST). Looks for stocks closing at the absolute high of the day on surging volume. This indicates institutional accumulation at the closing bell, which often gaps up the next morning.',
+    example: 'Entry: Buy at Market Close\nStop: 1.5% below entry\nTarget: Sell next morning on gap up'
+  },
+  crsi: {
+    name: 'Connors RSI',
+    desc: 'A mean-reversion strategy that looks for statistically oversold conditions in a long-term uptrend. It uses a 3-period RSI and streak counting to find "rubber band" setups that are stretched too far down.',
+    example: 'Entry: Buy on the close\nStop: 4% below entry\nTarget: Sell after 2-4 day snapback bounce'
+  },
+  minervini: {
+    name: 'Minervini VCP',
+    desc: 'Volatility Contraction Pattern. Looks for stocks in a Stage 2 uptrend (above 150 & 200 EMA) that are consolidating in a tight coil near 52-week highs, with volume drying up dramatically.',
+    example: 'Entry: Breakout of current tight range high\nStop: 5% risk\nTarget: Multi-week swing trade'
+  },
+  darvas: {
+    name: 'Darvas Box',
+    desc: 'Identifies stocks that have been trading in a tight horizontal range (< 15%) for multiple months, and are suddenly breaking out of the "Box" top on massive volume.',
+    example: 'Entry: Breakout of Box Top\nStop: Right below the Box Top line\nTarget: Ride the trend until a new box forms'
+  },
+  rs: {
+    name: 'Relative Strength',
+    desc: 'Focuses on stocks showing extreme internal momentum and ignoring market weakness. Looks for ADX > 30 and RSI > 60 in a strong established trend.',
+    example: 'Entry: Buy breakout\nStop: 5% risk\nTarget: Ride the runaway trend'
+  },
+  vcp_down: {
+    name: 'VCP Breakdown',
+    desc: 'The bearish inverse of VCP. Looks for tight consolidation below the 200 EMA that suddenly snaps downwards on massive volume.',
+    example: 'Entry: Breakdown of current low\nStop: 3% risk\nTarget: Heavy drop acceleration'
+  },
+  bear_call: {
+    name: 'Bear Call Spread',
+    desc: 'An options credit spread strategy. Identifies stocks failing at major resistance (200 EMA) with weak RSI and strong downtrend ADX.',
+    example: 'Action: Sell Call slightly above 200 EMA, Buy further OTM Call for protection.'
+  },
+  bps: {
+    name: 'Bull Put Spread',
+    desc: 'An options credit spread strategy. Identifies stocks in a strong, verified uptrend with high Historical Volatility, creating rich premium for selling puts below support.',
+    example: 'Action: Sell Put below 50 EMA, Buy further OTM Put for protection.'
+  },
+  strangle: {
+    name: 'Short Strangle',
+    desc: 'An options premium decay strategy. Looks for "dead" sideways stocks (ADX < 20) that are inexplicably pricing in massive historical volatility (HV > 35%).',
+    example: 'Action: Sell OTM Call and OTM Put to capture IV crush.'
+  },
+  iv_crush: {
+    name: 'Earnings IV Crush',
+    desc: 'Looks for extremely unusual short-term volatility spikes (often before earnings). Sells an Iron Condor to capture the rapid deflation of implied volatility after the event.',
+    example: 'Action: Sell Iron Condor.'
+  },
+  csp: {
+    name: 'Cash Secured Put',
+    desc: 'Sells put options on fundamentally strong stocks (above 200 EMA) that are experiencing a short-term oversold dip (RSI < 45). You get paid to wait to buy a great stock at a discount.',
+    example: 'Action: Sell ATM or slightly OTM Put.'
+  },
+  cc: {
+    name: 'Covered Call',
+    desc: 'For stocks you already own. Identifies when a strong stock becomes temporarily overbought (RSI > 70). A great time to sell calls against your shares to collect premium.',
+    example: 'Action: Sell short-term OTM Call.'
+  },
+  weinstein: {
+    name: 'Stan Weinstein Stage 2',
+    desc: 'A classic long-term strategy. Looks for a stock breaking out of a flat Stage 1 base, crossing its 30-period MA on massive (200%+) volume into a Stage 2 markup.',
+    example: 'Entry: Buy at market\nStop: Below the 30-period MA\nTarget: Multi-month / multi-year hold'
+  },
+  wyckoff: {
+    name: 'Wyckoff Stopping Vol',
+    desc: 'Identifies institutional accumulation. Looks for a massive volume spike during a downtrend where the price refuses to drop further (e.g. Doji or Hammer), indicating smart money is absorbing all selling pressure.',
+    example: 'Entry: Buy near close\nStop: Below the stopping candle low\nTarget: Reversal swing trade'
+  }
 };
 
 // ─── Initialize ─────────────────────────────────────────────────────────────
@@ -55,6 +134,34 @@ async function init() {
       DOM.scanBtn.disabled = false;
       DOM.scanBtn.innerHTML = `<span>Run Scan</span>`;
     }
+  });
+
+  // Setup Strategy Modal & Info Icons
+  const modal = document.getElementById('strategyModal');
+  const modalClose = document.getElementById('modalClose');
+  const modalOverlay = modal.querySelector('.modal-overlay');
+  
+  const closeModal = () => modal.classList.add('hidden');
+  modalClose.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', closeModal);
+
+  document.querySelectorAll('#strategyPills .pill:not([data-val="all"])').forEach(pill => {
+    const icon = document.createElement('span');
+    icon.className = 'info-icon';
+    icon.innerHTML = 'i';
+    pill.appendChild(icon);
+
+    icon.addEventListener('click', (e) => {
+      e.stopPropagation(); // prevent pill click
+      const val = pill.dataset.val;
+      const info = STRATEGY_INFO[val];
+      if (info) {
+        document.getElementById('modalTitle').textContent = info.name;
+        document.getElementById('modalDescription').textContent = info.desc;
+        document.getElementById('modalExample').textContent = info.example;
+        modal.classList.remove('hidden');
+      }
+    });
   });
 
   // Setup Strategy Pills
@@ -340,11 +447,52 @@ function renderResults(results) {
     let tagsHtml = '';
     if (AppState.strategy === 'all' && r.matches && r.matches.length > 0) {
       r.matches.forEach(m => {
-        tagsHtml += `<span class="setup-tag tag-breakout" style="margin-right: 6px;">${strategyLabels[m] || m.toUpperCase()}</span>`;
+        tagsHtml += `<span class="setup-tag tag-breakout">${strategyLabels[m] || m.toUpperCase()}</span>`;
       });
     } else {
       const setupName = strategyLabels[AppState.strategy] || AppState.strategy.toUpperCase();
       tagsHtml = `<span class="setup-tag tag-breakout">${setupName}</span>`;
+    }
+
+    // Add Dynamic Warning / Alert Tags
+    if (r.rsiVal > 70) tagsHtml += `<span class="tag orange">RSI Overbought</span>`;
+    if (r.rsiVal < 30) tagsHtml += `<span class="tag green">RSI Oversold</span>`;
+    if (r.vr > 2.0) tagsHtml += `<span class="tag green">Vol Surge</span>`;
+    if (r.curr < r.ema200) tagsHtml += `<span class="tag red">Below 200 EMA</span>`;
+    if (r.curr > r.ema50 && r.ema50 > r.ema200) tagsHtml += `<span class="tag green">Strong Trend</span>`;
+    if (r.chgPct < -3) tagsHtml += `<span class="tag red">Heavy Drop</span>`;
+    
+    tagsHtml = `<div class="tags-container" style="margin-bottom:8px;">${tagsHtml}</div>`;
+
+    // Calculate Position Sizing
+    let positionHtml = '';
+    const cap = parseFloat(AppState.capital) || 0;
+    if (cap > 0 && r.entry > 0) {
+      // If options strategy (margin provided), size based on margin, else size based on cash capital
+      if (r.margin) {
+        const lots = Math.floor(cap / r.margin);
+        const investment = lots * r.margin;
+        positionHtml = `
+          <div class="levels" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 6px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3);">
+            <div class="lv"><div class="lk">Suggested Lots</div><div class="lv2">${lots} Lots</div></div>
+            <div class="lv"><div class="lk">Est. Margin Reqd</div><div class="lv2">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div></div>
+          </div>
+        `;
+      } else {
+        const qty = Math.floor(cap / r.entry);
+        const investment = qty * r.entry;
+        const riskAmt = qty * (r.entry - r.stop);
+        const projReturn = qty * (r.t1 - r.entry);
+        if (qty > 0) {
+          positionHtml = `
+            <div class="levels" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 6px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3);">
+              <div class="lv"><div class="lk">Qty (Pos Size)</div><div class="lv2">${qty}</div></div>
+              <div class="lv"><div class="lk">Investment</div><div class="lv2">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div></div>
+              <div class="lv"><div class="lk">Risk / Reward (T1)</div><div class="lv2"><span style="color:var(--red)">-₹${Math.abs(riskAmt).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> / <span style="color:var(--green)">+₹${projReturn.toLocaleString('en-IN', {maximumFractionDigits:0})}</span></div></div>
+            </div>
+          `;
+        }
+      }
     }
 
     html += `
@@ -363,11 +511,10 @@ function renderResults(results) {
         </div>
         <div class="score-bar"><div class="score-bar-fill" style="width:${barW}%;background:${barCol}"></div></div>
         
-        <div style="margin-bottom: 8px;">
-          ${tagsHtml}
-        </div>
-        
+        ${tagsHtml}
         <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3;">${r.reason}</div>
+        
+        ${positionHtml}
 
         <div class="indicator-grid">
           <div class="ind"><div class="ik">RSI 14</div><div class="iv" style="color:${rsiOk?'var(--green)':rsiWarn?'var(--red)':'var(--muted)'}">${r.rsiVal}</div></div>

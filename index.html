@@ -115,7 +115,22 @@
 
   </main>
 
+  <!-- Strategy Info Modal -->
+  <div id="strategyModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Strategy Name</h2>
+        <button id="modalClose" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modalDescription" class="modal-desc"></div>
+        <div id="modalExample" class="modal-example"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Entry point for UI routing and execution -->
-  <script type="module" src="js/ui/app.js?v=18"></script>
+  <script type="module" src="js/ui/app.js?v=20"></script>
 </body>
 </html>
