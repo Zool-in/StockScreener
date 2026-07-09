@@ -201,6 +201,32 @@ async function runScan() {
     }
   }
 
+  // Overlay Live Prices
+  try {
+    const symbolsParam = results.map(r => r.ticker).join(',');
+    if (symbolsParam) {
+      DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Fetching Live Prices...</span>`;
+      const qRes = await fetch(`/api/quotes?symbols=${symbolsParam}`);
+      if (qRes.ok) {
+        const qData = await qRes.json();
+        if (qData.quotes) {
+          results.forEach(r => {
+            const livePrice = qData.quotes[r.ticker] || qData.quotes[r.ticker.toUpperCase()];
+            if (livePrice) {
+              const prev = r.data.closes[r.data.closes.length - 2];
+              if (prev) {
+                r.curr = livePrice;
+                r.chgPct = parseFloat(((livePrice - prev) / prev * 100).toFixed(2));
+              }
+            }
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Failed to fetch live quotes", e);
+  }
+
   renderResults(results);
   
   DOM.scanBtn.disabled = false;
