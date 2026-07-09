@@ -91,6 +91,24 @@ function loadSession() {
     if (d.day === getIstDay()) {
       currentSession = d;
       lastSessionDay = d.day;
+      return;
+    }
+  } catch (_) {}
+  
+  // Fallback: if deployment wiped the file, try reading from .env
+  try {
+    const envPath = path.join(ROOT, '.env');
+    const content = fs.readFileSync(envPath, 'utf8');
+    const match = content.match(/FYERS_ACCESS_TOKEN=(.*)/);
+    if (match && match[1]) {
+      // Use the file modification time of .env to determine if it was set today
+      const stat = fs.statSync(envPath);
+      const d = new Date(stat.mtimeMs + 330 * 60000);
+      const fileDay = d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
+      if (fileDay === getIstDay()) {
+        currentSession = { access_token: match[1].trim() };
+        lastSessionDay = fileDay;
+      }
     }
   } catch (_) {}
 }
@@ -98,9 +116,25 @@ function loadSession() {
 function saveSession(data) {
   if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
   data.day = getIstDay();
-  fs.writeFileSync(SESSION_FILE, JSON.stringify(data, null, 2));
+  try { fs.writeFileSync(SESSION_FILE, JSON.stringify(data, null, 2)); } catch(e){}
   currentSession = data;
   lastSessionDay = data.day;
+  
+  // Also save to .env to survive aggressive deployments that wipe untracked files
+  try {
+    const envPath = path.join(ROOT, '.env');
+    let content = '';
+    try { content = fs.readFileSync(envPath, 'utf8'); } catch(e){}
+    const tokenLine = `FYERS_ACCESS_TOKEN=${data.access_token}`;
+    if (content.includes('FYERS_ACCESS_TOKEN=')) {
+      content = content.replace(/FYERS_ACCESS_TOKEN=.*/g, tokenLine);
+    } else {
+      content += `\n${tokenLine}\n`;
+    }
+    fs.writeFileSync(envPath, content);
+  } catch(e) {
+    console.error("Could not write Fyers token to .env", e);
+  }
 }
 
 function hasValidSession() {
