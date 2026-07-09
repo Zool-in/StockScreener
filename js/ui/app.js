@@ -23,6 +23,9 @@ const DOM = {
 
 // ─── Initialize ─────────────────────────────────────────────────────────────
 async function init() {
+  fetchStatus();
+  setInterval(fetchStatus, 30000); // refresh every 30s
+  
   // Setup Universe Pills
   DOM.universePills.addEventListener('click', async (e) => {
     if (!e.target.classList.contains('pill')) return;
@@ -98,6 +101,35 @@ async function init() {
   }
   DOM.scanBtn.disabled = false;
   DOM.scanBtn.innerHTML = `<span>Run Scan</span>`;
+}
+
+// ─── Status Checking ────────────────────────────────────────────────────────
+async function fetchStatus() {
+  try {
+    const fyersRes = await fetch('/fyers/status');
+    const fyersData = await fyersRes.json();
+    
+    const connBadge = document.getElementById('connStatus');
+    if (fyersData.connected) {
+      connBadge.className = 'badge badge-green';
+      connBadge.innerText = 'Brokers: Connected (Fyers)';
+    } else {
+      connBadge.className = 'badge badge-red';
+      connBadge.innerHTML = 'Brokers: Disconnected <a href="/fyers/login" style="margin-left:8px; color:inherit; text-decoration:underline;">Login</a>';
+    }
+
+    const mmiRes = await fetch('/api/mmi');
+    if (mmiRes.ok) {
+      const mmiData = await mmiRes.json();
+      const mmiBadge = document.getElementById('mmiStatus');
+      mmiBadge.innerText = `MMI: ${mmiData.currentValue || 'N/A'}`;
+      if (mmiData.currentValue < 30) mmiBadge.className = 'badge badge-green';
+      else if (mmiData.currentValue > 70) mmiBadge.className = 'badge badge-red';
+      else mmiBadge.className = 'badge badge-amber';
+    }
+  } catch (e) {
+    console.error('Failed to fetch status:', e);
+  }
 }
 
 // ─── Scan Runner ────────────────────────────────────────────────────────────
