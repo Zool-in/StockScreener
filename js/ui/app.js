@@ -382,7 +382,13 @@ function renderResults(results) {
           <span class="dot-row"><span class="dot ${dotClass(adxOk,adxWarn)}"></span>ADX</span>
         </div>
         
-        ${AppState.strategy === 'all' ? `
+        <div class="levels" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 6px;">
+          <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-target"><div class="lk">Target 1</div><div class="lv2">₹${r.t1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-target"><div class="lk">Target 2</div><div class="lv2">₹${r.t2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+        </div>
+        
         <div class="levels" style="grid-template-columns: repeat(3, 1fr);">
           <div class="lv"><div class="lk">S1</div><div class="lv2">₹${r.s1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="lv"><div class="lk">S2</div><div class="lv2">₹${r.s2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
@@ -391,14 +397,6 @@ function renderResults(results) {
           <div class="lv"><div class="lk">R2</div><div class="lv2">₹${r.r2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="lv"><div class="lk">R3</div><div class="lv2">₹${r.r3.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
         </div>
-        ` : `
-        <div class="levels" style="grid-template-columns: repeat(4, 1fr);">
-          <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-target"><div class="lk">Target 1</div><div class="lv2">₹${r.t1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-target"><div class="lk">Target 2</div><div class="lv2">₹${r.t2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-        </div>
-        `}
       </div>
     `;
   });
