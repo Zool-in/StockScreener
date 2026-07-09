@@ -81,7 +81,7 @@
 /* Buttons */
 .btn {
   background: var(--accent);
-  color: #fff;
+  color: #000;
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
@@ -579,7 +579,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-muted);
   margin-left: 4px;
   font-size: 10px;
@@ -587,7 +587,7 @@
 }
 
 .pill:hover .info-icon {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
 
@@ -625,8 +625,15 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -667,7 +674,7 @@
 }
 
 .modal-example {
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   border: 1px dashed var(--border);
   border-radius: 8px;
   padding: 12px;
