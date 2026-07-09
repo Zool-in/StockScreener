@@ -20,10 +20,19 @@ const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 const kite = require('./kite');
+const fyers = require('./fyers');
 const bhavcopy = require('./bhavcopy');
 const symbols = require('./symbols');
 const livequote = require('./livequote');
 const lots = require('./lots');
+
+// ─── Load .env (Zero dependency) ──────────────────────────────────────────
+try {
+  fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split('\n').forEach(line => {
+    const idx = line.indexOf('=');
+    if (idx > 0) process.env[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+  });
+} catch (_) {}
 
 const PORT = process.env.PORT || 5173;
 const ROOT = __dirname;
@@ -191,10 +200,24 @@ async function handleChart(res, reqUrl) {
     return sendJSON(res, 400, { error: 'Invalid or missing symbol' });
   }
 
+  // 0) PRIMARY HIGH-FIDELITY SOURCES: Fyers or Kite
   let firstErr = '';
+  
+  if (fyers.isConfigured() && fyers.hasValidSession()) {
+    try {
+      const fbody = await fyers.fetchChart(symbol, interval, range);
+      writeCache(symbol, interval, range, fbody);
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Data-Source': 'fyers',
+      });
+      return res.end(fbody);
+    } catch (e) {
+      firstErr = `fyers: ${e.message}`;
+    }
+  }
 
-  // 0) PRIMARY source: Kite (Zerodha), when configured and connected. This is
-  // reliable NSE data straight from the broker, immune to Yahoo/NSE IP blocks.
   if (kite.isConfigured() && kite.hasValidSession()) {
     try {
       const kbody = await kite.fetchChart(symbol, interval, range);
@@ -207,7 +230,7 @@ async function handleChart(res, reqUrl) {
       return res.end(kbody);
     } catch (e) {
       // Fall through to Bhavcopy/Yahoo/cache below on any Kite error.
-      firstErr = `kite: ${e.message}`;
+      firstErr = firstErr ? `${firstErr}; kite: ${e.message}` : `kite: ${e.message}`;
     }
   }
 
@@ -301,6 +324,12 @@ function serveStatic(res, pathname) {
     return sendText(res, 403, 'Forbidden');
   }
 
+  // Prevent serving sensitive files (configs, dotfiles, cache)
+  const filename = path.basename(filePath);
+  if (filename.startsWith('.') || filename.endsWith('-config.json') || rel.startsWith('/.cache') || filename === 'server.js') {
+    return sendText(res, 403, 'Forbidden');
+  }
+
   fs.readFile(filePath, (err, data) => {
     if (err) return sendText(res, 404, 'Not found');
     const ext = path.extname(filePath).toLowerCase();
@@ -370,13 +399,19 @@ async function handleQuotes(res, reqUrl) {
     misses = list.filter(s => out[norm(s)] == null);
   }
 
-  // 3) Google (~15 min delayed) for whatever remains.
+  // 3) Fyers for anything else
+  if (misses.length && fyers.isConfigured() && fyers.hasValidSession()) {
+      try { Object.assign(out, await fyers.getLtp(misses)); } catch (_) {}
+      misses = list.filter(s => out[norm(s)] == null);
+  }
+
+  // 4) Google (~15 min delayed) for whatever remains.
   if (misses.length) {
     try { Object.assign(out, await livequote.getQuotes(misses.slice(0, 300), 10)); } catch (_) {}
   }
 
   const source = bridgeHits ? 'kite-live'
-    : (kite.isConfigured() && kite.hasValidSession()) ? 'kite' : 'google-delayed';
+    : (kite.isConfigured() && kite.hasValidSession()) ? 'kite' : (fyers.isConfigured() && fyers.hasValidSession()) ? 'fyers' : 'google-delayed';
   sendJSON(res, 200, { quotes: out, source, asOf: bridge ? bridge.ts : Date.now(), bridgeHits });
 }
 
@@ -450,6 +485,27 @@ async function handleKiteCallback(res, reqUrl) {
   }
 }
 
+async function handleFyersCallback(res, reqUrl) {
+  const code = reqUrl.searchParams.get('auth_code');
+  const okPage = (title, msg) => `<!DOCTYPE html><meta charset="utf-8">
+    <body style="font-family:sans-serif;background:#0f1117;color:#e8eaf0;padding:40px">
+    <h2>${title}</h2><p>${msg}</p>
+    <p><a href="/" style="color:#4f7cff">← Back to the screener</a></p>
+    <script>setTimeout(()=>location.href='/',2500)</script></body>`;
+  if (!code) {
+    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+    return res.end(okPage('Fyers login failed', 'No auth_code in the callback.'));
+  }
+  try {
+    const d = await fyers.exchangeToken(code);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(okPage('Fyers connected ✓', `Logged in successfully. Redirecting…`));
+  } catch (e) {
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(okPage('Fyers login failed', e.message));
+  }
+}
+
 // ─── Router ───────────────────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
   const reqUrl = new URL(req.url, `http://localhost:${PORT}`);
@@ -468,6 +524,14 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
   if (p === '/kite/callback') return handleKiteCallback(res, reqUrl);
+
+  if (p === '/fyers/status') return sendJSON(res, 200, fyers.status());
+  if (p === '/fyers/login') {
+    if (!fyers.isConfigured()) return sendJSON(res, 400, { error: 'Fyers not configured' });
+    res.writeHead(302, { Location: fyers.loginUrl() });
+    return res.end();
+  }
+  if (p === '/fyers/callback') return handleFyersCallback(res, reqUrl);
 
   serveStatic(res, p);
 });

@@ -471,6 +471,7 @@ function accentColor(s) {
 function dotClass(ok, warn) { return ok ? 'dy' : warn ? 'dm' : 'dn'; }
 function sourceLabel(src) {
   return src === 'kite' || src === 'kite-live' ? 'Zerodha Kite'
+    : src === 'fyers' ? 'Fyers API'
     : src === 'nse-bhavcopy' ? 'NSE Bhavcopy (EOD)'
     : src === 'cache' || src === 'cache-fresh' ? 'Cached'
     : 'Yahoo Finance';
@@ -912,7 +913,29 @@ async function fetchMMI() {
     mmiContainer.style.display = 'none';
   }
 }
-document.addEventListener('DOMContentLoaded', fetchMMI);
+async function checkFyersStatus() {
+  const el = document.getElementById('fyersStatus');
+  if (!el) return;
+  try {
+    const res = await fetch('/fyers/status');
+    const data = await res.json();
+    if (!data.configured) return;
+    el.style.display = 'block';
+    if (data.connected) {
+      el.className = 'kite-status kite-connected';
+      el.innerHTML = `Fyers: connected`;
+    } else {
+      el.className = 'kite-status kite-disconnected';
+      el.innerHTML = `<a href="/fyers/login" style="color:inherit">Connect Fyers</a>`;
+    }
+  } catch (e) { }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  refreshKiteStatus();
+  checkFyersStatus();
+  fetchMMI();
+});
 setInterval(fetchMMI, 10 * 60 * 1000); // Refresh MMI every 10 mins
 
 // ─── Kite connection status ────────────────────────────────────────────────
