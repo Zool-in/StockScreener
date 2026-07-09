@@ -27,77 +27,77 @@ const STRATEGY_INFO = {
   ttm_orb: {
     name: 'TTM Squeeze + ORB',
     desc: 'Combines the TTM Squeeze (Bollinger Bands narrowing inside Keltner Channels indicating low volatility) with an Opening Range Breakout (ORB) on surging volume. It looks for explosive moves out of tight consolidation.',
-    example: '<strong>Entry:</strong> Breakout of current High<br><strong>Stop:</strong> 1% below entry<br><strong>Target:</strong> High momentum intraday run'
+    example: '<strong>Entry:</strong> Breakout of current High<br><strong>Stop:</strong> 1% below entry<br><strong>Target:</strong> High momentum intraday run<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ITC has been trading flat between ₹400-₹405 for 2 weeks (Squeeze). Today at 9:30 AM, it breaks ₹406 on 3x normal volume (ORB).</span>'
   },
   btst: {
     name: 'BTST Momentum',
     desc: 'Buy Today, Sell Tomorrow (BTST). Looks for stocks closing at the absolute high of the day on surging volume. This indicates institutional accumulation at the closing bell, which often gaps up the next morning.',
-    example: '<strong>Entry:</strong> Buy at Market Close<br><strong>Stop:</strong> 1.5% below entry<br><strong>Target:</strong> Sell next morning on gap up'
+    example: '<strong>Entry:</strong> Buy at Market Close<br><strong>Stop:</strong> 1.5% below entry<br><strong>Target:</strong> Sell next morning on gap up<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., At 3:25 PM, TATA MOTORS surges to close at the absolute high of the day (₹1050) on massive volume. Buy now to sell on the likely gap-up tomorrow at 9:15 AM.</span>'
   },
   crsi: {
     name: 'Connors RSI',
     desc: 'A mean-reversion strategy that looks for statistically oversold conditions in a long-term uptrend. It uses a 3-period RSI and streak counting to find "rubber band" setups that are stretched too far down.',
-    example: '<strong>Entry:</strong> Buy on the close<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Sell after 2-4 day snapback bounce'
+    example: '<strong>Entry:</strong> Buy on the close<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Sell after 2-4 day snapback bounce<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., L&T is in a long-term uptrend but drops 3 days in a row due to market panic, pushing its 3-period RSI below 10. You buy the dip expecting a sharp bounce.</span>'
   },
   minervini: {
     name: 'Minervini VCP',
     desc: 'Volatility Contraction Pattern. Looks for stocks in a Stage 2 uptrend (above 150 & 200 EMA) that are consolidating in a tight coil near 52-week highs, with volume drying up dramatically.',
-    example: '<strong>Entry:</strong> Breakout of current tight range high<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Multi-week swing trade'
+    example: '<strong>Entry:</strong> Breakout of current tight range high<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Multi-week swing trade<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., HAL rallied 50%, then consolidated for 6 weeks. The swings get tighter (15% drop, then 8%, then 3%), and volume disappears. You buy the breakout of the 3% tight range.</span>'
   },
   darvas: {
     name: 'Darvas Box',
     desc: 'Identifies stocks that have been trading in a tight horizontal range (< 15%) for multiple months, and are suddenly breaking out of the "Box" top on massive volume.',
-    example: '<strong>Entry:</strong> Breakout of Box Top<br><strong>Stop:</strong> Right below the Box Top line<br><strong>Target:</strong> Ride the trend until a new box forms'
+    example: '<strong>Entry:</strong> Breakout of Box Top<br><strong>Stop:</strong> Right below the Box Top line<br><strong>Target:</strong> Ride the trend until a new box forms<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE bounces between ₹2300 and ₹2500 for 4 months (The Box). Today, it rips above ₹2500 on huge volume. You buy the breakout.</span>'
   },
   rs: {
     name: 'Relative Strength',
     desc: 'Focuses on stocks showing extreme internal momentum and ignoring market weakness. Looks for ADX > 30 and RSI > 60 in a strong established trend.',
-    example: '<strong>Entry:</strong> Buy breakout<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Ride the runaway trend'
+    example: '<strong>Entry:</strong> Buy breakout<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Ride the runaway trend<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., NIFTY is down 2% today, but ZOMATO is up 4% making new 52-week highs with an ADX of 35. You buy the strength because it is ignoring market gravity.</span>'
   },
   vcp_down: {
     name: 'VCP Breakdown',
     desc: 'The bearish inverse of VCP. Looks for tight consolidation below the 200 EMA that suddenly snaps downwards on massive volume.',
-    example: '<strong>Entry:</strong> Breakdown of current low<br><strong>Stop:</strong> 3% risk<br><strong>Target:</strong> Heavy drop acceleration'
+    example: '<strong>Entry:</strong> Breakdown of current low<br><strong>Stop:</strong> 3% risk<br><strong>Target:</strong> Heavy drop acceleration<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., WIPRO is in a long downtrend below its 200 EMA. It consolidates tightly for 3 weeks, then suddenly breaks the support level on high volume. You short the breakdown.</span>'
   },
   bear_call: {
     name: 'Bear Call Spread',
     desc: 'An options credit spread strategy. Identifies stocks failing at major resistance (200 EMA) with weak RSI and strong downtrend ADX.',
-    example: '<strong>Action:</strong> Sell Call slightly above 200 EMA, Buy further OTM Call for protection.'
+    example: '<strong>Action:</strong> Sell Call slightly above 200 EMA, Buy further OTM Call for protection.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., INFY is in a downtrend and rallies up to its 200 EMA (₹1500) but stalls. You sell the 1520 Call and buy the 1540 Call, betting it won\'t cross 1500.</span>'
   },
   bps: {
     name: 'Bull Put Spread',
     desc: 'An options credit spread strategy. Identifies stocks in a strong, verified uptrend with high Historical Volatility, creating rich premium for selling puts below support.',
-    example: '<strong>Action:</strong> Sell Put below 50 EMA, Buy further OTM Put for protection.'
+    example: '<strong>Action:</strong> Sell Put below 50 EMA, Buy further OTM Put for protection.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., HDFC BANK is in a strong uptrend (₹1600). You sell the 1500 Put and buy the 1480 Put to collect premium, betting it stays above ₹1500.</span>'
   },
   strangle: {
     name: 'Short Strangle',
     desc: 'An options premium decay strategy. Looks for "dead" sideways stocks (ADX < 20) that are inexplicably pricing in massive historical volatility (HV > 35%).',
-    example: '<strong>Action:</strong> Sell OTM Call and OTM Put to capture IV crush.'
+    example: '<strong>Action:</strong> Sell OTM Call and OTM Put to capture IV crush.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ASIAN PAINTS has been stuck at ₹3000 for months, but options premiums are extremely high. You sell the 3200 Call and 2800 Put, betting it stays flat.</span>'
   },
   iv_crush: {
     name: 'Earnings IV Crush',
     desc: 'Looks for extremely unusual short-term volatility spikes (often before earnings). Sells an Iron Condor to capture the rapid deflation of implied volatility after the event.',
-    example: '<strong>Action:</strong> Sell Iron Condor.'
+    example: '<strong>Action:</strong> Sell Iron Condor.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TCS reports earnings tomorrow. Implied Volatility (IV) spikes to 60%. You sell an Iron Condor. After earnings, IV crashes to 20% and the premium collapses for a quick profit.</span>'
   },
   csp: {
     name: 'Cash Secured Put',
     desc: 'Sells put options on fundamentally strong stocks (above 200 EMA) that are experiencing a short-term oversold dip (RSI < 45). You get paid to wait to buy a great stock at a discount.',
-    example: '<strong>Action:</strong> Sell ATM or slightly OTM Put.'
+    example: '<strong>Action:</strong> Sell ATM or slightly OTM Put.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ICICI BANK is a great long-term hold but temporarily drops to ₹1050. You sell the 1000 Put for ₹20 premium. If it stays above 1000, you keep the ₹20. If it drops, you buy it at ₹1000!</span>'
   },
   cc: {
     name: 'Covered Call',
     desc: 'For stocks you already own. Identifies when a strong stock becomes temporarily overbought (RSI > 70). A great time to sell calls against your shares to collect premium.',
-    example: '<strong>Action:</strong> Sell short-term OTM Call.'
+    example: '<strong>Action:</strong> Sell short-term OTM Call.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., You own 500 shares of SBI. It suddenly rockets to ₹850 (RSI 80) and looks exhausted. You sell the 900 Call, collecting premium while keeping your shares.</span>'
   },
   weinstein: {
     name: 'Stan Weinstein Stage 2',
     desc: 'A classic long-term strategy. Looks for a stock breaking out of a flat Stage 1 base, crossing its 30-period MA on massive (200%+) volume into a Stage 2 markup.',
-    example: '<strong>Entry:</strong> Buy at market<br><strong>Stop:</strong> Below the 30-period MA<br><strong>Target:</strong> Multi-month / multi-year hold'
+    example: '<strong>Entry:</strong> Buy at market<br><strong>Stop:</strong> Below the 30-period MA<br><strong>Target:</strong> Multi-month / multi-year hold<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., SUZLON did nothing for 2 years (Stage 1 base). Suddenly, it crosses its 30-week Moving Average on record volume. You buy and hold for a multi-year Stage 2 uptrend.</span>'
   },
   wyckoff: {
     name: 'Wyckoff Stopping Vol',
     desc: 'Identifies institutional accumulation. Looks for a massive volume spike during a downtrend where the price refuses to drop further (e.g. Doji or Hammer), indicating smart money is absorbing all selling pressure.',
-    example: '<strong>Entry:</strong> Buy near close<br><strong>Stop:</strong> Below the stopping candle low<br><strong>Target:</strong> Reversal swing trade'
+    example: '<strong>Entry:</strong> Buy near close<br><strong>Stop:</strong> Below the stopping candle low<br><strong>Target:</strong> Reversal swing trade<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., PAYTM is crashing for weeks. Today, volume is 5x normal, but the price forms a perfect Doji (it stops going down). This is "Stopping Volume"—institutions are quietly buying the panic.</span>'
   }
 };
 
