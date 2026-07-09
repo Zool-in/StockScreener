@@ -22,8 +22,8 @@ function vcpBreakdown(data) {
       reason: 'Tight consolidation snapped downwards on massive volume below the 200 EMA.',
       risk: cmp * 0.03,
       metrics: [
-        { name: 'Drop', value: \`\${(((cmp / closes[closes.length-2])-1)*100).toFixed(1)}%\` },
-        { name: 'Vol Surge', value: \`\${(currentVol/avgVol).toFixed(1)}x\` }
+        { name: 'Drop', value: `${(((cmp / closes[closes.length-2])-1)*100).toFixed(1)}%` },
+        { name: 'Vol Surge', value: `${(currentVol/avgVol).toFixed(1)}x` }
       ]
     };
   }

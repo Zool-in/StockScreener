@@ -28,8 +28,8 @@ function btstMomentum(data) {
       reason: 'Institutional accumulation at the bell. Closing at the absolute high of the day.',
       risk: risk,
       metrics: [
-        { name: 'Closing Strength', value: \`\${closingStrength.toFixed(1)}%\` },
-        { name: 'Vol vs Avg', value: \`\${(currentVol/avgVol).toFixed(1)}x\` }
+        { name: 'Closing Strength', value: `${closingStrength.toFixed(1)}%` },
+        { name: 'Vol vs Avg', value: `${(currentVol/avgVol).toFixed(1)}x` }
       ]
     };
   }

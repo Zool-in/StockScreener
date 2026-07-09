@@ -36,9 +36,9 @@ function minerviniVCP(data) {
       reason: 'Minervini Stage 2 uptrend with extreme volume and price contraction. Coil is tight.',
       risk: cmp * 0.05,
       metrics: [
-        { name: 'Daily Range', value: \`\${hlPct.toFixed(1)}%\` },
-        { name: 'Vol vs Avg', value: \`\${(currentVol/avgVol).toFixed(2)}x\` },
-        { name: 'Vs 52w High', value: \`-\${(((week52High-cmp)/week52High)*100).toFixed(1)}%\` }
+        { name: 'Daily Range', value: `${hlPct.toFixed(1)}%` },
+        { name: 'Vol vs Avg', value: `${(currentVol/avgVol).toFixed(2)}x` },
+        { name: 'Vs 52w High', value: `-${(((week52High-cmp)/week52High)*100).toFixed(1)}%` }
       ]
     };
   }
@@ -72,8 +72,8 @@ function darvasBox(data) {
       risk: cmp - boxTop, // Stop loss right below the top of the box
       metrics: [
         { name: 'Box Duration', value: '> 60 days' },
-        { name: 'Box Size', value: \`\${boxSizePct.toFixed(1)}%\` },
-        { name: 'Vol Surge', value: \`\${(currentVol/avgVol).toFixed(1)}x\` }
+        { name: 'Box Size', value: `${boxSizePct.toFixed(1)}%` },
+        { name: 'Vol Surge', value: `${(currentVol/avgVol).toFixed(1)}x` }
       ]
     };
   }

@@ -71,7 +71,7 @@ async function runScan() {
         results.push({ ticker, data, ...res });
       }
     } catch (e) {
-      console.error(\`Skipping \${ticker}: \`, e);
+      console.error(`Skipping ${ticker}: `, e);
     }
   }
 
@@ -95,27 +95,27 @@ function renderResults(results) {
     if (r.risk) {
       const maxLoss = AppState.capital * 0.01; // 1% risk rule
       const shares = Math.floor(maxLoss / r.risk);
-      sizingHtml = `<div class="kv"><div class="k">1% Risk Size</div><div class="v v-accent">\${shares} shares</div></div>`;
+      sizingHtml = `<div class="kv"><div class="k">1% Risk Size</div><div class="v v-accent">${shares} shares</div></div>`;
     } else if (r.margin) {
       const lots = Math.floor(AppState.capital / r.margin);
-      sizingHtml = `<div class="kv"><div class="k">Max Lots</div><div class="v v-accent">\${lots} lots</div></div>`;
+      sizingHtml = `<div class="kv"><div class="k">Max Lots</div><div class="v v-accent">${lots} lots</div></div>`;
     }
 
     html += `
       <div class="card">
         <div class="flex justify-between items-center" style="margin-bottom: 16px;">
-          <h2 style="color: var(--accent); font-size: 1.5rem;">\${r.ticker}</h2>
+          <h2 style="color: var(--accent); font-size: 1.5rem;">${r.ticker}</h2>
           <div class="badge badge-green">MATCH</div>
         </div>
-        <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px;">CMP: ₹\${r.data.cmp.toFixed(2)}</div>
+        <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px;">CMP: ₹${r.data.cmp.toFixed(2)}</div>
         
         <div style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
-          \${r.reason}
+          ${r.reason}
         </div>
 
         <div class="kv-grid">
-          \${sizingHtml}
-          \${r.metrics ? r.metrics.map(m => `<div class="kv"><div class="k">\${m.name}</div><div class="v">\${m.value}</div></div>`).join('') : ''}
+          ${sizingHtml}
+          ${r.metrics ? r.metrics.map(m => `<div class="kv"><div class="k">${m.name}</div><div class="v">${m.value}</div></div>`).join('') : ''}
         </div>
       </div>
     `;

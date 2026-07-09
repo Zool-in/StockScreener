@@ -31,8 +31,8 @@ function stanWeinstein(data) {
       reason: 'Stan Weinstein Stage 2 Markup detected. Price crossing 30-period MA on 200%+ volume.',
       risk: cmp - sma30,
       metrics: [
-        { name: 'MA Breakout', value: \`Above \${sma30.toFixed(2)}\` },
-        { name: 'Vol Surge', value: \`\${(currentVol/avgVol).toFixed(1)}x\` }
+        { name: 'MA Breakout', value: `Above ${sma30.toFixed(2)}` },
+        { name: 'Vol Surge', value: `${(currentVol/avgVol).toFixed(1)}x` }
       ]
     };
   }
@@ -62,7 +62,7 @@ function wyckoffStoppingVolume(data) {
       reason: 'Wyckoff Stopping Volume. Massive 300%+ volume spike but price refused to drop. Institutional accumulation footprint.',
       risk: cmp * 0.10, // Long term holds have wider stops
       metrics: [
-        { name: 'Vol Anomaly', value: \`\${(currentVol/avgVol).toFixed(1)}x\` },
+        { name: 'Vol Anomaly', value: `${(currentVol/avgVol).toFixed(1)}x` },
         { name: 'Price Action', value: 'Accumulation Doji' }
       ]
     };

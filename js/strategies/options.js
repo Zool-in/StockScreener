@@ -22,7 +22,7 @@ function bullPutSpread(data) {
       margin: 40000, // Roughly 40k INR margin per spread lot
       metrics: [
         { name: 'ADX', value: adxVal },
-        { name: 'HV', value: \`\${(vol*100).toFixed(1)}%\` }
+        { name: 'HV', value: `${(vol*100).toFixed(1)}%` }
       ]
     };
   }
@@ -41,7 +41,7 @@ function shortStrangle(data) {
       margin: 120000, // Naked strangle margin
       metrics: [
         { name: 'ADX', value: adxVal },
-        { name: 'HV', value: \`\${(vol*100).toFixed(1)}%\` }
+        { name: 'HV', value: `${(vol*100).toFixed(1)}%` }
       ]
     };
   }
@@ -60,8 +60,8 @@ function ivCrushCondor(data) {
       reason: 'Massive short-term volatility spike detected (likely pending earnings/event). Sell Iron Condor to capture IV crush.',
       margin: 50000, // Margin for Iron Condor
       metrics: [
-        { name: 'Short Vol', value: \`\${(shortVol*100).toFixed(1)}%\` },
-        { name: 'Base Vol', value: \`\${(vol*100).toFixed(1)}%\` }
+        { name: 'Short Vol', value: `${(shortVol*100).toFixed(1)}%` },
+        { name: 'Base Vol', value: `${(vol*100).toFixed(1)}%` }
       ]
     };
   }
