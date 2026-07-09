@@ -391,6 +391,18 @@ async function handleLots(res) {
 }
 
 // ─── Market Mood Index (MMI) ────────────────────────────────────────────────
+// Reports the public IP this server calls external APIs FROM — this is the IP
+// to whitelist in FYERS/Kite (they check the caller's outbound IP).
+async function handleWhoami(res) {
+  try {
+    const r = await httpsGet('https://api.ipify.org?format=json', { 'User-Agent': UA }, 8000);
+    const ip = JSON.parse(r.body).ip;
+    sendJSON(res, 200, { egressIp: ip, note: 'Whitelist this IP in FYERS (it is the IP the app calls broker APIs from).' });
+  } catch (e) {
+    sendJSON(res, 502, { error: e.message || 'Could not determine egress IP' });
+  }
+}
+
 async function handleMmi(res) {
   try {
     const r = await httpsGet('https://api.tickertape.in/mmi/now', {
@@ -448,6 +460,7 @@ const server = http.createServer((req, res) => {
   if (p === '/api/quotes') return handleQuotes(res, reqUrl);
   if (p === '/api/lots') return handleLots(res);
   if (p === '/api/mmi') return handleMmi(res);
+  if (p === '/api/whoami') return handleWhoami(res);
   if (p === '/kite/status') return sendJSON(res, 200, kite.status());
   if (p === '/kite/login') {
     if (!kite.isConfigured()) return sendJSON(res, 400, { error: 'Kite not configured' });
