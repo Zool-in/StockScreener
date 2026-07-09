@@ -4,7 +4,8 @@ export function run(strategyId, data) {
   if (strategyId === 'bps') return bullPutSpread(data);
   if (strategyId === 'strangle') return shortStrangle(data);
   if (strategyId === 'iv_crush') return ivCrushCondor(data);
-  if (strategyId === 'wheel' || strategyId === 'csp') return wheel(data);
+  if (strategyId === 'csp' || strategyId === 'wheel') return csp(data);
+  if (strategyId === 'cc') return coveredCall(data);
   return { isMatch: false };
 }
 
@@ -19,6 +20,7 @@ function bullPutSpread(data) {
     return {
       isMatch: true,
       reason: 'Strong verified uptrend (ADX > 25) with high Historical Volatility. Great premium for Credit Spread.',
+      entry: cmp, // Enter spread at market
       margin: 40000, // Roughly 40k INR margin per spread lot
       metrics: [
         { name: 'ADX', value: adxVal },
@@ -38,6 +40,7 @@ function shortStrangle(data) {
     return {
       isMatch: true,
       reason: 'Dead sideways trend (ADX < 20) but massive volatility pricing. Perfect for premium decay.',
+      entry: cmp, // Enter at market
       margin: 120000, // Naked strangle margin
       metrics: [
         { name: 'ADX', value: adxVal },
@@ -58,6 +61,7 @@ function ivCrushCondor(data) {
     return {
       isMatch: true,
       reason: 'Massive short-term volatility spike detected (likely pending earnings/event). Sell Iron Condor to capture IV crush.',
+      entry: cmp, // Enter at market
       margin: 50000, // Margin for Iron Condor
       metrics: [
         { name: 'Short Vol', value: `${(shortVol*100).toFixed(1)}%` },
@@ -68,20 +72,42 @@ function ivCrushCondor(data) {
   return { isMatch: false };
 }
 
-function wheel(data) {
+function csp(data) {
   const { closes, cmp } = data;
   const e200 = ema(closes, 200);
   const rsiVal = rsi(closes);
 
-  // Wheel Phase 1 / CSP: Strong stock on a temporary dip
+  // CSP: Strong stock on a temporary dip
   if (cmp > e200 && rsiVal < 45) {
     return {
       isMatch: true,
-      reason: 'Fundamentally strong stock (Above 200 EMA) on a short-term oversold dip. Perfect to sell a CSP to get paid to wait.',
+      reason: 'Fundamentally strong stock (Above 200 EMA) on a short-term oversold dip. Perfect to sell a Cash Secured Put.',
+      entry: cmp,
       margin: Math.round(cmp * 500 * 0.20), // Proxy margin approx 20% of contract value
       metrics: [
         { name: 'RSI', value: rsiVal },
         { name: 'Trend', value: 'Intact' }
+      ]
+    };
+  }
+  return { isMatch: false };
+}
+
+function coveredCall(data) {
+  const { closes, cmp } = data;
+  const e200 = ema(closes, 200);
+  const rsiVal = rsi(closes);
+
+  // Covered Call: Strong stock, but becoming overbought short term
+  if (cmp > e200 && rsiVal > 70) {
+    return {
+      isMatch: true,
+      reason: 'Stock is in a strong uptrend but currently overbought (RSI > 70). Great time to sell a Covered Call to collect premium.',
+      entry: cmp,
+      margin: Math.round(cmp * 500), // Proxy margin holding the underlying
+      metrics: [
+        { name: 'RSI', value: rsiVal },
+        { name: 'Trend', value: 'Overbought' }
       ]
     };
   }

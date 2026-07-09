@@ -29,6 +29,7 @@ function stanWeinstein(data) {
     return {
       isMatch: true,
       reason: 'Stan Weinstein Stage 2 Markup detected. Price crossing 30-period MA on 200%+ volume.',
+      entry: cmp, // Buy the breakout at market
       risk: cmp - sma30,
       metrics: [
         { name: 'MA Breakout', value: `Above ${sma30.toFixed(2)}` },
@@ -59,8 +60,9 @@ function wyckoffStoppingVolume(data) {
   if (isDowntrend && isHighVol && isStopping) {
     return {
       isMatch: true,
-      reason: 'Wyckoff Stopping Volume. Massive 300%+ volume spike but price refused to drop. Institutional accumulation footprint.',
-      risk: cmp * 0.10, // Long term holds have wider stops
+      reason: 'Downtrend halting on massive relative volume. Smart money accumulation suspected.',
+      entry: cmp, // Enter at market near the close
+      risk: lows[lows.length-1] * 0.98, // Stop below the stopping candle low
       metrics: [
         { name: 'Vol Anomaly', value: `${(currentVol/avgVol).toFixed(1)}x` },
         { name: 'Price Action', value: 'Accumulation Doji' }

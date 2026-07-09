@@ -20,6 +20,7 @@ function vcpBreakdown(data) {
     return {
       isMatch: true,
       reason: 'Tight consolidation snapped downwards on massive volume below the 200 EMA.',
+      entry: lows[lows.length-1], // Trigger is breaking today's low
       risk: cmp * 0.03,
       metrics: [
         { name: 'Drop', value: `${(((cmp / closes[closes.length-2])-1)*100).toFixed(1)}%` },
@@ -41,6 +42,7 @@ function bearCallSpread(data) {
     return {
       isMatch: true,
       reason: 'Failing right at the 200-day moving average resistance in a strong downtrend.',
+      entry: cmp, // Enter spread at market
       risk: cmp * 0.05,
       metrics: [
         { name: 'RSI', value: rsiVal },

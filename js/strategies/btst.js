@@ -26,6 +26,7 @@ function btstMomentum(data) {
     return {
       isMatch: true,
       reason: 'Institutional accumulation at the bell. Closing at the absolute high of the day.',
+      entry: cmp, // Enter exactly at market price on the close
       risk: risk,
       metrics: [
         { name: 'Closing Strength', value: `${closingStrength.toFixed(1)}%` },

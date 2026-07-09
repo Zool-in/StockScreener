@@ -26,6 +26,7 @@ function ttmSqueezeORB(data) {
     return {
       isMatch: true,
       reason: 'Bollinger Bands inside Keltner Channels (Squeeze) + Volume Surge.',
+      entry: highs[highs.length-1], // Trigger is breaking today's high
       risk: risk,
       metrics: [
         { name: 'Avg Vol', value: Math.round(avgVol).toLocaleString() },

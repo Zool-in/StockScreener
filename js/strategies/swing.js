@@ -34,6 +34,7 @@ function minerviniVCP(data) {
     return {
       isMatch: true,
       reason: 'Minervini Stage 2 uptrend with extreme volume and price contraction. Coil is tight.',
+      entry: highs[highs.length-1], // Entry trigger is breaking today's high
       risk: cmp * 0.05,
       metrics: [
         { name: 'Daily Range', value: `${hlPct.toFixed(1)}%` },
@@ -69,6 +70,7 @@ function darvasBox(data) {
     return {
       isMatch: true,
       reason: 'Exploding out of a multi-month flat Darvas Box on massive volume.',
+      entry: boxTop, // The specific trigger level
       risk: cmp - boxTop, // Stop loss right below the top of the box
       metrics: [
         { name: 'Box Duration', value: '> 60 days' },
@@ -91,6 +93,7 @@ function rsLeader(data) {
     return {
       isMatch: true,
       reason: 'Extreme internal Relative Strength. ADX > 30 indicates a runaway trend.',
+      entry: highs[highs.length-1], // Entry trigger is breaking today's high
       risk: cmp * 0.05,
       metrics: [
         { name: 'ADX Trend', value: adxVal },
@@ -111,6 +114,7 @@ function crsiMeanReversion(data) {
     return {
       isMatch: true,
       reason: 'Connors RSI < 10. Statistically oversold rubber-band setup. Buy for a 2-4 day snapback.',
+      entry: cmp, // Enter at market to catch the dip
       risk: cmp * 0.04,
       metrics: [
         { name: 'Connors RSI', value: crsiVal.toFixed(1) },
