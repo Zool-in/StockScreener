@@ -221,7 +221,10 @@ async function runScan() {
         const s3 = pLow - 2 * (pHigh - pivot);
 
         // Entry, Stop, Targets
-        const entry = res.entry || curr;
+        // If the strategy doesn't provide a specific trigger price, default to the previous candle's close
+        // so the Entry price remains a static reference point instead of fluctuating identically with the Live Price.
+        const prevClose = data.closes[n - 2] || curr;
+        const entry = res.entry || prevClose;
         const stop = res.risk ? entry - res.risk : entry * 0.95;
         const riskAmount = entry - stop;
         const t1 = entry + (riskAmount * 1.5);
