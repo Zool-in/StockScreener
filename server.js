@@ -541,7 +541,7 @@ const server = http.createServer((req, res) => {
     if (s.connected) {
       try {
         const url = 'https://api-t1.fyers.in/data/quotes?symbols=NSE:RELIANCE-EQ';
-        const session = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '.cache', 'fyers-session.json')));
+        const session = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'fyers.session.json')));
         const auth = `${process.env.FYERS_APP_ID}:${session.access_token}`;
         
         // Use promise chain since this is a synchronous request listener
