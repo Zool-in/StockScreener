@@ -122,9 +122,15 @@
 
   .disclaimer { padding: 16px 24px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); line-height: 1.7; font-style: italic; max-width: 1100px; margin: 0 auto; }
 
+  .quick-select { display: flex; align-items: center; gap: 8px; margin: 12px auto 20px; max-width: 1100px; flex-wrap: wrap; padding: 0 24px; }
+  .quick-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; white-space: nowrap; margin-right: 4px; }
+  .quick-badge { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .quick-badge:hover { background: var(--border); border-color: var(--border2); color: #fff; transform: translateY(-1px); }
+
   @media (max-width: 640px) {
     .controls { padding: 14px 16px; } .wrap { padding: 14px 16px; } .topnav { padding: 10px 16px; }
     #tickerInput { width: 100%; }
+    .quick-select { padding: 0 16px; margin: 4px auto 16px; }
   }
 </style>
 </head>
@@ -164,6 +170,10 @@
     <input id="capitalInput" type="number" value="500000" step="50000">
   </div>
   <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">▶ Analyze</button>
+</div>
+
+<div class="quick-select" id="quickSelect">
+  <!-- quick select badges injected here -->
 </div>
 
 <div class="wrap" id="out">
@@ -833,11 +843,35 @@ document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () =
   document.querySelectorAll('.pill').forEach(x => x.classList.remove('on'));
   p.classList.add('on');
   strategy = p.dataset.strat;
+  renderQuickSelect();
   if (document.querySelector('.card, .error-box')) analyze(); // re-run if we already have a result
 }));
 document.getElementById('tickerInput').addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
 document.getElementById('resultsDate').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
 document.getElementById('capitalInput').addEventListener('change', () => { if (document.querySelector('.card')) analyze(); });
+
+// ─── Quick Select Feature ───────────────────────────────────────────────────
+const CC_STOCKS = ['RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ITC', 'LT', 'BHARTIARTL', 'HUL', 'SBIN', 'ASIANPAINT'];
+const CSP_STOCKS = ['BAJFINANCE', 'TATAMOTORS', 'ICICIBANK', 'VEDL', 'ADANIENT', 'TATASTEEL', 'SUNPHARMA', 'AXISBANK', 'HAL', 'ZOMATO'];
+
+function renderQuickSelect() {
+  const container = document.getElementById('quickSelect');
+  const stocks = strategy === 'cc' ? CC_STOCKS : CSP_STOCKS;
+  const label = strategy === 'cc' ? 'Top Covered Calls:' : 'Top Cash Secured Puts:';
+  
+  let html = `<div class="quick-label">${label}</div>`;
+  stocks.forEach(ticker => {
+    html += `<div class="quick-badge" onclick="selectQuickTicker('${ticker}')">${ticker}</div>`;
+  });
+  container.innerHTML = html;
+}
+
+function selectQuickTicker(ticker) {
+  document.getElementById('tickerInput').value = ticker;
+  analyze();
+}
+
+renderQuickSelect();
 </script>
 </body>
 </html>
