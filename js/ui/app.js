@@ -111,6 +111,9 @@ async function init() {
   }
   DOM.scanBtn.disabled = false;
   DOM.scanBtn.innerHTML = `<span>Run Scan</span>`;
+  
+  // Auto-run the scan on initial load
+  runScan();
 }
 
 // ─── Status Checking ────────────────────────────────────────────────────────
@@ -186,14 +189,27 @@ async function runScan() {
         const avgVol = data.volumes.slice(n - 21, n - 1).reduce((a,b)=>a+b,0) / 20;
         const vr = avgVol > 0 ? parseFloat((recentVol / avgVol).toFixed(2)) : 1;
 
-        // Entry, Stop, Target (defaults if not provided by strategy)
-        const entry = curr;
-        const stop = res.risk ? curr - res.risk : curr * 0.95;
-        const target = curr + ((curr - stop) * 2);
+        // Pivot Points (Classic) based on previous day High, Low, Close
+        const pHigh = data.highs[n - 2];
+        const pLow = data.lows[n - 2];
+        const pClose = data.closes[n - 2];
+        const pivot = (pHigh + pLow + pClose) / 3;
+        const r1 = (2 * pivot) - pLow;
+        const s1 = (2 * pivot) - pHigh;
+        const r2 = pivot + (pHigh - pLow);
+        const s2 = pivot - (pHigh - pLow);
+
+        // Entry, Stop, Targets
+        const entry = res.entry || curr;
+        const stop = res.risk ? entry - res.risk : entry * 0.95;
+        const riskAmount = entry - stop;
+        const t1 = entry + (riskAmount * 1.5);
+        const t2 = entry + (riskAmount * 3);
 
         results.push({
           ticker, data, ...res, 
-          chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, entry, stop, target
+          chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, 
+          entry, stop, t1, t2, s1, s2, r1, r2
         });
       }
     } catch (e) {
@@ -315,11 +331,22 @@ function renderResults(results) {
           <span class="dot-row"><span class="dot ${dotClass(rsiOk,rsiWarn)}"></span>RSI</span>
           <span class="dot-row"><span class="dot ${dotClass(adxOk,adxWarn)}"></span>ADX</span>
         </div>
-        <div class="levels">
-          <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div><div class="rr">−${(((r.curr-r.stop)/r.curr)*100).toFixed(1)}%</div></div>
-          <div class="lv lv-target"><div class="lk">Target</div><div class="lv2">₹${r.target.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div><div class="rr">${parseFloat((r.target-r.curr)/(r.curr-r.stop)).toFixed(1)}x RR</div></div>
+        
+        ${AppState.strategy === 'all' ? `
+        <div class="levels" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="lv"><div class="lk">S2</div><div class="lv2">₹${r.s2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv"><div class="lk">S1</div><div class="lv2">₹${r.s1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv"><div class="lk">R1</div><div class="lv2">₹${r.r1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv"><div class="lk">R2</div><div class="lv2">₹${r.r2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
         </div>
+        ` : `
+        <div class="levels" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-target"><div class="lk">Target 1</div><div class="lv2">₹${r.t1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-target"><div class="lk">Target 2</div><div class="lv2">₹${r.t2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+        </div>
+        `}
       </div>
     `;
   });
