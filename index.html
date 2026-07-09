@@ -1,124 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NSE Swing Screener</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockScan Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
 
-<nav class="topnav">
-  <div class="brand">NSE <span>Toolkit</span></div>
-  <a href="/" class="active">📊 Screener</a>
-  <a href="/options.html">⚙ Options</a>
-  <a href="/btst.html">⚡ BTST</a>
-</nav>
+  <!-- Global HUD -->
+  <header class="hud-bar">
+    <div class="hud-brand">StockScan Pro</div>
+    <div class="hud-stats">
+      <div id="mmiStatus" class="badge badge-muted">Market: Loading...</div>
+      <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
+    </div>
+  </header>
 
-<div class="hdr">
-  <div class="hdr-left">
-    <div class="eyebrow">NSE · Bhavcopy history + live price overlay</div>
-    <h1>Swing Trade Screener</h1>
-    <div class="sub">Live OHLCV · Computed: EMA 20/50/200, RSI, ADX, MACD, Bollinger Bands, Volume ratio, Setup scoring</div>
-  </div>
-  <div class="hdr-right" style="display:flex; align-items:center; gap:12px;">
-    <div id="mmiStatus" class="mmi-container" title="Market Mood Index" style="display:none">
-      <div class="mmi-gauge">
-        <svg viewBox="0 0 100 55" width="80" height="44">
-          <path d="M 10 50 A 40 40 0 0 1 21.7 21.7" fill="none" stroke="var(--red)" stroke-width="12" />
-          <path d="M 21.7 21.7 A 40 40 0 0 1 50 10" fill="none" stroke="var(--amber)" stroke-width="12" />
-          <path d="M 50 10 A 40 40 0 0 1 78.3 21.7" fill="none" stroke="var(--green)" stroke-width="12" />
-          <path d="M 78.3 21.7 A 40 40 0 0 1 90 50" fill="none" stroke="var(--accent)" stroke-width="12" />
-          <g id="mmiNeedle" transform="rotate(0, 50, 50)">
-            <polygon points="48,50 52,50 50,15" fill="#fff" />
-            <circle cx="50" cy="50" r="4" fill="#fff" />
-          </g>
-        </svg>
+  <main class="app-container">
+    
+    <!-- Command Bar -->
+    <div class="card command-bar">
+      
+      <div class="input-group">
+        <label class="input-label">Tickers (Comma separated, or paste list)</label>
+        <input type="text" id="tickerInput" class="input" placeholder="RELIANCE, INFY.BO, TCS" value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK">
       </div>
-      <div class="mmi-info">
-        <span class="mmi-val" id="mmiVal">--</span>
-        <span class="mmi-mood" id="mmiMood">--</span>
+
+      <div class="input-group">
+        <label class="input-label">Strategy</label>
+        <select id="strategySelect" class="select">
+          <optgroup label="Intraday (15m)">
+            <option value="ttm_orb">TTM Squeeze + ORB</option>
+          </optgroup>
+          <optgroup label="Short Term (Daily)">
+            <option value="btst">BTST Momentum</option>
+            <option value="crsi">Connors RSI Mean Reversion</option>
+          </optgroup>
+          <optgroup label="Swing (Daily/Weekly)">
+            <option value="minervini">Minervini Trend Template</option>
+            <option value="darvas">Darvas Box Breakout</option>
+            <option value="rs">Relative Strength Leader</option>
+          </optgroup>
+          <optgroup label="Short Setups">
+            <option value="vcp_down">VCP Breakdown</option>
+            <option value="bear_call">Bear Call Spreads</option>
+          </optgroup>
+          <optgroup label="Options Premium">
+            <option value="bps">Bull Put Spread</option>
+            <option value="strangle">Short Strangle</option>
+            <option value="iv_crush">Earnings IV Crush Condor</option>
+            <option value="wheel">The Wheel / Covered Call</option>
+            <option value="csp">Standalone Cash Secured Put</option>
+          </optgroup>
+          <optgroup label="Long Term (Weekly/Monthly)">
+            <option value="weinstein">Stan Weinstein Stage 2</option>
+            <option value="wyckoff">Wyckoff Stopping Volume</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Timeframe</label>
+        <select id="timeframeSelect" class="select">
+          <option value="15m">15 Min</option>
+          <option value="1h">1 Hour</option>
+          <option value="1d" selected>1 Day</option>
+          <option value="1wk">1 Week</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Capital (₹)</label>
+        <input type="number" id="capitalInput" class="input" value="100000" step="10000">
+      </div>
+
+      <button id="scanBtn" class="btn">
+        <span>Run Scan</span>
+      </button>
+
+    </div>
+
+    <!-- Scanner Results Area -->
+    <div id="resultsArea" class="results-grid">
+      <!-- Cards will be injected here via JS -->
+      <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">
+        Ready. Select a strategy and hit Run Scan.
       </div>
     </div>
-    <div id="fyersStatus" class="kite-status" style="display:none"></div>
-    <div id="kiteStatus" class="kite-status" style="display:none"></div>
-    <div class="live-dot" id="mktDot"><span id="mktBlip"></span> <span id="mktLabel">Live data</span></div>
-  </div>
-</div>
 
-<div class="input-panel">
-  <div class="input-group">
-    <label>NSE tickers (one per line or comma-separated)</label>
-    <div class="presets">
-      <span class="presets-label">Load:</span>
-      <button type="button" class="preset-pill" data-idx="nifty50">Nifty 50</button>
-      <button type="button" class="preset-pill" data-idx="nifty100">Nifty 100</button>
-      <button type="button" class="preset-pill" data-idx="nifty500">Nifty 500</button>
-      <button type="button" class="preset-pill" data-idx="etf">ETFs</button>
-      <button type="button" class="preset-pill" data-idx="all">All NSE</button>
-      <span class="presets-count" id="presetsCount"></span>
-    </div>
-    <textarea id="tickerInput" placeholder="RELIANCE&#10;TCS&#10;INFY&#10;HDFCBANK&#10;ICICIBANK&#10;BEL&#10;TITAN&#10;WIPRO">RELIANCE
-TCS
-INFY
-HDFCBANK
-ICICIBANK
-BEL
-TITAN
-WIPRO
-SUNPHARMA
-MARUTI</textarea>
-  </div>
-  <div class="controls">
-    <select id="timeframeSelect" class="timeframe-select" onchange="runScan()">
-      <option value="15m">15m (Intraday)</option>
-      <option value="1h">1h (Intraday)</option>
-      <option value="1d" selected>Daily</option>
-      <option value="1wk">Weekly</option>
-      <option value="1mo">Monthly</option>
-    </select>
-    <button class="btn-scan" id="scanBtn" onclick="runScan()">▶ Run scan</button>
-    <button class="btn-clear" onclick="clearResults()">Clear</button>
-  </div>
-</div>
+  </main>
 
-<div class="filter-bar" id="filterBar" style="display:none">
-  <button class="filter-pill on" data-f="all">All</button>
-  <button class="filter-pill" data-f="VCP / Coiled">VCP / Coiled</button>
-  <button class="filter-pill" data-f="VCP Breakdown">VCP Breakdown</button>
-  <button class="filter-pill" data-f="Breakout">Breakout</button>
-  <button class="filter-pill" data-f="Pullback">Pullback</button>
-  <button class="filter-pill" data-f="RS Leader">RS Leader</button>
-  <button class="filter-pill" data-f="Weak">Skip</button>
-  <span class="sort-label">Sort by</span>
-  <select class="sort-sel" id="sortSel" onchange="renderResults()">
-    <option value="score">Score ↓</option>
-    <option value="rsi">RSI</option>
-    <option value="chg">Day change</option>
-  </select>
-</div>
-
-<div class="sizing-bar" id="sizingBar" style="display:none">
-  <span class="siz-title">📐 Position sizing</span>
-  <span class="siz-field"><label>Capital ₹</label><input type="number" id="capitalInput" min="0" step="10000" value="100000"></span>
-  <span class="siz-field"><label>Risk per trade %</label><input type="number" id="riskInput" min="0.1" max="10" step="0.25" value="1"></span>
-  <span class="siz-field siz-live"><label><input type="checkbox" id="liveToggle" checked> Live prices</label></span>
-  <span class="siz-note" id="liveNote"></span>
-  <span class="siz-note" id="sizNote"></span>
-</div>
-
-<div class="summary" id="summaryBar" style="display:none"></div>
-<div class="grid" id="resultsGrid">
-  <div class="empty">
-    <div class="icon">📡</div>
-    <p>Enter NSE tickers and hit Run scan</p>
-    <small>Fetches live data · computes technicals · scores swing setups</small>
-  </div>
-</div>
-<div class="disclaimer" id="disclaimer" style="display:none">
-  Data source: NSE official Bhavcopy (end-of-day) drives the ~90-day history and all indicators (RSI, ADX, MACD, Bollinger Bands, EMAs) — computed on completed daily candles. With "Live prices" on, the displayed price and trade levels (entry/stop/target, days-to-target, position size) are overlaid with a fresher last price and auto-refreshed every 30s. Source is Zerodha Kite (exchange real-time, exact) when connected, otherwise Google Finance (~15 min delayed by exchange data rules — no free source is tick-real-time). Prices are unadjusted for splits/bonuses. ADX is approximate (simplified Wilder method). Scores are algorithmic, not financial advice. Always verify at Screener.in or TradingView before trading. This tool is for educational and research purposes only — not investment advice.
-</div>
-
-<script src="technicals.js"></script>
+  <!-- Entry point for UI routing and execution -->
+  <script type="module" src="js/ui/app.js"></script>
 </body>
 </html>
