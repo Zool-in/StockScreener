@@ -27,77 +27,77 @@ const STRATEGY_INFO = {
   ttm_orb: {
     name: 'TTM Squeeze + ORB',
     desc: 'Combines the TTM Squeeze (Bollinger Bands narrowing inside Keltner Channels indicating low volatility) with an Opening Range Breakout (ORB) on surging volume. It looks for explosive moves out of tight consolidation.',
-    example: 'Entry: Breakout of current High\nStop: 1% below entry\nTarget: High momentum intraday run'
+    example: '<strong>Entry:</strong> Breakout of current High<br><strong>Stop:</strong> 1% below entry<br><strong>Target:</strong> High momentum intraday run'
   },
   btst: {
     name: 'BTST Momentum',
     desc: 'Buy Today, Sell Tomorrow (BTST). Looks for stocks closing at the absolute high of the day on surging volume. This indicates institutional accumulation at the closing bell, which often gaps up the next morning.',
-    example: 'Entry: Buy at Market Close\nStop: 1.5% below entry\nTarget: Sell next morning on gap up'
+    example: '<strong>Entry:</strong> Buy at Market Close<br><strong>Stop:</strong> 1.5% below entry<br><strong>Target:</strong> Sell next morning on gap up'
   },
   crsi: {
     name: 'Connors RSI',
     desc: 'A mean-reversion strategy that looks for statistically oversold conditions in a long-term uptrend. It uses a 3-period RSI and streak counting to find "rubber band" setups that are stretched too far down.',
-    example: 'Entry: Buy on the close\nStop: 4% below entry\nTarget: Sell after 2-4 day snapback bounce'
+    example: '<strong>Entry:</strong> Buy on the close<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Sell after 2-4 day snapback bounce'
   },
   minervini: {
     name: 'Minervini VCP',
     desc: 'Volatility Contraction Pattern. Looks for stocks in a Stage 2 uptrend (above 150 & 200 EMA) that are consolidating in a tight coil near 52-week highs, with volume drying up dramatically.',
-    example: 'Entry: Breakout of current tight range high\nStop: 5% risk\nTarget: Multi-week swing trade'
+    example: '<strong>Entry:</strong> Breakout of current tight range high<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Multi-week swing trade'
   },
   darvas: {
     name: 'Darvas Box',
     desc: 'Identifies stocks that have been trading in a tight horizontal range (< 15%) for multiple months, and are suddenly breaking out of the "Box" top on massive volume.',
-    example: 'Entry: Breakout of Box Top\nStop: Right below the Box Top line\nTarget: Ride the trend until a new box forms'
+    example: '<strong>Entry:</strong> Breakout of Box Top<br><strong>Stop:</strong> Right below the Box Top line<br><strong>Target:</strong> Ride the trend until a new box forms'
   },
   rs: {
     name: 'Relative Strength',
     desc: 'Focuses on stocks showing extreme internal momentum and ignoring market weakness. Looks for ADX > 30 and RSI > 60 in a strong established trend.',
-    example: 'Entry: Buy breakout\nStop: 5% risk\nTarget: Ride the runaway trend'
+    example: '<strong>Entry:</strong> Buy breakout<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Ride the runaway trend'
   },
   vcp_down: {
     name: 'VCP Breakdown',
     desc: 'The bearish inverse of VCP. Looks for tight consolidation below the 200 EMA that suddenly snaps downwards on massive volume.',
-    example: 'Entry: Breakdown of current low\nStop: 3% risk\nTarget: Heavy drop acceleration'
+    example: '<strong>Entry:</strong> Breakdown of current low<br><strong>Stop:</strong> 3% risk<br><strong>Target:</strong> Heavy drop acceleration'
   },
   bear_call: {
     name: 'Bear Call Spread',
     desc: 'An options credit spread strategy. Identifies stocks failing at major resistance (200 EMA) with weak RSI and strong downtrend ADX.',
-    example: 'Action: Sell Call slightly above 200 EMA, Buy further OTM Call for protection.'
+    example: '<strong>Action:</strong> Sell Call slightly above 200 EMA, Buy further OTM Call for protection.'
   },
   bps: {
     name: 'Bull Put Spread',
     desc: 'An options credit spread strategy. Identifies stocks in a strong, verified uptrend with high Historical Volatility, creating rich premium for selling puts below support.',
-    example: 'Action: Sell Put below 50 EMA, Buy further OTM Put for protection.'
+    example: '<strong>Action:</strong> Sell Put below 50 EMA, Buy further OTM Put for protection.'
   },
   strangle: {
     name: 'Short Strangle',
     desc: 'An options premium decay strategy. Looks for "dead" sideways stocks (ADX < 20) that are inexplicably pricing in massive historical volatility (HV > 35%).',
-    example: 'Action: Sell OTM Call and OTM Put to capture IV crush.'
+    example: '<strong>Action:</strong> Sell OTM Call and OTM Put to capture IV crush.'
   },
   iv_crush: {
     name: 'Earnings IV Crush',
     desc: 'Looks for extremely unusual short-term volatility spikes (often before earnings). Sells an Iron Condor to capture the rapid deflation of implied volatility after the event.',
-    example: 'Action: Sell Iron Condor.'
+    example: '<strong>Action:</strong> Sell Iron Condor.'
   },
   csp: {
     name: 'Cash Secured Put',
     desc: 'Sells put options on fundamentally strong stocks (above 200 EMA) that are experiencing a short-term oversold dip (RSI < 45). You get paid to wait to buy a great stock at a discount.',
-    example: 'Action: Sell ATM or slightly OTM Put.'
+    example: '<strong>Action:</strong> Sell ATM or slightly OTM Put.'
   },
   cc: {
     name: 'Covered Call',
     desc: 'For stocks you already own. Identifies when a strong stock becomes temporarily overbought (RSI > 70). A great time to sell calls against your shares to collect premium.',
-    example: 'Action: Sell short-term OTM Call.'
+    example: '<strong>Action:</strong> Sell short-term OTM Call.'
   },
   weinstein: {
     name: 'Stan Weinstein Stage 2',
     desc: 'A classic long-term strategy. Looks for a stock breaking out of a flat Stage 1 base, crossing its 30-period MA on massive (200%+) volume into a Stage 2 markup.',
-    example: 'Entry: Buy at market\nStop: Below the 30-period MA\nTarget: Multi-month / multi-year hold'
+    example: '<strong>Entry:</strong> Buy at market<br><strong>Stop:</strong> Below the 30-period MA<br><strong>Target:</strong> Multi-month / multi-year hold'
   },
   wyckoff: {
     name: 'Wyckoff Stopping Vol',
     desc: 'Identifies institutional accumulation. Looks for a massive volume spike during a downtrend where the price refuses to drop further (e.g. Doji or Hammer), indicating smart money is absorbing all selling pressure.',
-    example: 'Entry: Buy near close\nStop: Below the stopping candle low\nTarget: Reversal swing trade'
+    example: '<strong>Entry:</strong> Buy near close<br><strong>Stop:</strong> Below the stopping candle low<br><strong>Target:</strong> Reversal swing trade'
   }
 };
 
@@ -156,9 +156,9 @@ async function init() {
       const val = pill.dataset.val;
       const info = STRATEGY_INFO[val];
       if (info) {
-        document.getElementById('modalTitle').textContent = info.name;
-        document.getElementById('modalDescription').textContent = info.desc;
-        document.getElementById('modalExample').textContent = info.example;
+        document.getElementById('modalTitle').innerHTML = info.name;
+        document.getElementById('modalDescription').innerHTML = info.desc;
+        document.getElementById('modalExample').innerHTML = info.example;
         modal.classList.remove('hidden');
       }
     });
