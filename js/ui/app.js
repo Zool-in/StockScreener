@@ -169,13 +169,32 @@ async function runScan() {
       const chgPct = parseFloat(((curr - prev) / prev * 100).toFixed(2));
       
       let res = null;
-      if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
-      else if (['minervini', 'darvas', 'rs', 'crsi'].includes(strategyId)) res = swingStrats.run(strategyId, data);
-      else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(strategyId)) res = optionStrats.run(strategyId, data);
-      else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
-      else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
-      else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
-      else if (strategyId === 'all') res = { isMatch: true, reason: 'Unfiltered metrics view' };
+      let matchedStrategies = [];
+
+      if (strategyId === 'all') {
+        const allStrategies = ['ttm_orb', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'wheel', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call'];
+        for (const s of allStrategies) {
+          let tempRes = null;
+          if (['ttm_orb'].includes(s)) tempRes = intradayStrats.run(s, data);
+          else if (['minervini', 'darvas', 'rs', 'crsi'].includes(s)) tempRes = swingStrats.run(s, data);
+          else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(s)) tempRes = optionStrats.run(s, data);
+          else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
+          else if (['weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
+          else if (['vcp_down', 'bear_call'].includes(s)) tempRes = shortStrats.run(s, data);
+          
+          if (tempRes && tempRes.isMatch) {
+            matchedStrategies.push(s);
+          }
+        }
+        res = { isMatch: true, reason: 'Unfiltered metrics view', matches: matchedStrategies };
+      } else {
+        if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
+        else if (['minervini', 'darvas', 'rs', 'crsi'].includes(strategyId)) res = swingStrats.run(strategyId, data);
+        else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(strategyId)) res = optionStrats.run(strategyId, data);
+        else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
+        else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
+        else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
+      }
 
       if (res && res.isMatch) {
         // Compute standard technicals for the card
@@ -297,22 +316,32 @@ function renderResults(results) {
 
     const strategyLabels = {
       all: 'All Stocks',
-      ttm: 'TTM Squeeze + ORB',
+      ttm_orb: 'TTM Squeeze + ORB',
       btst: 'BTST Momentum',
-      rsi: 'Connors RSI',
-      vcp: 'Minervini VCP',
+      crsi: 'Connors RSI',
+      minervini: 'Minervini VCP',
       darvas: 'Darvas Box',
       rs: 'Relative Strength',
-      'vcp-breakdown': 'VCP Breakdown',
-      'bear-call': 'Bear Call Spread',
-      'bull-put': 'Bull Put Spread',
-      'short-strangle': 'Short Strangle',
-      'iv-crush': 'Earnings IV Crush',
+      vcp_down: 'VCP Breakdown',
+      bear_call: 'Bear Call Spread',
+      bps: 'Bull Put Spread',
+      strangle: 'Short Strangle',
+      iv_crush: 'Earnings IV Crush',
       wheel: 'The Wheel / CSP',
-      stage2: 'Stan Weinstein Stage 2',
+      weinstein: 'Stan Weinstein Stage 2',
       wyckoff: 'Wyckoff Stopping Vol'
     };
-    const setupName = strategyLabels[AppState.strategy] || AppState.strategy.toUpperCase();
+    
+    let tagsHtml = '';
+    if (AppState.strategy === 'all' && r.matches && r.matches.length > 0) {
+      r.matches.forEach(m => {
+        tagsHtml += `<span class="setup-tag tag-breakout" style="margin-right: 6px;">${strategyLabels[m] || m.toUpperCase()}</span>`;
+      });
+    } else {
+      const setupName = strategyLabels[AppState.strategy] || AppState.strategy.toUpperCase();
+      tagsHtml = `<span class="setup-tag tag-breakout">${setupName}</span>`;
+    }
+
     html += `
       <div class="scard">
         <div class="scard-accent" style="background:var(--accent)"></div>
@@ -328,7 +357,10 @@ function renderResults(results) {
           <span class="chg ${chgClass}">${chgSign}${r.chgPct}%</span>
         </div>
         <div class="score-bar"><div class="score-bar-fill" style="width:${barW}%;background:${barCol}"></div></div>
-        <span class="setup-tag tag-breakout">${setupName}</span>
+        
+        <div style="margin-bottom: 8px;">
+          ${tagsHtml}
+        </div>
         
         <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3;">${r.reason}</div>
 
