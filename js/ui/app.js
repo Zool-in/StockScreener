@@ -132,9 +132,9 @@ async function fetchStatus() {
     if (mmiRes.ok) {
       const mmiData = await mmiRes.json();
       const mmiBadge = document.getElementById('mmiStatus');
-      mmiBadge.innerText = `MMI: ${mmiData.currentValue || 'N/A'}`;
-      if (mmiData.currentValue < 30) mmiBadge.className = 'badge badge-green';
-      else if (mmiData.currentValue > 70) mmiBadge.className = 'badge badge-red';
+      mmiBadge.innerText = `MMI: ${mmiData.value || 'N/A'}`;
+      if (mmiData.value < 30) mmiBadge.className = 'badge badge-green';
+      else if (mmiData.value > 70) mmiBadge.className = 'badge badge-red';
       else mmiBadge.className = 'badge badge-amber';
     }
   } catch (e) {
