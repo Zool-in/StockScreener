@@ -20,7 +20,7 @@ const CACHE_DIR = path.join(ROOT, '.cache');
 const SESSION_FILE = path.join(CACHE_DIR, 'fyers-session.json');
 
 const FYERS_BASE = 'https://api-t1.fyers.in';
-const REDIRECT_URI = 'https://stockscreener.fly.dev/fyers/callback';
+const REDIRECT_URI = process.env.FYERS_REDIRECT_URI || 'https://goldenrod-locust-579147.hostingersite.com/fyers/callback';
 
 // ─── Credentials ──────────────────────────────────────────────────────────
 function loadConfig() {

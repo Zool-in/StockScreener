@@ -19,12 +19,6 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
-const kite = require('./kite');
-const fyers = require('./fyers');
-const bhavcopy = require('./bhavcopy');
-const symbols = require('./symbols');
-const livequote = require('./livequote');
-const lots = require('./lots');
 
 // ─── Load .env (Zero dependency) ──────────────────────────────────────────
 try {
@@ -33,6 +27,13 @@ try {
     if (idx > 0) process.env[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
   });
 } catch (_) {}
+
+const kite = require('./kite');
+const fyers = require('./fyers');
+const bhavcopy = require('./bhavcopy');
+const symbols = require('./symbols');
+const livequote = require('./livequote');
+const lots = require('./lots');
 
 const PORT = process.env.PORT || 5173;
 const ROOT = __dirname;
