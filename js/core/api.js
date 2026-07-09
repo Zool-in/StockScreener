@@ -15,7 +15,7 @@ export async function fetchOHLCV(ticker, timeframe = '1d') {
   else if (timeframe === '1wk') { interval = '1wk'; range = '5y'; }
   else if (timeframe === '1mo') { interval = '1mo'; range = '10y'; }
 
-  const url = `${API_BASE}?ticker=${encodeURIComponent(sym)}&interval=${interval}&range=${range}`;
+  const url = `${API_BASE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&range=${range}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch ${sym}`);
   const data = await res.json();
