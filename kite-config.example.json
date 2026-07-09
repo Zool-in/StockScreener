@@ -1,5 +1,0 @@
-{
-  "_comment": "Copy this file to kite-config.json and fill in your Kite Connect app credentials. Alternatively, set KITE_API_KEY and KITE_API_SECRET as environment variables. Never commit the real kite-config.json.",
-  "api_key": "your_kite_api_key_here",
-  "api_secret": "your_kite_api_secret_here"
-}

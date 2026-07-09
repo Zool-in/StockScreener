@@ -28,7 +28,7 @@ try {
   });
 } catch (_) {}
 
-const kite = require('./kite');
+
 const fyers = require('./fyers');
 const bhavcopy = require('./bhavcopy');
 const symbols = require('./symbols');
@@ -219,21 +219,6 @@ async function handleChart(res, reqUrl) {
     }
   }
 
-  if (kite.isConfigured() && kite.hasValidSession()) {
-    try {
-      const kbody = await kite.fetchChart(symbol, interval, range);
-      writeCache(symbol, interval, range, kbody);
-      res.writeHead(200, {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'no-store',
-        'X-Data-Source': 'kite',
-      });
-      return res.end(kbody);
-    } catch (e) {
-      // Fall through to Bhavcopy/Yahoo/cache below on any Kite error.
-      firstErr = firstErr ? `${firstErr}; kite: ${e.message}` : `kite: ${e.message}`;
-    }
-  }
 
   // 1) PRIMARY (default) source: NSE official Bhavcopy — free, authoritative,
   // end-of-day. Reliable even from IPs that Yahoo/NSE-web block. Perfect for a
@@ -360,26 +345,7 @@ async function handleSymbols(res, reqUrl) {
 }
 
 // ─── Live-ish quotes (overlay fresher prices on the EOD series) ────────────
-// ─── Kite bridge ───────────────────────────────────────────────────────────
-// When Claude is logged into your Kite (the chat connector), it drops real-time
-// quotes into .cache/kite-raw.json (raw Kite get_ltp/get_quotes shape). We read
-// them here so the app shows EXACT Kite prices without its own Connect app.
-// Fresh only while Claude keeps refreshing the file; falls back otherwise.
-const KITE_RAW_FILE = path.join(CACHE_DIR, 'kite-raw.json');
-const BRIDGE_FRESH_MS = 5 * 60 * 1000;
-function readKiteBridge() {
-  try {
-    const st = fs.statSync(KITE_RAW_FILE);
-    if (Date.now() - st.mtimeMs > BRIDGE_FRESH_MS) return null; // stale
-    const raw = JSON.parse(fs.readFileSync(KITE_RAW_FILE, 'utf8'));
-    const map = {};
-    for (const [k, v] of Object.entries(raw)) {
-      const price = (v && typeof v === 'object') ? v.last_price : v;
-      if (price != null) map[k.replace(/^NSE:/i, '').toUpperCase()] = price;
-    }
-    return { map, ts: st.mtimeMs };
-  } catch (_) { return null; }
-}
+
 const norm = s => s.replace(/\.NS$/i, '').toUpperCase();
 
 async function handleQuotes(res, reqUrl) {
@@ -388,17 +354,7 @@ async function handleQuotes(res, reqUrl) {
   const list = raw.slice(0, 500);
   const out = {};
 
-  // 1) Kite bridge (real-time, from the chat connector) — first choice.
-  const bridge = readKiteBridge();
-  let bridgeHits = 0;
-  if (bridge) for (const s of list) { const sym = norm(s); if (bridge.map[sym] != null) { out[sym] = bridge.map[sym]; bridgeHits++; } }
-
-  // 2) App's own Kite Connect for anything the bridge missed.
-  let misses = list.filter(s => out[norm(s)] == null);
-  if (misses.length && kite.isConfigured() && kite.hasValidSession()) {
-    try { Object.assign(out, await kite.getLtp(misses)); } catch (_) {}
-    misses = list.filter(s => out[norm(s)] == null);
-  }
+  let misses = list.slice();
 
   // 3) Fyers for anything else
   if (misses.length && fyers.isConfigured() && fyers.hasValidSession()) {
@@ -418,9 +374,8 @@ async function handleQuotes(res, reqUrl) {
     }
   }
 
-  const source = bridgeHits ? 'kite-live'
-    : (kite.isConfigured() && kite.hasValidSession()) ? 'kite' : (fyers.isConfigured() && fyers.hasValidSession()) ? 'fyers' : 'google-delayed';
-  sendJSON(res, 200, { quotes: out, source, asOf: bridge ? bridge.ts : Date.now(), bridgeHits });
+  const source = (fyers.isConfigured() && fyers.hasValidSession()) ? 'fyers' : 'google-delayed';
+  sendJSON(res, 200, { quotes: out, source, asOf: Date.now() });
 }
 
 // ─── Live NSE F&O lot sizes ───────────────────────────────────────────────
@@ -471,27 +426,6 @@ async function handleMmi(res) {
   }
 }
 
-// ─── Kite auth routes ─────────────────────────────────────────────────────
-async function handleKiteCallback(res, reqUrl) {
-  const requestToken = reqUrl.searchParams.get('request_token');
-  const okPage = (title, msg) => `<!DOCTYPE html><meta charset="utf-8">
-    <body style="font-family:sans-serif;background:#0f1117;color:#e8eaf0;padding:40px">
-    <h2>${title}</h2><p>${msg}</p>
-    <p><a href="/" style="color:#4f7cff">← Back to the screener</a></p>
-    <script>setTimeout(()=>location.href='/',2500)</script></body>`;
-  if (!requestToken) {
-    res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
-    return res.end(okPage('Kite login failed', 'No request_token in the callback.'));
-  }
-  try {
-    const d = await kite.exchangeToken(requestToken);
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(okPage('Kite connected ✓', `Logged in as ${d.user_name || d.user_id}. Redirecting…`));
-  } catch (e) {
-    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(okPage('Kite login failed', e.message));
-  }
-}
 
 async function handleFyersCallback(res, reqUrl) {
   const code = reqUrl.searchParams.get('auth_code');
@@ -525,13 +459,7 @@ const server = http.createServer((req, res) => {
   if (p === '/api/lots') return handleLots(res);
   if (p === '/api/mmi') return handleMmi(res);
   if (p === '/api/whoami') return handleWhoami(res);
-  if (p === '/kite/status') return sendJSON(res, 200, kite.status());
-  if (p === '/kite/login') {
-    if (!kite.isConfigured()) return sendJSON(res, 400, { error: 'Kite not configured' });
-    res.writeHead(302, { Location: kite.loginUrl() });
-    return res.end();
-  }
-  if (p === '/kite/callback') return handleKiteCallback(res, reqUrl);
+
 
   if (p === '/fyers/status') {
     const s = fyers.status();
