@@ -49,6 +49,11 @@ const STRATEGY_INFO = {
     desc: 'Identifies stocks that have been trading in a tight horizontal range (< 15%) for multiple months, and are suddenly breaking out of the "Box" top on massive volume.',
     example: '<strong>Entry:</strong> Breakout of Box Top<br><strong>Stop:</strong> Right below the Box Top line<br><strong>Target:</strong> Ride the trend until a new box forms<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE bounces between ₹2300 and ₹2500 for 4 months (The Box). Today, it rips above ₹2500 on huge volume. You buy the breakout.</span>'
   },
+  xmomentum: {
+    name: 'Extreme Momentum Breakout',
+    desc: 'Identifies extreme runaway momentum by combining MACD bullish crossovers, RSI > 70, and CCI(34) > 100. Strictly filters out sideways chop by requiring a 20-day price action breakout on massive volume.',
+    example: '<strong>Entry:</strong> Buy breakout above 20-day high<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Ride the trend until RSI drops below 50<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TATA MOTORS consolidates for weeks. Suddenly it breaks ₹680 resistance. MACD crosses 0, RSI spikes to 75, and CCI rips past 100 on 2x volume. You buy the explosive breakout.</span>'
+  },
   rs: {
     name: 'Relative Strength',
     desc: 'Focuses on stocks showing extreme internal momentum and ignoring market weakness. Looks for ADX > 30 and RSI > 60 in a strong established trend.',
@@ -301,8 +306,8 @@ async function runScan() {
         res = { isMatch: true, reason: 'Unfiltered metrics view', matches: matchedStrategies };
       } else {
         if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
-        else if (['minervini', 'darvas', 'rs', 'crsi'].includes(strategyId)) res = swingStrats.run(strategyId, data);
-        else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(strategyId)) res = optionStrats.run(strategyId, data);
+        else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
+        else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp', 'cov_call'].includes(strategyId)) res = optionStrats.run(strategyId, data);
         else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
         else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
         else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);

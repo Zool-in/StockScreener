@@ -1,10 +1,55 @@
-import { ema, rsi, adx, connorsRSI } from '../core/math.js';
+import { ema, rsi, adx, connorsRSI, macd, cci } from '../core/math.js';
 
 export function run(strategyId, data) {
   if (strategyId === 'minervini') return minerviniVCP(data);
   if (strategyId === 'darvas') return darvasBox(data);
   if (strategyId === 'rs') return rsLeader(data);
   if (strategyId === 'crsi') return crsiMeanReversion(data);
+  if (strategyId === 'xmomentum') return extremeMomentum(data);
+  return { isMatch: false };
+}
+
+function extremeMomentum(data) {
+  const { closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 50) return { isMatch: false };
+
+  const rsiVal = rsi(closes);
+  const macdData = macd(closes);
+  const cciVal = cci(highs, lows, closes, 34);
+  
+  // MACD Bullish Crossover / Above 0
+  const macdBullish = macdData.macd > 0 && macdData.hist > 0;
+  
+  // RSI > 70
+  const rsiBullish = rsiVal > 70;
+  
+  // CCI(34) > 100
+  const cciBullish = cciVal > 100;
+  
+  // Sideways Chop Filter (Price Action Breakout > 20-day High)
+  const recentHighs = highs.slice(-21, -1);
+  const twentyDayHigh = Math.max(...recentHighs);
+  const isBreakout = cmp >= twentyDayHigh;
+
+  // Volume Surge Filter
+  const currentVol = volumes[n - 1];
+  const avgVol = volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20;
+  const volSurge = currentVol > avgVol * 1.5;
+
+  if (macdBullish && rsiBullish && cciBullish && isBreakout && volSurge) {
+    return {
+      isMatch: true,
+      reason: 'Extreme Momentum Breakout: MACD bullish, RSI > 70, CCI > 100, breaking 20-day high on heavy volume.',
+      entry: twentyDayHigh, 
+      risk: cmp * 0.04, // 4% stop loss
+      metrics: [
+        { name: 'RSI', value: rsiVal.toFixed(1) },
+        { name: 'CCI 34', value: cciVal.toFixed(1) },
+        { name: 'Vol Surge', value: `${(currentVol/avgVol).toFixed(1)}x` }
+      ]
+    };
+  }
   return { isMatch: false };
 }
 
