@@ -22,64 +22,78 @@
   <main class="app-container">
     
     <!-- Command Bar -->
-    <div class="card command-bar">
+    <div class="card" style="margin-bottom: 32px;">
       
-      <div class="input-group">
-        <label class="input-label">Tickers (Comma separated, or paste list)</label>
-        <input type="text" id="tickerInput" class="input" placeholder="RELIANCE, INFY.BO, TCS" value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK">
+      <!-- Universe Section -->
+      <div style="margin-bottom: 24px;">
+        <label class="input-label">Stock Universe</label>
+        <div class="pill-container" id="universePills">
+          <div class="pill active" data-val="nifty50">Nifty 50</div>
+          <div class="pill" data-val="nifty100">Nifty 100</div>
+          <div class="pill" data-val="nifty500">Nifty 500</div>
+          <div class="pill" data-val="etf">ETFs</div>
+          <div class="pill" data-val="fno">F&O Stocks</div>
+          <div class="pill" data-val="all">All NSE</div>
+          <div class="pill" data-val="bse">BSE Microcaps</div>
+          <div class="pill" data-val="custom">Custom List</div>
+        </div>
+        
+        <div id="customTickerWrapper" class="hidden" style="margin-top: 12px;">
+          <input type="text" id="tickerInput" class="input" placeholder="RELIANCE, INFY.BO, TCS" value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK">
+        </div>
       </div>
 
-      <div class="input-group">
-        <label class="input-label">Strategy</label>
-        <select id="strategySelect" class="select">
-          <optgroup label="Intraday (15m)">
-            <option value="ttm_orb">TTM Squeeze + ORB</option>
-          </optgroup>
-          <optgroup label="Short Term (Daily)">
-            <option value="btst">BTST Momentum</option>
-            <option value="crsi">Connors RSI Mean Reversion</option>
-          </optgroup>
-          <optgroup label="Swing (Daily/Weekly)">
-            <option value="minervini">Minervini Trend Template</option>
-            <option value="darvas">Darvas Box Breakout</option>
-            <option value="rs">Relative Strength Leader</option>
-          </optgroup>
-          <optgroup label="Short Setups">
-            <option value="vcp_down">VCP Breakdown</option>
-            <option value="bear_call">Bear Call Spreads</option>
-          </optgroup>
-          <optgroup label="Options Premium">
-            <option value="bps">Bull Put Spread</option>
-            <option value="strangle">Short Strangle</option>
-            <option value="iv_crush">Earnings IV Crush Condor</option>
-            <option value="wheel">The Wheel / Covered Call</option>
-            <option value="csp">Standalone Cash Secured Put</option>
-          </optgroup>
-          <optgroup label="Long Term (Weekly/Monthly)">
-            <option value="weinstein">Stan Weinstein Stage 2</option>
-            <option value="wyckoff">Wyckoff Stopping Volume</option>
-          </optgroup>
-        </select>
+      <!-- Strategy Section -->
+      <div style="margin-bottom: 24px;">
+        <label class="input-label">Algorithmic Strategy</label>
+        <div class="pill-container" id="strategyPills">
+          <!-- Intraday / Short Term -->
+          <div class="pill active" data-val="ttm_orb" data-tf="15m">TTM Squeeze + ORB <span class="badge badge-muted">15m</span></div>
+          <div class="pill" data-val="btst" data-tf="1d">BTST Momentum <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="crsi" data-tf="1d">Connors RSI <span class="badge badge-muted">1d</span></div>
+          
+          <!-- Swing -->
+          <div class="pill" data-val="minervini" data-tf="1d">Minervini VCP <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="darvas" data-tf="1d">Darvas Box <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="rs" data-tf="1d">Relative Strength <span class="badge badge-muted">1d</span></div>
+          
+          <!-- Short -->
+          <div class="pill" data-val="vcp_down" data-tf="1d">VCP Breakdown <span class="badge badge-red">Short</span></div>
+          <div class="pill" data-val="bear_call" data-tf="1d">Bear Call Spread <span class="badge badge-red">Short</span></div>
+          
+          <!-- Options -->
+          <div class="pill" data-val="bps" data-tf="1d">Bull Put Spread <span class="badge badge-amber">Opts</span></div>
+          <div class="pill" data-val="strangle" data-tf="1d">Short Strangle <span class="badge badge-amber">Opts</span></div>
+          <div class="pill" data-val="iv_crush" data-tf="1d">Earnings IV Crush <span class="badge badge-amber">Opts</span></div>
+          <div class="pill" data-val="wheel" data-tf="1d">The Wheel / CSP <span class="badge badge-amber">Opts</span></div>
+          
+          <!-- Long Term -->
+          <div class="pill" data-val="weinstein" data-tf="1wk">Stan Weinstein Stage 2 <span class="badge badge-green">1wk</span></div>
+          <div class="pill" data-val="wyckoff" data-tf="1wk">Wyckoff Stopping Vol <span class="badge badge-green">1wk</span></div>
+        </div>
       </div>
 
-      <div class="input-group">
-        <label class="input-label">Timeframe</label>
-        <select id="timeframeSelect" class="select">
-          <option value="15m">15 Min</option>
-          <option value="1h">1 Hour</option>
-          <option value="1d" selected>1 Day</option>
-          <option value="1wk">1 Week</option>
-        </select>
-      </div>
+      <!-- Execution Row -->
+      <div class="flex items-center gap-4" style="flex-wrap: wrap;">
+        <div class="input-group" style="flex-grow: 1; max-width: 200px;">
+          <label class="input-label">Timeframe Override</label>
+          <select id="timeframeSelect" class="select">
+            <option value="15m">15 Min</option>
+            <option value="1h">1 Hour</option>
+            <option value="1d" selected>1 Day</option>
+            <option value="1wk">1 Week</option>
+          </select>
+        </div>
 
-      <div class="input-group">
-        <label class="input-label">Capital (₹)</label>
-        <input type="number" id="capitalInput" class="input" value="100000" step="10000">
-      </div>
+        <div class="input-group" style="flex-grow: 1; max-width: 200px;">
+          <label class="input-label">Risk Capital (₹)</label>
+          <input type="number" id="capitalInput" class="input" value="100000" step="10000">
+        </div>
 
-      <button id="scanBtn" class="btn">
-        <span>Run Scan</span>
-      </button>
+        <button id="scanBtn" class="btn" style="margin-top: auto; flex-grow: 1;">
+          <span>Run Scan</span>
+        </button>
+      </div>
 
     </div>
 

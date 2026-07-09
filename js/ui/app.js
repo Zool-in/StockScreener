@@ -12,7 +12,9 @@ import * as shortStrats from '../strategies/short.js';
 
 const DOM = {
   tickerInput: document.getElementById('tickerInput'),
-  strategySelect: document.getElementById('strategySelect'),
+  universePills: document.getElementById('universePills'),
+  customTickerWrapper: document.getElementById('customTickerWrapper'),
+  strategyPills: document.getElementById('strategyPills'),
   timeframeSelect: document.getElementById('timeframeSelect'),
   capitalInput: document.getElementById('capitalInput'),
   scanBtn: document.getElementById('scanBtn'),
@@ -20,27 +22,82 @@ const DOM = {
 };
 
 // ─── Initialize ─────────────────────────────────────────────────────────────
-function init() {
-  // Bind inputs to State
-  DOM.tickerInput.addEventListener('input', e => AppState.setTickers(e.target.value.split(',').map(s=>s.trim()).filter(Boolean)));
-  DOM.strategySelect.addEventListener('change', e => {
-    AppState.setStrategy(e.target.value);
-    // Auto-select timeframe based on strategy
-    const strat = e.target.value;
-    if (strat === 'ttm_orb') DOM.timeframeSelect.value = '15m';
-    else if (['weinstein', 'wyckoff'].includes(strat)) DOM.timeframeSelect.value = '1wk';
-    else DOM.timeframeSelect.value = '1d';
-    AppState.setTimeframe(DOM.timeframeSelect.value);
+async function init() {
+  // Setup Universe Pills
+  DOM.universePills.addEventListener('click', async (e) => {
+    if (!e.target.classList.contains('pill')) return;
+    
+    // UI Update
+    Array.from(DOM.universePills.children).forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    
+    const val = e.target.dataset.val;
+    if (val === 'custom') {
+      DOM.customTickerWrapper.classList.remove('hidden');
+      AppState.setTickers(DOM.tickerInput.value.split(',').map(s=>s.trim()).filter(Boolean));
+    } else {
+      DOM.customTickerWrapper.classList.add('hidden');
+      DOM.scanBtn.disabled = true;
+      DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Loading ${val.toUpperCase()}...</span>`;
+      try {
+        const res = await fetch(`/api/symbols?index=${val}`);
+        const data = await res.json();
+        if (data.symbols) {
+          AppState.setTickers(data.symbols);
+        }
+      } catch (err) {
+        console.error("Failed to load symbols", err);
+      }
+      DOM.scanBtn.disabled = false;
+      DOM.scanBtn.innerHTML = `<span>Run Scan</span>`;
+    }
   });
+
+  // Setup Strategy Pills
+  DOM.strategyPills.addEventListener('click', (e) => {
+    const pill = e.target.closest('.pill');
+    if (!pill) return;
+    
+    Array.from(DOM.strategyPills.children).forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    
+    AppState.setStrategy(pill.dataset.val);
+    
+    // Auto timeframe
+    const tf = pill.dataset.tf;
+    if (tf) {
+      DOM.timeframeSelect.value = tf;
+      AppState.setTimeframe(tf);
+    }
+  });
+
+  // Manual Ticker Input
+  DOM.tickerInput.addEventListener('input', e => {
+    const activeUniverse = DOM.universePills.querySelector('.active').dataset.val;
+    if (activeUniverse === 'custom') {
+      AppState.setTickers(e.target.value.split(',').map(s=>s.trim()).filter(Boolean));
+    }
+  });
+
   DOM.timeframeSelect.addEventListener('change', e => AppState.setTimeframe(e.target.value));
   DOM.capitalInput.addEventListener('input', e => AppState.setCapital(e.target.value));
-
   DOM.scanBtn.addEventListener('click', runScan);
 
-  // Initial State Sync
-  AppState.setTickers(DOM.tickerInput.value.split(',').map(s=>s.trim()).filter(Boolean));
-  AppState.setStrategy(DOM.strategySelect.value);
-  AppState.setTimeframe(DOM.timeframeSelect.value);
+  // Initial Data Load (Nifty 50)
+  AppState.setStrategy('ttm_orb');
+  AppState.setTimeframe('15m');
+  
+  DOM.scanBtn.disabled = true;
+  DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Loading NIFTY50...</span>`;
+  try {
+    const res = await fetch(`/api/symbols?index=nifty50`);
+    const data = await res.json();
+    if (data.symbols) AppState.setTickers(data.symbols);
+  } catch (err) {
+    console.error("Failed to load symbols", err);
+  }
+  DOM.scanBtn.disabled = false;
+  DOM.scanBtn.innerHTML = `<span>Run Scan</span>`;
 }
 
 // ─── Scan Runner ────────────────────────────────────────────────────────────
