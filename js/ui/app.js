@@ -506,7 +506,14 @@ function renderResults(results) {
         <div class="scard-accent" style="background:var(--accent)"></div>
         <div class="scard-top">
           <div>
-            <div class="scard-ticker">${r.ticker}</div>
+            <div class="scard-ticker" style="display: flex; align-items: center; gap: 6px;">
+              ${r.ticker}
+              <a href="https://in.tradingview.com/chart/?symbol=NSE:${r.ticker}" target="_blank" title="View on TradingView" style="color: var(--text-muted); display: flex;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-5 5"/>
+                </svg>
+              </a>
+            </div>
             <div class="scard-name">${r.data.meta?.shortName || r.ticker}</div>
           </div>
           <span class="score-badge ${score >= 75 ? 'score-s' : 'score-m'}">${score}/100</span>
