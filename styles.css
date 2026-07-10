@@ -1,24 +1,24 @@
 :root {
-  --bg: #0f1117;
-  --surface: #181c27;
-  --card: #1e2335;
-  --border: #2a3047;
-  --border2: #384060;
-  --text: #e8eaf0;
-  --muted: #7c85a0;
-  --accent: #4f7cff;
-  --accent-dim: #1e2d5e;
-  --green: #22d08a;
-  --green-dim: #0d2e1e;
-  --red: #f05a5a;
-  --red-dim: #2e1010;
-  --amber: #f5a623;
-  --amber-dim: #2e2010;
+  --bg: #1c1c1c;
+  --surface: #232323;
+  --card: #2a2a2a;
+  --border: #3e3e3e;
+  --border2: #4a4a4a;
+  --text: #ededed;
+  --muted: #8b8b8b;
+  --accent: #24b47e;
+  --accent-dim: #103323;
+  --green: #24b47e;
+  --green-dim: #103323;
+  --red: #ef4444;
+  --red-dim: #331515;
+  --amber: #f59e0b;
+  --amber-dim: #332510;
   --mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; min-height: 100vh; -webkit-font-smoothing: antialiased; }
 
 /* ─── Top nav (shared with options page) ─── */
 .topnav { display: flex; align-items: center; gap: 4px; padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 20; }
