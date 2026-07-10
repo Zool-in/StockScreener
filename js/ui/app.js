@@ -262,9 +262,6 @@ async function init() {
   }
   DOM.scanBtn.disabled = false;
   DOM.scanBtn.innerHTML = `<span>Run Scan</span>`;
-  
-  // Auto-run the scan on initial load
-  runScan();
 }
 
 // ─── Status Checking ────────────────────────────────────────────────────────
