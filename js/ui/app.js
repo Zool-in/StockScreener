@@ -424,7 +424,7 @@ async function runScan() {
   try {
     const symbolsParam = results.map(r => r.ticker).join(',');
     if (symbolsParam) {
-      DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Fetching Live Prices...</span>`;
+      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;"><div class="spinner" style="margin: 0 auto 16px;"></div>Fetching Live Prices...</div>`;
       const qRes = await fetch(`/api/quotes?symbols=${symbolsParam}`);
       if (qRes.ok) {
         const qData = await qRes.json();
