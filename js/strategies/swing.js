@@ -42,16 +42,18 @@ function extremeMomentum(data) {
   const twentyDayLow = Math.min(...recentLows);
   const isBreakout = cmp >= twentyDayHigh;
   
-  // The box must have been relatively tight (e.g. less than 15% from high to low)
-  const isTight = ((twentyDayHigh - twentyDayLow) / twentyDayLow) <= 0.15;
+  // The box must have been relatively tight (e.g. less than 12% from high to low)
+  const isTight = ((twentyDayHigh - twentyDayLow) / twentyDayLow) <= 0.12;
 
   // EMA Conjunction (Squeeze) Filter
-  // The 21 EMA and 50 EMA should be very close together indicating a squeeze
-  const emaConjunction = Math.abs(curE21 - curE50) / curE50 <= 0.04; // Max 4% distance
+  // The 9, 21, and 50 EMAs should be coiled tightly together (within a 5% band)
+  const maxEma = Math.max(curE9, curE21, curE50);
+  const minEma = Math.min(curE9, curE21, curE50);
+  const emaConjunction = (maxEma - minEma) / minEma <= 0.05;
   
   // Not Overextended Filter (Prevent buying after it ran away)
-  // Price should not be more than 8% above the 21 EMA on the breakout day
-  const notOverextended = cmp <= curE21 * 1.08;
+  // Price should not be more than 6% above the 9 EMA on the breakout day
+  const notOverextended = cmp <= curE9 * 1.06;
 
   // Volume Surge Filter
   const currentVol = volumes[n - 1];
