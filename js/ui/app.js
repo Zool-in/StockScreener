@@ -51,9 +51,9 @@ const STRATEGY_INFO = {
     example: '<strong>Entry:</strong> Breakout of Box Top<br><strong>Stop:</strong> Right below the Box Top line<br><strong>Target:</strong> Ride the trend until a new box forms<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE bounces between ₹2300 and ₹2500 for 4 months (The Box). Today, it rips above ₹2500 on huge volume. You buy the breakout.</span>'
   },
   xmomentum: {
-    name: 'Extreme Momentum Breakout',
-    desc: 'Identifies extreme runaway momentum by combining MACD bullish crossovers, RSI > 70, and CCI(34) > 100. Strictly filters out sideways chop by requiring a 20-day price action breakout on massive volume.',
-    example: '<strong>Entry:</strong> Buy breakout above 20-day high<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Ride the trend until RSI drops below 50<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TATA MOTORS consolidates for weeks. Suddenly it breaks ₹680 resistance. MACD crosses 0, RSI spikes to 75, and CCI rips past 100 on 2x volume. You buy the explosive breakout.</span>'
+    name: 'Fresh Momentum Breakout',
+    desc: 'Identifies explosive momentum right out of a tight coil. It requires the 21 and 50 EMAs to be tightly pinched (within 4%) and a tight 20-day price range. When MACD, RSI, and CCI turn extremely bullish on massive volume, it flags the start of the breakout, while strictly filtering out stocks that have already run away.',
+    example: '<strong>Entry:</strong> Buy breakout above 20-day high<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Ride the trend until RSI drops below 50<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TATA MOTORS tightens into a narrow range where its 21 and 50 EMAs converge. Suddenly it explodes above its 20-day high on 2x volume. You buy the explosive breakout early, rather than chasing it later.</span>'
   },
   rs: {
     name: 'Relative Strength',
