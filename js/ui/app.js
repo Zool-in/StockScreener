@@ -318,7 +318,7 @@ async function runScan() {
   const cancelBtn = document.getElementById('cancelBtn');
   if (cancelBtn) cancelBtn.style.display = 'flex';
   
-  DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;"><div class="spinner" style="margin: 0 auto 16px;"></div>Scanning ${AppState.tickers.length} stocks...</div>`;
+  DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); padding: 64px 0;"><div class="spinner"></div><span>Scanning ${AppState.tickers.length} stocks...</span></div>`;
   document.getElementById('adStrip').style.display = 'none';
   document.getElementById('summaryBar').style.display = 'none';
   
@@ -421,7 +421,7 @@ async function runScan() {
   try {
     const symbolsParam = results.map(r => r.ticker).join(',');
     if (symbolsParam) {
-      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;"><div class="spinner" style="margin: 0 auto 16px;"></div>Fetching Live Prices...</div>`;
+      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); padding: 64px 0;"><div class="spinner"></div><span>Fetching Live Prices...</span></div>`;
       const qRes = await fetch(`/api/quotes?symbols=${symbolsParam}`);
       if (qRes.ok) {
         const qData = await qRes.json();
