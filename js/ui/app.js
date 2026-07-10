@@ -237,6 +237,15 @@ async function init() {
     }
   });
   DOM.scanBtn.addEventListener('click', runScan);
+  
+  const cancelBtn = document.getElementById('cancelBtn');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      if (currentAbortController) {
+        currentAbortController.abort();
+      }
+    });
+  }
 
   // Initial Data Load (Nifty 50)
   AppState.setStrategy('all');
@@ -288,9 +297,16 @@ async function fetchStatus() {
 }
 
 let currentScanId = 0;
+let currentAbortController = null;
 
 // ─── Scan Runner ────────────────────────────────────────────────────────────
 async function runScan() {
+  if (currentAbortController) {
+    currentAbortController.abort();
+  }
+  currentAbortController = new AbortController();
+  const signal = currentAbortController.signal;
+
   const scanId = ++currentScanId;
 
   if (!DOM.customTickerWrapper.classList.contains('hidden')) {
@@ -301,19 +317,24 @@ async function runScan() {
   if (AppState.tickers.length === 0) return;
   
   DOM.scanBtn.disabled = true;
-  DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Scanning...</span>`;
-  DOM.resultsArea.innerHTML = '';
+  DOM.scanBtn.style.display = 'none';
+  const cancelBtn = document.getElementById('cancelBtn');
+  if (cancelBtn) cancelBtn.style.display = 'flex';
+  
+  DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;"><div class="spinner" style="margin: 0 auto 16px;"></div>Scanning ${AppState.tickers.length} stocks...</div>`;
   document.getElementById('adStrip').style.display = 'none';
   document.getElementById('summaryBar').style.display = 'none';
   
   const results = [];
   const strategyId = AppState.strategy;
 
-  for (let ticker of AppState.tickers) {
-    try {
-      const data = await fetchOHLCV(ticker, AppState.timeframe);
-      const n = data.closes.length;
-      if (n < 200) continue; // Need data
+  try {
+    for (let ticker of AppState.tickers) {
+      if (signal.aborted) throw new Error('AbortError');
+      try {
+        const data = await fetchOHLCV(ticker, AppState.timeframe, signal);
+        const n = data.closes.length;
+        if (n < 200) continue; // Need data
 
       const curr = data.closes[n - 1];
       const prev = data.closes[n - 2];
@@ -422,16 +443,26 @@ async function runScan() {
       }
     }
   } catch (e) {
-    console.error("Failed to fetch live quotes", e);
+      console.error("Failed to fetch live quotes", e);
+    }
+
+    if (scanId !== currentScanId) return; // Drop stale results if a newer scan started
+
+    AppState.setResults(results);
+    renderResults(results);
+  } catch (err) {
+    if (err.message === 'AbortError' || err.name === 'AbortError') {
+      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--red); padding: 64px 0;">Scan canceled by user.</div>`;
+    } else {
+      console.error(err);
+    }
+  } finally {
+    if (scanId === currentScanId) {
+      DOM.scanBtn.disabled = false;
+      DOM.scanBtn.style.display = 'flex';
+      if (cancelBtn) cancelBtn.style.display = 'none';
+    }
   }
-
-  if (scanId !== currentScanId) return; // Drop stale results if a newer scan started
-
-  AppState.setResults(results);
-  renderResults(results);
-  
-  DOM.scanBtn.disabled = false;
-  DOM.scanBtn.innerHTML = `<span>Run Scan</span>`;
 }
 
 // ─── UI Renderer ────────────────────────────────────────────────────────────

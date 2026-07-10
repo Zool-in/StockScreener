@@ -1,7 +1,7 @@
 // ─── Unified API Data Fetching ──────────────────────────────────────────────
 const API_BASE = '/api/chart';
 
-export async function fetchOHLCV(ticker, timeframe = '1d') {
+export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   // Support appending .BO for BSE stocks if not NSE
   let sym = ticker.trim().toUpperCase();
   if (!sym.endsWith('.NS') && !sym.endsWith('.BO')) {
@@ -22,7 +22,7 @@ export async function fetchOHLCV(ticker, timeframe = '1d') {
   let retries = 3;
   while (retries > 0) {
     try {
-      res = await fetch(url);
+      res = await fetch(url, { signal });
       if (!res.ok) throw new Error(`Failed to fetch ${sym} (Status: ${res.status})`);
       data = await res.json();
       
