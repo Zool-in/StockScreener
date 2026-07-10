@@ -289,6 +289,11 @@ async function fetchStatus() {
 
 // ─── Scan Runner ────────────────────────────────────────────────────────────
 async function runScan() {
+  if (!DOM.customTickerWrapper.classList.contains('hidden')) {
+    const customList = DOM.tickerInput.value.split(',').map(s=>s.trim()).filter(Boolean);
+    if (customList.length > 0) AppState.setTickers(customList);
+  }
+  
   if (AppState.tickers.length === 0) return;
   
   DOM.scanBtn.disabled = true;
