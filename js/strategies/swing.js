@@ -27,17 +27,22 @@ function extremeMomentum(data) {
   // CCI(34) > 100
   const cciBullish = cciVal > 100;
   
-  // Sideways Chop Filter (Price Action Breakout > 20-day High)
+  // Sideways Chop Filter (Price Action Breakout > 20-day High & Tight Range)
   const recentHighs = highs.slice(-21, -1);
+  const recentLows = lows.slice(-21, -1);
   const twentyDayHigh = Math.max(...recentHighs);
+  const twentyDayLow = Math.min(...recentLows);
   const isBreakout = cmp >= twentyDayHigh;
+  
+  // The box must have been relatively tight (e.g. less than 15% from high to low)
+  const isTight = ((twentyDayHigh - twentyDayLow) / twentyDayLow) <= 0.15;
 
   // Volume Surge Filter
   const currentVol = volumes[n - 1];
   const avgVol = volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20;
   const volSurge = currentVol > avgVol * 1.5;
 
-  if (macdBullish && rsiBullish && cciBullish && isBreakout && volSurge) {
+  if (macdBullish && rsiBullish && cciBullish && isBreakout && isTight && volSurge) {
     return {
       isMatch: true,
       reason: 'Extreme Momentum Breakout: MACD bullish, RSI > 70, CCI > 100, breaking 20-day high on heavy volume.',

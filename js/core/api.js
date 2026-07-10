@@ -16,12 +16,25 @@ export async function fetchOHLCV(ticker, timeframe = '1d') {
   else if (timeframe === '1mo') { interval = '1mo'; range = '10y'; }
 
   const url = `${API_BASE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&range=${range}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch ${sym}`);
-  const data = await res.json();
-
-  if (!data || !data.chart || !data.chart.result || !data.chart.result[0].indicators.quote[0]) {
-    throw new Error("Invalid data format from Yahoo Finance");
+  
+  let res;
+  let data;
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch ${sym} (Status: ${res.status})`);
+      data = await res.json();
+      
+      if (!data || !data.chart || !data.chart.result || !data.chart.result[0].indicators.quote[0]) {
+        throw new Error("Invalid data format from Yahoo Finance");
+      }
+      break; // Success
+    } catch (err) {
+      retries--;
+      if (retries === 0) throw err;
+      await new Promise(r => setTimeout(r, 500)); // wait 500ms before retry
+    }
   }
 
   const result = data.chart.result[0];
