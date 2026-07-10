@@ -457,11 +457,31 @@ function renderResults(results) {
   const isOptions = ['bps', 'strangle', 'iv_crush', 'csp', 'cc', 'bear_call'].includes(AppState.strategy);
 
   let html = '';
-  results.forEach(r => {
-    if (isOptions) {
+  if (isOptions) {
+    html += '<div class="options-tabs" style="grid-column: 1 / -1; display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin;">';
+    results.forEach((r, idx) => {
+      html += `<button class="pill ${idx === 0 ? 'active' : ''}" onclick="switchOptionTab('${r.ticker}')" data-ticker="${r.ticker}" style="flex-shrink:0;">${r.ticker}</button>`;
+    });
+    html += '</div>';
+
+    results.forEach((r, idx) => {
+      html += `<div id="opt-tab-${r.ticker}" class="opt-tab-content" style="grid-column: 1 / -1; display: ${idx === 0 ? 'block' : 'none'};">`;
       html += renderOptionCards(r, AppState.strategy);
-      return;
+      html += `</div>`;
+    });
+
+    if (!window.switchOptionTab) {
+      window.switchOptionTab = (ticker) => {
+        document.querySelectorAll('.opt-tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.options-tabs .pill').forEach(el => el.classList.remove('active'));
+        const targetTab = document.getElementById('opt-tab-' + ticker);
+        const targetPill = document.querySelector(`.options-tabs .pill[data-ticker="${ticker}"]`);
+        if (targetTab) targetTab.style.display = 'block';
+        if (targetPill) targetPill.classList.add('active');
+      };
     }
+  } else {
+    results.forEach(r => {
     const chgClass = r.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
     const chgSign = r.chgPct >= 0 ? '+' : '';
     
@@ -633,7 +653,8 @@ function renderResults(results) {
         </div>
       </div>
     `;
-  });
+    });
+  }
 
   DOM.resultsArea.innerHTML = html;
 }
