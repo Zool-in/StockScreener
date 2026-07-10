@@ -556,8 +556,20 @@ function renderResults(results) {
     if (r.curr < r.ema200) tagsHtml += `<span class="tag red">Below 200 EMA</span>`;
     if (r.curr > r.ema50 && r.ema50 > r.ema200) tagsHtml += `<span class="tag green">Strong Trend</span>`;
     if (r.chgPct < -3) tagsHtml += `<span class="tag red">Heavy Drop</span>`;
+    if (r.macdHist > 0 && r.macdVal < 0) tagsHtml += `<span class="tag green">MACD Bullish Cross</span>`;
+    if (r.cciVal > 100) tagsHtml += `<span class="tag orange">CCI Extremes (Overbought)</span>`;
+    if (r.cciVal < -100) tagsHtml += `<span class="tag green">CCI Extremes (Oversold)</span>`;
+    if (r.curr > r.ema50 && r.curr < r.ema50 * 1.02) tagsHtml += `<span class="tag green">Near 50 EMA Support</span>`;
     
     tagsHtml = `<div class="tags-container" style="margin-bottom:8px;">${tagsHtml}</div>`;
+
+    // Calculate Estimated Hold Time
+    const estHold = (['ttm_orb'].includes(AppState.strategy)) ? 'Intraday'
+                  : (['btst'].includes(AppState.strategy)) ? '1-2 Days'
+                  : (['minervini', 'darvas', 'xmomentum'].includes(AppState.strategy)) ? '2-6 Weeks'
+                  : (['crsi', 'vcp_down'].includes(AppState.strategy)) ? '3-10 Days'
+                  : (['weinstein', 'wyckoff'].includes(AppState.strategy)) ? '3-6 Months'
+                  : '1-4 Weeks';
 
     // Calculate Position Sizing
     let positionHtml = '';
@@ -580,8 +592,9 @@ function renderResults(results) {
         const projReturn = qty * (r.t1 - r.entry);
         if (qty > 0) {
           positionHtml = `
-            <div class="levels" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 6px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3);">
+            <div class="levels" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 6px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3);">
               <div class="lv"><div class="lk">Qty (Pos Size)</div><div class="lv2">${qty}</div></div>
+              <div class="lv"><div class="lk">Est. Hold Time</div><div class="lv2">${estHold}</div></div>
               <div class="lv"><div class="lk">Investment</div><div class="lv2">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div></div>
               <div class="lv"><div class="lk">Risk / Reward (T1)</div><div class="lv2"><span style="color:var(--red)">-₹${Math.abs(riskAmt).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> / <span style="color:var(--green)">+₹${projReturn.toLocaleString('en-IN', {maximumFractionDigits:0})}</span></div></div>
             </div>
