@@ -18,6 +18,14 @@ function extremeMomentum(data) {
   const macdData = macd(closes);
   const cciVal = cci(highs, lows, closes, 34);
   
+  const e9 = ema(closes, 9);
+  const e21 = ema(closes, 21);
+  const e50 = ema(closes, 50);
+  
+  const curE9 = e9[n-1];
+  const curE21 = e21[n-1];
+  const curE50 = e50[n-1];
+  
   // MACD Bullish Crossover / Above 0
   const macdBullish = macdData.macd > 0 && macdData.hist > 0;
   
@@ -37,15 +45,23 @@ function extremeMomentum(data) {
   // The box must have been relatively tight (e.g. less than 15% from high to low)
   const isTight = ((twentyDayHigh - twentyDayLow) / twentyDayLow) <= 0.15;
 
+  // EMA Conjunction (Squeeze) Filter
+  // The 21 EMA and 50 EMA should be very close together indicating a squeeze
+  const emaConjunction = Math.abs(curE21 - curE50) / curE50 <= 0.04; // Max 4% distance
+  
+  // Not Overextended Filter (Prevent buying after it ran away)
+  // Price should not be more than 8% above the 21 EMA on the breakout day
+  const notOverextended = cmp <= curE21 * 1.08;
+
   // Volume Surge Filter
   const currentVol = volumes[n - 1];
   const avgVol = volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20;
   const volSurge = currentVol > avgVol * 1.5;
 
-  if (macdBullish && rsiBullish && cciBullish && isBreakout && isTight && volSurge) {
+  if (macdBullish && rsiBullish && cciBullish && isBreakout && isTight && emaConjunction && notOverextended && volSurge) {
     return {
       isMatch: true,
-      reason: 'Extreme Momentum Breakout: MACD bullish, RSI > 70, CCI > 100, breaking 20-day high on heavy volume.',
+      reason: 'Fresh Momentum Breakout: EMAs pinched, tight range, breaking out with volume. Not overextended.',
       entry: twentyDayHigh, 
       risk: cmp * 0.04, // 4% stop loss
       metrics: [
