@@ -42,8 +42,8 @@ function hv30(closes) {
 
 function computeBase(raw, metrics, chgPct) {
   const cmp = raw.cmp;
-  const wk52hi = raw.wk52hi;
-  const wk52lo = raw.wk52lo;
+  const wk52hi = raw.meta?.fiftyTwoWeekHigh || Math.max(...(raw.highs || []));
+  const wk52lo = raw.meta?.fiftyTwoWeekLow || Math.min(...(raw.lows || []));
   const hv = hv30(raw.closes);
   const ivPct = +(hv * 100).toFixed(1);
   const rangePos = wk52hi !== wk52lo ? Math.round((cmp - wk52lo) / (wk52hi - wk52lo) * 100) : 50;
@@ -335,9 +335,17 @@ export function renderOptionCards(res, stratId) {
   if (!res.raw) return `<div class="error-box">Missing raw data for options rendering.</div>`;
   const b = computeBase(res.raw, res.metrics, res.chgPct);
   
-  if (stratId === 'csp' || stratId === 'wheel') return renderCashSecuredPut(b);
-  if (stratId === 'cc') return renderCoveredCall(b);
-  if (stratId === 'bps') return snapshotCard(b) + renderBullPutSpread(b);
-  
-  return snapshotCard(b) + renderGenericOption(b, stratId);
+  let content = '';
+  if (stratId === 'csp' || stratId === 'wheel') content = renderCashSecuredPut(b);
+  else if (stratId === 'cc') content = renderCoveredCall(b);
+  else if (stratId === 'bps') content = snapshotCard(b) + renderBullPutSpread(b);
+  else content = snapshotCard(b) + renderGenericOption(b, stratId);
+
+  return `<div class="options-analysis-wrapper" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; background: rgba(0,0,0,0.2); padding: 24px; border-radius: 16px; border: 1px dashed var(--border2);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 8px;">
+      <h2 style="font-size:18px; color:var(--text); margin:0;">Detailed Options Analysis: <span style="color:var(--accent)">${b.ticker}</span></h2>
+      <span class="badge badge-amber" style="font-size:12px;">${stratId.toUpperCase()}</span>
+    </div>
+    ${content}
+  </div>`;
 }
