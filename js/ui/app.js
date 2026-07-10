@@ -486,6 +486,34 @@ function renderResults(results) {
       };
     }
   } else {
+    // 1. Pre-calculate Scores and Sort (Highest to Lowest)
+    results.forEach(r => {
+      let calcScore = 0;
+      if (r.curr > r.ema200) calcScore += 10;
+      if (r.curr > r.ema50) calcScore += 10;
+      if (r.curr > r.ema20) calcScore += 10;
+      
+      if (r.rsiVal > 40 && r.rsiVal < 70) calcScore += 20;
+      else if (r.rsiVal >= 70) calcScore += 10;
+      else if (r.rsiVal <= 30) calcScore += 5;
+
+      if (r.adxVal > 25) calcScore += 20;
+      else if (r.adxVal > 20) calcScore += 10;
+
+      if (r.macdHist > 0) calcScore += 15;
+      else if (r.macdHist > -1) calcScore += 5;
+
+      if (r.vr > 2.0) calcScore += 15;
+      else if (r.vr > 1.2) calcScore += 10;
+      else if (r.vr > 0.8) calcScore += 5;
+
+      r.score = r.score || calcScore;
+    });
+
+    // Sort Descending by Score
+    results.sort((a, b) => b.score - a.score);
+
+    // 2. Render Cards
     results.forEach(r => {
     const chgClass = r.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
     const chgSign = r.chgPct >= 0 ? '+' : '';
@@ -494,33 +522,7 @@ function renderResults(results) {
     const adxOk = r.adxVal > 25, adxWarn = r.adxVal > 20;
     const vrOk = r.vr >= 1.5, vrWarn = r.vr >= 1.0;
     
-    // Calculate dynamic Technical Score (0-100)
-    let score = 0;
-    // 1. Trend (Max 30)
-    if (r.curr > r.ema200) score += 10;
-    if (r.curr > r.ema50) score += 10;
-    if (r.curr > r.ema20) score += 10;
-    
-    // 2. Momentum / RSI (Max 20)
-    if (r.rsiVal > 40 && r.rsiVal < 70) score += 20;
-    else if (r.rsiVal >= 70) score += 10; // Overbought but strong
-    else if (r.rsiVal <= 30) score += 5; // Oversold
-
-    // 3. Trend Strength / ADX (Max 20)
-    if (r.adxVal > 25) score += 20;
-    else if (r.adxVal > 20) score += 10;
-
-    // 4. MACD (Max 15)
-    if (r.macdHist > 0) score += 15;
-    else if (r.macdHist > -1) score += 5;
-
-    // 5. Volume Surge (Max 15)
-    if (r.vr > 2.0) score += 15;
-    else if (r.vr > 1.2) score += 10;
-    else if (r.vr > 0.8) score += 5;
-
-    // If strategy returned a specific score, use it, else use computed
-    score = r.score || score;
+    const score = r.score;
     
     const barW = score;
     const barCol = score >= 75 ? '#22d08a' : score >= 55 ? '#f5a623' : '#f05a5a';
