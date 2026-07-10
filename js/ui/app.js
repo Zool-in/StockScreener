@@ -287,8 +287,12 @@ async function fetchStatus() {
   }
 }
 
+let currentScanId = 0;
+
 // ─── Scan Runner ────────────────────────────────────────────────────────────
 async function runScan() {
+  const scanId = ++currentScanId;
+
   if (!DOM.customTickerWrapper.classList.contains('hidden')) {
     const customList = DOM.tickerInput.value.split(',').map(s=>s.trim()).filter(Boolean);
     if (customList.length > 0) AppState.setTickers(customList);
@@ -420,6 +424,8 @@ async function runScan() {
   } catch (e) {
     console.error("Failed to fetch live quotes", e);
   }
+
+  if (scanId !== currentScanId) return; // Drop stale results if a newer scan started
 
   AppState.setResults(results);
   renderResults(results);
