@@ -10,6 +10,7 @@ import * as optionStrats from '../strategies/options.js?v=6';
 import * as btstStrats from '../strategies/btst.js?v=6';
 import * as longTermStrats from '../strategies/longterm.js?v=6';
 import * as shortStrats from '../strategies/short.js?v=6';
+import { renderOptionCards } from './options_render.js?v=1';
 
 const DOM = {
   tickerInput: document.getElementById('tickerInput'),
@@ -112,6 +113,30 @@ async function init() {
   setInterval(fetchStatus, 30000); // refresh every 30s
   
   // Setup Universe Pills
+  const assetToggle = document.getElementById('assetToggle');
+  if (assetToggle) {
+    assetToggle.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('pill')) return;
+      Array.from(assetToggle.children).forEach(p => p.classList.remove('active'));
+      e.target.classList.add('active');
+      const asset = e.target.dataset.asset;
+      
+      // Filter Strategy Pills
+      const stratPills = Array.from(DOM.strategyPills.children);
+      stratPills.forEach(p => {
+        if (p.dataset.type === asset) {
+          p.style.display = 'inline-block';
+        } else {
+          p.style.display = 'none';
+        }
+      });
+      
+      // Auto-select first visible pill
+      const firstVisible = stratPills.find(p => p.style.display !== 'none');
+      if (firstVisible) firstVisible.click();
+    });
+  }
+
   DOM.universePills.addEventListener('click', async (e) => {
     if (!e.target.classList.contains('pill')) return;
     
@@ -307,7 +332,10 @@ async function runScan() {
       } else {
         if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
         else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
-        else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp', 'cov_call'].includes(strategyId)) res = optionStrats.run(strategyId, data);
+        else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
+          res = optionStrats.run(strategyId, data);
+          if (res.isMatch) res.raw = data;
+        }
         else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
         else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
         else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
@@ -426,8 +454,14 @@ function renderResults(results) {
     `;
   }
 
+  const isOptions = ['bps', 'strangle', 'iv_crush', 'csp', 'cc', 'bear_call'].includes(AppState.strategy);
+
   let html = '';
   results.forEach(r => {
+    if (isOptions) {
+      html += renderOptionCards(r, AppState.strategy);
+      return;
+    }
     const chgClass = r.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
     const chgSign = r.chgPct >= 0 ? '+' : '';
     

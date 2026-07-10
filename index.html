@@ -46,36 +46,42 @@
 
       <!-- Strategy Section -->
       <div style="margin-bottom: 24px;">
-        <label class="input-label">Algorithmic Strategy</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label class="input-label" style="margin-bottom: 0;">Algorithmic Strategy</label>
+          <div class="pill-container" id="assetToggle" style="gap: 4px; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+            <div class="pill active" data-asset="stocks" style="padding: 4px 12px; font-size: 12px; min-height: unset; margin: 0;">Stocks</div>
+            <div class="pill" data-asset="options" style="padding: 4px 12px; font-size: 12px; min-height: unset; margin: 0;">Options</div>
+          </div>
+        </div>
         <div class="pill-container" id="strategyPills">
           <!-- Default -->
-          <div class="pill active" data-val="all" data-tf="1d">All Stocks <span class="badge badge-muted">RAW</span></div>
+          <div class="pill active" data-val="all" data-tf="1d" data-type="stocks">All Stocks <span class="badge badge-muted">RAW</span></div>
           
           <!-- Intraday / Short Term -->
-          <div class="pill" data-val="ttm_orb" data-tf="15m">TTM Squeeze + ORB <span class="badge badge-muted">15m</span></div>
-          <div class="pill" data-val="btst" data-tf="1d">BTST Momentum <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="crsi" data-tf="1d">Connors RSI <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="ttm_orb" data-tf="15m" data-type="stocks">TTM Squeeze + ORB <span class="badge badge-muted">15m</span></div>
+          <div class="pill" data-val="btst" data-tf="1d" data-type="stocks">BTST Momentum <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="crsi" data-tf="1d" data-type="stocks">Connors RSI <span class="badge badge-muted">1d</span></div>
           
           <!-- Swing -->
-          <div class="pill" data-val="minervini" data-tf="1d">Minervini VCP <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="darvas" data-tf="1d">Darvas Box <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="xmomentum" data-tf="1d">X-Momentum <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="rs" data-tf="1d">Relative Strength <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="minervini" data-tf="1d" data-type="stocks">Minervini VCP <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="darvas" data-tf="1d" data-type="stocks">Darvas Box <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="xmomentum" data-tf="1d" data-type="stocks">X-Momentum <span class="badge badge-muted">1d</span></div>
+          <div class="pill" data-val="rs" data-tf="1d" data-type="stocks">Relative Strength <span class="badge badge-muted">1d</span></div>
           
           <!-- Short -->
-          <div class="pill" data-val="vcp_down" data-tf="1d">VCP Breakdown <span class="badge badge-red">Short</span></div>
-          <div class="pill" data-val="bear_call" data-tf="1d">Bear Call Spread <span class="badge badge-red">Short</span></div>
+          <div class="pill" data-val="vcp_down" data-tf="1d" data-type="stocks">VCP Breakdown <span class="badge badge-red">Short</span></div>
+          <div class="pill" data-val="bear_call" data-tf="1d" data-type="options" style="display: none;">Bear Call Spread <span class="badge badge-red">Short</span></div>
           
           <!-- Options -->
-          <div class="pill" data-val="bps" data-tf="1d">Bull Put Spread <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="strangle" data-tf="1d">Short Strangle <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="iv_crush" data-tf="1d">Earnings IV Crush <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="csp" data-tf="1d">Cash Secured Put <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="cc" data-tf="1d">Covered Call <span class="badge badge-amber">OPTS</span></div>
+          <div class="pill" data-val="bps" data-tf="1d" data-type="options" style="display: none;">Bull Put Spread <span class="badge badge-amber">OPTS</span></div>
+          <div class="pill" data-val="strangle" data-tf="1d" data-type="options" style="display: none;">Short Strangle <span class="badge badge-amber">OPTS</span></div>
+          <div class="pill" data-val="iv_crush" data-tf="1d" data-type="options" style="display: none;">Earnings IV Crush <span class="badge badge-amber">OPTS</span></div>
+          <div class="pill" data-val="csp" data-tf="1d" data-type="options" style="display: none;">Cash Secured Put <span class="badge badge-amber">OPTS</span></div>
+          <div class="pill" data-val="cc" data-tf="1d" data-type="options" style="display: none;">Covered Call <span class="badge badge-amber">OPTS</span></div>
           
           <!-- Long Term -->
-          <div class="pill" data-val="weinstein" data-tf="1wk">Stan Weinstein Stage 2 <span class="badge badge-green">1wk</span></div>
-          <div class="pill" data-val="wyckoff" data-tf="1wk">Wyckoff Stopping Vol <span class="badge badge-green">1wk</span></div>
+          <div class="pill" data-val="weinstein" data-tf="1wk" data-type="stocks">Stan Weinstein Stage 2 <span class="badge badge-green">1wk</span></div>
+          <div class="pill" data-val="wyckoff" data-tf="1wk" data-type="stocks">Wyckoff Stopping Vol <span class="badge badge-green">1wk</span></div>
         </div>
       </div>
 
