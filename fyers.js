@@ -42,8 +42,10 @@ function isConfigured() {
 }
 
 // ─── Small HTTPS helper (GET/POST) ────────────────────────────────────────
+let fyersQueue = Promise.resolve();
+
 function request(method, endpoint, body = null, headers = {}) {
-  return new Promise((resolve, reject) => {
+  const p = fyersQueue.then(() => new Promise((resolve, reject) => {
     const url = new URL(endpoint.startsWith('http') ? endpoint : FYERS_BASE + endpoint);
     const reqHeaders = { 'User-Agent': 'Node/StockScan', ...headers };
     if (body) {
@@ -73,7 +75,11 @@ function request(method, endpoint, body = null, headers = {}) {
     req.on('error', reject);
     if (body) req.write(body);
     req.end();
-  });
+  }));
+
+  // Enforce global 10 req/sec limit across all concurrent requests
+  fyersQueue = p.catch(() => {}).then(() => new Promise(r => setTimeout(r, 110)));
+  return p;
 }
 
 // ─── Session Management ───────────────────────────────────────────────────
