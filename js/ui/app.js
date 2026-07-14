@@ -377,7 +377,8 @@ async function runScan() {
         try {
           const data = await fetchOHLCV(ticker, AppState.timeframe, signal);
           const n = data.closes.length;
-          if (n < 200) return; // Need data
+          const minBars = ['1wk', '1mo'].includes(AppState.timeframe) ? 40 : 200;
+          if (n < minBars) return; // Need data
 
           const curr = data.closes[n - 1];
           const prev = data.closes[n - 2];
