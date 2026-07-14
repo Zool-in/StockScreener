@@ -190,27 +190,51 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
   if (range === '10y') days = 365 * 10;
   const from = to - (days * 24 * 60 * 60);
 
-  const url = `${FYERS_BASE}/data/history?symbol=${encodeURIComponent(fyersSym)}&resolution=${resolution}&date_format=0&range_from=${from}&range_to=${to}&cont_flag=1`;
+  const maxDays = ['1D', '1W', '1M'].includes(resolution) ? 365 : 100;
+  const chunkSecs = maxDays * 24 * 60 * 60;
   
-  let res;
-  for (let attempt = 1; attempt <= 4; attempt++) {
-    try {
-      res = await request('GET', url, null, { Authorization: getAuthHeader() });
-      break;
-    } catch (e) {
-      if (e.message === 'FYERS_RATE_LIMIT' && attempt < 4) {
-        await new Promise(r => setTimeout(r, 1000 * attempt)); // exponential backoff
-        continue;
+  let allCandles = [];
+  let currentFrom = from;
+
+  while (currentFrom < to) {
+    let currentTo = currentFrom + chunkSecs;
+    if (currentTo > to) currentTo = to;
+
+    const url = `${FYERS_BASE}/data/history?symbol=${encodeURIComponent(fyersSym)}&resolution=${resolution}&date_format=0&range_from=${currentFrom}&range_to=${currentTo}&cont_flag=1`;
+    
+    let res;
+    let success = false;
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      try {
+        res = await request('GET', url, null, { Authorization: getAuthHeader() });
+        success = true;
+        break;
+      } catch (e) {
+        if (e.message === 'FYERS_RATE_LIMIT' && attempt < 4) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+          continue;
+        }
+        throw e;
       }
-      throw e;
+    }
+
+    if (!success || res.s !== 'ok' || !res.candles) {
+      if (allCandles.length > 0) break; // We got SOME data, proceed with it
+      throw new Error('No history found');
+    }
+    
+    allCandles = allCandles.concat(res.candles);
+    currentFrom = currentTo + 1;
+    
+    // Throttle to respect Fyers strict rate limit when making multiple requests per stock
+    if (currentFrom < to) {
+      await new Promise(r => setTimeout(r, 200));
     }
   }
 
-  if (res.s !== 'ok' || !res.candles) throw new Error('No history found');
-
   // Convert to Yahoo format: { chart: { result: [{ timestamp:[], indicators:{quote:[{open:[], high:[], low:[], close:[], volume:[]}]} }] } }
   const t = [], o = [], h = [], l = [], c = [], v = [];
-  for (const row of res.candles) {
+  for (const row of allCandles) {
     // Fyers timestamp is in epoch seconds
     t.push(row[0]);
     o.push(row[1]);
