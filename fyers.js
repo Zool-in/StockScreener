@@ -194,11 +194,11 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
   const chunkSecs = maxDays * 24 * 60 * 60;
   
   let allCandles = [];
-  let currentFrom = from;
+  let currentTo = to;
 
-  while (currentFrom < to) {
-    let currentTo = currentFrom + chunkSecs;
-    if (currentTo > to) currentTo = to;
+  while (currentTo > from) {
+    let currentFrom = currentTo - chunkSecs;
+    if (currentFrom < from) currentFrom = from;
 
     const url = `${FYERS_BASE}/data/history?symbol=${encodeURIComponent(fyersSym)}&resolution=${resolution}&date_format=0&range_from=${currentFrom}&range_to=${currentTo}&cont_flag=1`;
     
@@ -218,16 +218,16 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
       }
     }
 
-    if (!success || res.s !== 'ok' || !res.candles) {
-      if (allCandles.length > 0) break; // We got SOME data, proceed with it
+    if (!success || res.s !== 'ok' || !res.candles || res.candles.length === 0) {
+      if (allCandles.length > 0) break; // Reached listing date of a newer stock
       throw new Error('No history found');
     }
     
-    allCandles = allCandles.concat(res.candles);
-    currentFrom = currentTo + 1;
+    allCandles = res.candles.concat(allCandles); // prepend older data
+    currentTo = currentFrom - 1;
     
     // Throttle to respect Fyers strict rate limit when making multiple requests per stock
-    if (currentFrom < to) {
+    if (currentTo > from) {
       await new Promise(r => setTimeout(r, 200));
     }
   }
