@@ -163,7 +163,7 @@ async function exchangeToken(authCode) {
     saveSession(res);
     return res;
   }
-  throw new Error('Failed to exchange Fyers token');
+  throw new Error('Failed to exchange Fyers token: ' + JSON.stringify(res));
 }
 
 // ─── Data Fetching ────────────────────────────────────────────────────────
