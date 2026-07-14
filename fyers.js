@@ -190,7 +190,8 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
   if (range === '10y') days = 365 * 10;
   const from = to - (days * 24 * 60 * 60);
 
-  const maxDays = ['1D', '1W', '1M'].includes(resolution) ? 365 : 100;
+  // Use 360 instead of 365 to safely avoid Fyers rejecting chunks that span a leap day or overlap time boundaries.
+  const maxDays = ['1D', '1W', '1M'].includes(resolution) ? 360 : 90;
   const chunkSecs = maxDays * 24 * 60 * 60;
   
   let allCandles = [];
