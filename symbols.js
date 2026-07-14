@@ -86,8 +86,15 @@ async function fetchIndex(key) {
   return out;
 }
 
-// index: 'nifty50' | 'nifty100' | 'nifty200' | 'nifty500' | 'niftytotal' | 'etf' | 'fno' | 'all'
+// index: 'nifty50' | 'nifty100' | 'nifty200' | 'nifty500' | 'niftytotal' | 'etf' | 'fno' | 'all' | 'bse_exclusive'
 async function getList(index) {
+  if (index === 'bse_exclusive') {
+    try {
+      return JSON.parse(fs.readFileSync(path.join(__dirname, 'js', 'data', 'bse_exclusives.json'), 'utf8'));
+    } catch (e) {
+      throw new Error('bse_exclusives.json not found. Please run the generation script.');
+    }
+  }
   if (index === 'all') return bhavcopy.listSymbols();
   if (index === 'etf') return ETF_LIST.slice();
   if (index === 'fno') return Object.keys(await require('./lots').getLots());
