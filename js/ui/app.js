@@ -96,6 +96,31 @@ const STRATEGY_INFO = {
     desc: 'For stocks you already own. Identifies when a strong stock becomes temporarily overbought (RSI > 70). A great time to sell calls against your shares to collect premium.',
     example: '<strong>Action:</strong> Sell short-term OTM Call.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., You own 500 shares of SBI. It suddenly rockets to ₹850 (RSI 80) and looks exhausted. You sell the 900 Call, collecting premium while keeping your shares.</span>'
   },
+  hm_bottom: {
+    name: 'Hilega Milega: Bottom Catch',
+    desc: 'Catches early upside reversals when the RSI and 3-EMA cross back above the 21-VWMA from an oversold condition.',
+    example: '<strong>Action:</strong> Buy early reversal.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock has been beaten down (RSI < 50), but momentum suddenly shifts. The RSI and EMA cross above the VWMA volume line. Buy early before the trend becomes obvious.</span>'
+  },
+  hm_top: {
+    name: 'Hilega Milega: Top Catch',
+    desc: 'Catches early downside reversals when the RSI and 3-EMA cross below the 21-VWMA from an overbought condition.',
+    example: '<strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is over-extended (RSI > 50), but momentum dies. The RSI and EMA cross below the VWMA volume line, indicating a top.</span>'
+  },
+  hm_bullish: {
+    name: 'Hilega Milega: Bullish Trend',
+    desc: 'Identifies strong upward momentum where the RSI > 50, and lines are stacked perfectly: RSI > 3-EMA > 21-VWMA.',
+    example: '<strong>Action:</strong> Buy breakout/trend continuation.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume and price are pushing higher. The green line is above the blue, which is above the red, confirming a very safe and strong uptrend.</span>'
+  },
+  hm_bearish: {
+    name: 'Hilega Milega: Bearish Breakdown',
+    desc: 'Identifies strong downward momentum where the RSI < 50, and lines are stacked perfectly for a drop: 21-VWMA > 3-EMA > RSI.',
+    example: '<strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume is accelerating to the downside. The red volume line sits heavily on top of the blue and green lines, suppressing price.</span>'
+  },
+  hm_chop: {
+    name: 'Hilega Milega: Consolidation',
+    desc: 'Identifies when the RSI, EMA, and VWMA are tangled together tightly near the 50 centerline, indicating no clear trend (Chop).',
+    example: '<strong>Action:</strong> Avoid or watch for a squeeze breakout.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is bouncing sideways. The indicators are flat-lining on top of each other. Do not trade this until it breaks out into a trend.</span>'
+  },
   weinstein: {
     name: 'Stan Weinstein Stage 2',
     desc: 'A classic long-term strategy. Looks for a stock breaking out of a flat Stage 1 base, crossing its 30-period MA on massive (200%+) volume into a Stage 2 markup.',
