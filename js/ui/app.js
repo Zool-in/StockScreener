@@ -459,7 +459,6 @@ async function runScan() {
       // Throttle between batches to avoid Hostinger 50req/s DDoS limit
       await new Promise(r => setTimeout(r, 600));
     }
-  }
 
   // Overlay Live Prices
   try {
