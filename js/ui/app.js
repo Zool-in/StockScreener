@@ -367,6 +367,8 @@ async function runScan() {
       if (signal.aborted) throw new Error('AbortError');
       try {
         const data = await fetchOHLCV(ticker, AppState.timeframe, signal);
+        // Throttle to avoid triggering Hostinger's 50req/s DDoS protection
+        await new Promise(r => setTimeout(r, 50));
         const n = data.closes.length;
         if (n < 200) continue; // Need data
 
