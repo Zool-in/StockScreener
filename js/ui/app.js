@@ -363,7 +363,12 @@ async function runScan() {
   const strategyId = AppState.strategy;
 
   try {
-    const BATCH_SIZE = 15;
+    // Use smaller batch size for historical APIs (1W/1M) to prevent 504 Gateway Timeouts
+    // as they require multiple paginated requests to the broker.
+    const isEOD = AppState.timeframe === '1d';
+    const BATCH_SIZE = isEOD ? 15 : 4;
+    const BATCH_DELAY = isEOD ? 600 : 300;
+
     for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
       const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
@@ -457,7 +462,7 @@ async function runScan() {
         }
       }));
       // Throttle between batches to avoid Hostinger 50req/s DDoS limit
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, BATCH_DELAY));
     }
 
   // Overlay Live Prices
