@@ -137,15 +137,27 @@
           return;
         }
 
-        document.getElementById('loadingText').innerText = `Fetching quotes for ${symbols.length} symbols...`;
+        document.getElementById('loadingText').innerText = `Fetching quotes for ${symbols.length} symbols in chunks...`;
 
-        // 2. Fetch Quotes (chunked if necessary, but /api/quotes can usually handle 200)
-        const quoteRes = await fetch(`/api/quotes?symbols=${encodeURIComponent(symbols.join(','))}`);
-        const quoteJson = await quoteRes.json();
+        // 2. Fetch Quotes (chunked to avoid server timeout on Google scraper fallback)
+        let allQuotes = {};
+        const CHUNK_SIZE = 15;
+        for (let i = 0; i < symbols.length; i += CHUNK_SIZE) {
+          const chunk = symbols.slice(i, i + CHUNK_SIZE);
+          try {
+            const quoteRes = await fetch(`/api/quotes?symbols=${encodeURIComponent(chunk.join(','))}`);
+            const quoteJson = await quoteRes.json();
+            if (quoteJson.quotes) {
+              Object.assign(allQuotes, quoteJson.quotes);
+            }
+          } catch (e) {
+            console.error('Chunk failed', e);
+          }
+        }
         
         // 3. Assemble Data
         rawData = symbols.map(sym => {
-          const price = quoteJson.quotes?.[sym] || 0;
+          const price = allQuotes[sym] || 0;
           const lot = lots[sym];
           return {
             symbol: sym,
@@ -182,17 +194,21 @@
 
       // Update DOM
       const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = viewData.map(d => \`
+      tbody.innerHTML = viewData.map(d => `
         <tr>
-          <td class="sym-name">\${d.symbol}</td>
-          <td class="numeric">\${d.price > 0 ? fmt.format(d.price) : '—'}</td>
-          <td class="numeric">\${fmtWhole.format(d.lot)}</td>
-          <td class="numeric" style="color: \${d.value > 1000000 ? 'var(--brand)' : 'inherit'}">\${d.value > 0 ? fmtWhole.format(d.value) : '—'}</td>
+          <td class="sym-name">
+            <a href="https://in.tradingview.com/chart/?symbol=NSE%3A${d.symbol}" target="_blank" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--border);">
+              ${d.symbol}
+            </a>
+          </td>
+          <td class="numeric">${d.price > 0 ? fmt.format(d.price) : '—'}</td>
+          <td class="numeric">${fmtWhole.format(d.lot)}</td>
+          <td class="numeric" style="color: ${d.value > 1000000 ? 'var(--brand)' : 'inherit'}">${d.value > 0 ? fmtWhole.format(d.value) : '—'}</td>
         </tr>
-      \`).join('');
+      `).join('');
       
       if (viewData.length === 0) {
-        tbody.innerHTML = \`<tr><td colspan="4" class="loading-state">No matching symbols found.</td></tr>\`;
+        tbody.innerHTML = `<tr><td colspan="4" class="loading-state">No matching symbols found.</td></tr>`;
       }
       
       // Update Sort Icons

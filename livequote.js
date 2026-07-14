@@ -39,12 +39,20 @@ function httpsGet(urlStr, timeoutMs = 10000) {
 
 // Fetch one symbol's last price (₹). Returns a number or null.
 async function getQuote(symbol) {
-  const sym = symbol.replace(/\.NS$/i, '').toUpperCase();
+  let sym = symbol.replace(/\.NS$/i, '').toUpperCase();
+  
+  // Google Finance index mapping
+  if (sym === 'NIFTY') sym = 'NIFTY_50:INDEXNSE';
+  else if (sym === 'BANKNIFTY') sym = 'NIFTY_BANK:INDEXNSE';
+  else if (sym === 'FINNIFTY') sym = 'NIFTY_FIN_SRV25_50:INDEXNSE';
+  else if (sym === 'MIDCPNIFTY') sym = 'NIFTY_MIDCAP_100:INDEXNSE';
+  else sym = sym + ':NSE';
+
   const hit = cache.get(sym);
   if (hit && Date.now() - hit.ts < TTL_MS) return hit.price;
 
   try {
-    const r = await httpsGet(`https://www.google.com/finance/quote/${encodeURIComponent(sym)}:NSE`);
+    const r = await httpsGet(`https://www.google.com/finance/quote/${sym}`);
     if (r.status !== 200) return null;
     const m = r.body.match(/data-last-price="([\d.]+)"/);
     if (!m) return null;

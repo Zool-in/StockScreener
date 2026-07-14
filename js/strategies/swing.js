@@ -1,4 +1,4 @@
-import { ema, rsi, adx, connorsRSI, macd, cci } from '../core/math.js';
+import { ema, emaSeries, rsi, adx, connorsRSI, macd, cci } from '../core/math.js';
 
 export function run(strategyId, data) {
   if (strategyId === 'minervini') return minerviniVCP(data);
@@ -18,9 +18,9 @@ function extremeMomentum(data) {
   const macdData = macd(closes);
   const cciVal = cci(highs, lows, closes, 34);
   
-  const e9 = ema(closes, 9);
-  const e21 = ema(closes, 21);
-  const e50 = ema(closes, 50);
+  const e9 = emaSeries(closes, 9);
+  const e21 = emaSeries(closes, 21);
+  const e50 = emaSeries(closes, 50);
   
   const curE9 = e9[n-1];
   const curE21 = e21[n-1];

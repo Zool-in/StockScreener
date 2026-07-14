@@ -10,6 +10,7 @@ import * as optionStrats from '../strategies/options.js?v=6';
 import * as btstStrats from '../strategies/btst.js?v=6';
 import * as longTermStrats from '../strategies/longterm.js?v=6';
 import * as shortStrats from '../strategies/short.js?v=6';
+import * as hmStrats from '../strategies/hm.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
 
 const DOM = {
@@ -366,6 +367,7 @@ async function runScan() {
         else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
         else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
         else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
+        else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
       }
 
       if (res && res.isMatch) {

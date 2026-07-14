@@ -233,3 +233,76 @@ export function cci(highs, lows, closes, period = 34) {
   if (meanDev === 0) return 0;
   return (currentTP - smaTP) / (0.015 * meanDev);
 }
+
+// ─── Mathematical Time Series Functions ────────────────────────────────────────
+
+// Exponential Moving Average (Series)
+export function emaSeries(arr, period) {
+  if (arr.length === 0) return [];
+  const k = 2 / (period + 1);
+  const out = new Array(arr.length);
+  out[0] = arr[0];
+  for (let i = 1; i < arr.length; i++) {
+    out[i] = arr[i] * k + out[i - 1] * (1 - k);
+  }
+  return out;
+}
+
+// Relative Strength Index (Series)
+export function rsiSeries(closes, period = 14) {
+  const out = new Array(closes.length).fill(50);
+  if (closes.length < period + 1) return out;
+  
+  let gain = 0, loss = 0;
+  for (let i = 1; i <= period; i++) {
+    const diff = closes[i] - closes[i - 1];
+    if (diff > 0) gain += diff;
+    else loss -= diff;
+  }
+  
+  let avgGain = gain / period;
+  let avgLoss = loss / period;
+  out[period] = avgLoss === 0 ? 100 : Math.round(100 - (100 / (1 + (avgGain / avgLoss))));
+  
+  for (let i = period + 1; i < closes.length; i++) {
+    const diff = closes[i] - closes[i - 1];
+    avgGain = (avgGain * (period - 1) + Math.max(diff, 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + Math.max(-diff, 0)) / period;
+    out[i] = avgLoss === 0 ? 100 : Math.round(100 - (100 / (1 + (avgGain / avgLoss))));
+  }
+  return out;
+}
+
+// Weighted Moving Average (Series)
+export function wmaSeries(arr, period) {
+  const out = new Array(arr.length).fill(0);
+  const denom = (period * (period + 1)) / 2;
+  
+  for (let i = period - 1; i < arr.length; i++) {
+    let sum = 0;
+    for (let j = 0; j < period; j++) {
+      const weight = period - j;
+      sum += arr[i - j] * weight;
+    }
+    out[i] = sum / denom;
+  }
+  return out;
+}
+
+// Volume Weighted Moving Average (Series)
+export function vwmaSeries(arr, volumes, period) {
+  const out = new Array(arr.length).fill(0);
+  
+  for (let i = period - 1; i < arr.length; i++) {
+    let sumValVol = 0;
+    let sumVol = 0;
+    for (let j = 0; j < period; j++) {
+      const val = arr[i - j];
+      const vol = volumes[i - j] || 1; // Fallback to 1 if missing
+      sumValVol += val * vol;
+      sumVol += vol;
+    }
+    out[i] = sumVol === 0 ? arr[i] : sumValVol / sumVol;
+  }
+  return out;
+}
