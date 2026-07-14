@@ -363,125 +363,134 @@ async function runScan() {
   const strategyId = AppState.strategy;
 
   try {
-    for (let ticker of AppState.tickers) {
+    const BATCH_SIZE = 15;
+    for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
-      try {
-        const data = await fetchOHLCV(ticker, AppState.timeframe, signal);
-        // Throttle to avoid triggering Hostinger's 50req/s DDoS protection
-        await new Promise(r => setTimeout(r, 50));
-        const n = data.closes.length;
-        if (n < 200) continue; // Need data
-
-      const curr = data.closes[n - 1];
-      const prev = data.closes[n - 2];
-      const chgPct = parseFloat(((curr - prev) / prev * 100).toFixed(2));
+      const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
       
-      let res = null;
-      let matchedStrategies = [];
+      await Promise.all(batch.map(async (ticker) => {
+        try {
+          const data = await fetchOHLCV(ticker, AppState.timeframe, signal);
+          const n = data.closes.length;
+          if (n < 200) return; // Need data
 
-      if (strategyId === 'all') {
-        const allStrategies = ['ttm_orb', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'wheel', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call'];
-        for (const s of allStrategies) {
-          let tempRes = null;
-          if (['ttm_orb'].includes(s)) tempRes = intradayStrats.run(s, data);
-          else if (['minervini', 'darvas', 'rs', 'crsi'].includes(s)) tempRes = swingStrats.run(s, data);
-          else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(s)) tempRes = optionStrats.run(s, data);
-          else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
-          else if (['weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
-          else if (['vcp_down', 'bear_call'].includes(s)) tempRes = shortStrats.run(s, data);
+          const curr = data.closes[n - 1];
+          const prev = data.closes[n - 2];
+          const chgPct = parseFloat(((curr - prev) / prev * 100).toFixed(2));
           
-          if (tempRes && tempRes.isMatch) {
-            matchedStrategies.push(s);
+          let res = null;
+          let matchedStrategies = [];
+
+          if (strategyId === 'all') {
+            const allStrategies = ['ttm_orb', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'wheel', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call'];
+            for (const s of allStrategies) {
+              let tempRes = null;
+              if (['ttm_orb'].includes(s)) tempRes = intradayStrats.run(s, data);
+              else if (['minervini', 'darvas', 'rs', 'crsi'].includes(s)) tempRes = swingStrats.run(s, data);
+              else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(s)) tempRes = optionStrats.run(s, data);
+              else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
+              else if (['weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
+              else if (['vcp_down', 'bear_call'].includes(s)) tempRes = shortStrats.run(s, data);
+              
+              if (tempRes && tempRes.isMatch) {
+                matchedStrategies.push(s);
+              }
+            }
+            res = { isMatch: true, reason: 'Unfiltered metrics view', matches: matchedStrategies };
+          } else {
+            if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
+            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
+            else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
+              res = optionStrats.run(strategyId, data);
+              if (res.isMatch) res.raw = data;
+            }
+            else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
+            else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
+            else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
+            else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
           }
+
+          if (res && res.isMatch) {
+            // Compute standard technicals for the card
+            const ema20 = ema(data.closes, 20);
+            const ema50 = ema(data.closes, 50);
+            const ema200 = ema(data.closes, 200);
+            const rsiVal = rsi(data.closes);
+            const adxVal = adx(data.highs, data.lows, data.closes);
+            const macdData = macd(data.closes);
+            const macdVal = macdData.macd;
+            const macdHist = macdData.hist;
+            const cciVal = cci(data.highs, data.lows, data.closes, 34);
+            
+            const recentVol = data.volumes[n - 1];
+            const avgVol = data.volumes.slice(n - 21, n - 1).reduce((a,b)=>a+b,0) / 20;
+            const vr = avgVol > 0 ? parseFloat((recentVol / avgVol).toFixed(2)) : 1;
+
+            // Pivot Points (Classic) based on previous day High, Low, Close
+            const pHigh = data.highs[n - 2];
+            const pLow = data.lows[n - 2];
+            const pClose = data.closes[n - 2];
+            const pivot = (pHigh + pLow + pClose) / 3;
+            const r1 = (2 * pivot) - pLow;
+            const s1 = (2 * pivot) - pHigh;
+            const r2 = pivot + (pHigh - pLow);
+            const s2 = pivot - (pHigh - pLow);
+            const r3 = pHigh + 2 * (pivot - pLow);
+            const s3 = pLow - 2 * (pHigh - pivot);
+
+            // Entry, Stop, Targets
+            const prevClose = data.closes[n - 2] || curr;
+            const entry = res.entry || prevClose;
+            const stop = res.risk ? entry - res.risk : entry * 0.95;
+            const riskAmount = entry - stop;
+            const t1 = entry + (riskAmount * 1.5);
+            const t2 = entry + (riskAmount * 3);
+
+            results.push({
+              ticker, data, ...res, 
+              chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, macdVal, macdHist, cciVal,
+              entry, stop, t1, t2, s1, s2, s3, r1, r2, r3
+            });
+          }
+        } catch (e) {
+          console.error(`Skipping ${ticker}: `, e);
         }
-        res = { isMatch: true, reason: 'Unfiltered metrics view', matches: matchedStrategies };
-      } else {
-        if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
-        else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
-        else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
-          res = optionStrats.run(strategyId, data);
-          if (res.isMatch) res.raw = data;
-        }
-        else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
-        else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
-        else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
-        else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
-      }
-
-      if (res && res.isMatch) {
-        // Compute standard technicals for the card
-        const ema20 = ema(data.closes, 20);
-        const ema50 = ema(data.closes, 50);
-        const ema200 = ema(data.closes, 200);
-        const rsiVal = rsi(data.closes);
-        const adxVal = adx(data.highs, data.lows, data.closes);
-        const macdData = macd(data.closes);
-        const macdVal = macdData.macd;
-        const macdHist = macdData.hist;
-        const cciVal = cci(data.highs, data.lows, data.closes, 34);
-        
-        const recentVol = data.volumes[n - 1];
-        const avgVol = data.volumes.slice(n - 21, n - 1).reduce((a,b)=>a+b,0) / 20;
-        const vr = avgVol > 0 ? parseFloat((recentVol / avgVol).toFixed(2)) : 1;
-
-        // Pivot Points (Classic) based on previous day High, Low, Close
-        const pHigh = data.highs[n - 2];
-        const pLow = data.lows[n - 2];
-        const pClose = data.closes[n - 2];
-        const pivot = (pHigh + pLow + pClose) / 3;
-        const r1 = (2 * pivot) - pLow;
-        const s1 = (2 * pivot) - pHigh;
-        const r2 = pivot + (pHigh - pLow);
-        const s2 = pivot - (pHigh - pLow);
-        const r3 = pHigh + 2 * (pivot - pLow);
-        const s3 = pLow - 2 * (pHigh - pivot);
-
-        // Entry, Stop, Targets
-        // If the strategy doesn't provide a specific trigger price, default to the previous candle's close
-        // so the Entry price remains a static reference point instead of fluctuating identically with the Live Price.
-        const prevClose = data.closes[n - 2] || curr;
-        const entry = res.entry || prevClose;
-        const stop = res.risk ? entry - res.risk : entry * 0.95;
-        const riskAmount = entry - stop;
-        const t1 = entry + (riskAmount * 1.5);
-        const t2 = entry + (riskAmount * 3);
-
-        results.push({
-          ticker, data, ...res, 
-          chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, macdVal, macdHist, cciVal,
-          entry, stop, t1, t2, s1, s2, s3, r1, r2, r3
-        });
-      }
-    } catch (e) {
-      console.error(`Skipping ${ticker}: `, e);
+      }));
+      // Throttle between batches to avoid Hostinger 50req/s DDoS limit
+      await new Promise(r => setTimeout(r, 600));
     }
   }
 
   // Overlay Live Prices
   try {
-    const symbolsParam = results.map(r => r.ticker).join(',');
-    if (symbolsParam) {
+    const allSymbols = results.map(r => r.ticker);
+    if (allSymbols.length > 0) {
       DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); padding: 64px 0;"><div class="spinner"></div><span>Fetching Live Prices...</span></div>`;
-      const qRes = await fetch(`/api/quotes?symbols=${symbolsParam}`);
-      if (qRes.ok) {
-        const qData = await qRes.json();
-        if (qData.quotes) {
-          results.forEach(r => {
-            const livePrice = qData.quotes[r.ticker] || qData.quotes[r.ticker.toUpperCase()];
-            if (livePrice) {
-              const prev = r.data.closes[r.data.closes.length - 2];
-              if (prev) {
-                r.curr = livePrice;
-                r.chgPct = parseFloat(((livePrice - prev) / prev * 100).toFixed(2));
-              }
-            }
-          });
-        }
+      
+      const BATCH_Q = 100;
+      for (let i = 0; i < allSymbols.length; i += BATCH_Q) {
+         const batchSyms = allSymbols.slice(i, i + BATCH_Q).join(',');
+         const qRes = await fetch(`/api/quotes?symbols=${batchSyms}`);
+         if (qRes.ok) {
+           const qData = await qRes.json();
+           if (qData.quotes) {
+             results.forEach(r => {
+                const livePrice = qData.quotes[r.ticker] || qData.quotes[r.ticker.toUpperCase()];
+                if (livePrice) {
+                  const prev = r.data.closes[r.data.closes.length - 2];
+                  if (prev) {
+                    r.curr = livePrice;
+                    r.chgPct = parseFloat(((livePrice - prev) / prev * 100).toFixed(2));
+                  }
+                }
+             });
+           }
+         }
       }
     }
   } catch (e) {
       console.error("Failed to fetch live quotes", e);
-    }
+  }
 
     if (scanId !== currentScanId) return; // Drop stale results if a newer scan started
 
