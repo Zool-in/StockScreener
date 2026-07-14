@@ -5,10 +5,10 @@ export function run(strategyId, data) {
   const n = closes.length;
   if (n < 50) return { isMatch: false };
 
-  // 1. Global Volume Spike Filter (1.5x 20-period average)
+  // 1. Global Volume Spike Filter (1.2x 20-period average)
   const currentVol = volumes[n - 1];
   const avgVol = volumes.slice(Math.max(0, n - 21), n - 1).reduce((a,b)=>a+b, 0) / 20;
-  if (currentVol < avgVol * 1.5) {
+  if (currentVol < avgVol * 1.2) {
     return { isMatch: false }; // Strict filter: No volume, no trade.
   }
 
@@ -21,9 +21,23 @@ export function run(strategyId, data) {
   const curEMA = ema3Arr[n - 1];
   const curVWMA = vwma21Arr[n - 1];
   
-  const prevRSI = rsiArr[n - 2];
-  const prevEMA = ema3Arr[n - 2];
-  const prevVWMA = vwma21Arr[n - 2];
+  // 3-day grace period for crossovers
+  let wasBelowLast3Days = false;
+  let wasAboveLast3Days = false;
+  let wasRsiBelow50Last3Days = false;
+  let wasRsiAbove50Last3Days = false;
+  
+  for (let i = 1; i <= 3; i++) {
+    if (n - 1 - i < 0) break;
+    const pRSI = rsiArr[n - 1 - i];
+    const pEMA = ema3Arr[n - 1 - i];
+    const pVWMA = vwma21Arr[n - 1 - i];
+    
+    if (pRSI < pVWMA || pEMA < pVWMA) wasBelowLast3Days = true;
+    if (pRSI > pVWMA || pEMA > pVWMA) wasAboveLast3Days = true;
+    if (pRSI <= 50) wasRsiBelow50Last3Days = true;
+    if (pRSI >= 50) wasRsiAbove50Last3Days = true;
+  }
 
   // ADX for trend filtering
   const currentAdx = adx(highs, lows, closes, 14);
@@ -31,22 +45,21 @@ export function run(strategyId, data) {
   // 9-EMA for price confirmation
   const priceEma9 = ema(closes, 9);
 
-  if (strategyId === 'hm_bottom') return bottomCatch(curRSI, curEMA, curVWMA, prevRSI, prevEMA, prevVWMA, cmp, priceEma9);
-  if (strategyId === 'hm_top') return topCatch(curRSI, curEMA, curVWMA, prevRSI, prevEMA, prevVWMA, cmp, priceEma9);
-  if (strategyId === 'hm_bullish') return bullishTrend(curRSI, curEMA, curVWMA, prevRSI, cmp, currentAdx);
-  if (strategyId === 'hm_bearish') return bearishBreakdown(curRSI, curEMA, curVWMA, prevRSI, cmp, currentAdx);
+  if (strategyId === 'hm_bottom') return bottomCatch(curRSI, curEMA, curVWMA, wasBelowLast3Days, cmp, priceEma9);
+  if (strategyId === 'hm_top') return topCatch(curRSI, curEMA, curVWMA, wasAboveLast3Days, cmp, priceEma9);
+  if (strategyId === 'hm_bullish') return bullishTrend(curRSI, curEMA, curVWMA, wasRsiBelow50Last3Days, cmp, currentAdx);
+  if (strategyId === 'hm_bearish') return bearishBreakdown(curRSI, curEMA, curVWMA, wasRsiAbove50Last3Days, cmp, currentAdx);
   if (strategyId === 'hm_chop') return consolidation(curRSI, curEMA, curVWMA, cmp);
 
   return { isMatch: false };
 }
 
-function bottomCatch(curRSI, curEMA, curVWMA, prevRSI, prevEMA, prevVWMA, cmp, priceEma9) {
-  const wasBelow = prevRSI < prevVWMA || prevEMA < prevVWMA;
+function bottomCatch(curRSI, curEMA, curVWMA, wasBelowLast3Days, cmp, priceEma9) {
   const isAbove = curRSI > curVWMA && curEMA > curVWMA;
   const isOversold = curRSI < 55; 
   const isPriceConfirmed = cmp > priceEma9;
 
-  if (wasBelow && isAbove && isOversold && isPriceConfirmed) {
+  if (wasBelowLast3Days && isAbove && isOversold && isPriceConfirmed) {
     return {
       isMatch: true,
       reason: 'HM Bottom Catch: RSI & 3-EMA crossing above 21-VWMA from oversold region, confirmed by price > 9-EMA and volume spike.',
@@ -62,13 +75,12 @@ function bottomCatch(curRSI, curEMA, curVWMA, prevRSI, prevEMA, prevVWMA, cmp, p
   return { isMatch: false };
 }
 
-function topCatch(curRSI, curEMA, curVWMA, prevRSI, prevEMA, prevVWMA, cmp, priceEma9) {
-  const wasAbove = prevRSI > prevVWMA || prevEMA > prevVWMA;
+function topCatch(curRSI, curEMA, curVWMA, wasAboveLast3Days, cmp, priceEma9) {
   const isBelow = curRSI < curVWMA && curEMA < curVWMA;
   const isOverbought = curRSI > 45;
   const isPriceConfirmed = cmp < priceEma9;
 
-  if (wasAbove && isBelow && isOverbought && isPriceConfirmed) {
+  if (wasAboveLast3Days && isBelow && isOverbought && isPriceConfirmed) {
     return {
       isMatch: true,
       reason: 'HM Top Catch: RSI & 3-EMA crossing below 21-VWMA from overbought region, confirmed by price < 9-EMA and volume spike.',
@@ -84,8 +96,8 @@ function topCatch(curRSI, curEMA, curVWMA, prevRSI, prevEMA, prevVWMA, cmp, pric
   return { isMatch: false };
 }
 
-function bullishTrend(curRSI, curEMA, curVWMA, prevRSI, cmp, currentAdx) {
-  if (curRSI > 50 && curRSI > curEMA && curEMA > curVWMA && prevRSI <= 50 && currentAdx > 20) {
+function bullishTrend(curRSI, curEMA, curVWMA, wasRsiBelow50Last3Days, cmp, currentAdx) {
+  if (curRSI > 50 && curRSI > curEMA && curEMA > curVWMA && wasRsiBelow50Last3Days && currentAdx > 20) {
     return {
       isMatch: true,
       reason: 'HM Bullish Breakout: Lines stacked bullishly (Black > Blue > Red), ADX > 20, and volume spiked.',
@@ -101,8 +113,8 @@ function bullishTrend(curRSI, curEMA, curVWMA, prevRSI, cmp, currentAdx) {
   return { isMatch: false };
 }
 
-function bearishBreakdown(curRSI, curEMA, curVWMA, prevRSI, cmp, currentAdx) {
-  if (curRSI < 50 && curVWMA > curEMA && curEMA > curRSI && prevRSI >= 50 && currentAdx > 20) {
+function bearishBreakdown(curRSI, curEMA, curVWMA, wasRsiAbove50Last3Days, cmp, currentAdx) {
+  if (curRSI < 50 && curVWMA > curEMA && curEMA > curRSI && wasRsiAbove50Last3Days && currentAdx > 20) {
     return {
       isMatch: true,
       reason: 'HM Bearish Breakdown: Lines stacked bearishly (Red > Blue > Black), ADX > 20, and volume spiked.',

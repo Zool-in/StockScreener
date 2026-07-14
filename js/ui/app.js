@@ -201,6 +201,17 @@ async function init() {
   modalClose.addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', closeModal);
 
+  // MMI Info Modal
+  const mmiStatusBadge = document.getElementById('mmiStatus');
+  if (mmiStatusBadge) {
+    mmiStatusBadge.addEventListener('click', () => {
+      document.getElementById('modalTitle').innerHTML = 'Market Mood Index (MMI)';
+      document.getElementById('modalDescription').innerHTML = 'The Market Mood Index (MMI) tracks the sentiment of the overall market. It helps in timing your trades by identifying extreme greed or extreme fear phases.';
+      document.getElementById('modalExample').innerHTML = '<strong>< 30 (Extreme Fear):</strong> High probability of a market bottom. Great time for Bottom Catch and Long Term strategies.<br><br><strong>> 70 (Extreme Greed):</strong> High probability of a market top. Great time for Top Catch and Bearish Breakdown strategies.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> When MMI is in the middle (30-70), focus on stock-specific Trend Breakouts rather than betting on macro direction.</span>';
+      modal.classList.remove('hidden');
+    });
+  }
+
   document.querySelectorAll('#strategyPills .pill:not([data-val="all"])').forEach(pill => {
     const icon = document.createElement('span');
     icon.className = 'info-icon';
@@ -309,7 +320,7 @@ async function fetchStatus() {
     if (mmiRes.ok) {
       const mmiData = await mmiRes.json();
       const mmiBadge = document.getElementById('mmiStatus');
-      mmiBadge.innerText = `MMI: ${mmiData.value || 'N/A'}`;
+      mmiBadge.innerHTML = `MMI: ${mmiData.value || 'N/A'} <span class="info-icon" style="margin-left:4px;">i</span>`;
       if (mmiData.value < 30) mmiBadge.className = 'badge badge-green';
       else if (mmiData.value > 70) mmiBadge.className = 'badge badge-red';
       else mmiBadge.className = 'badge badge-amber';
