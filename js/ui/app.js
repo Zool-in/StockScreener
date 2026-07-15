@@ -809,6 +809,9 @@ window.triggerBacktest = (ticker, strategyId) => {
       
       resultsDiv.style.display = "block";
       resultsDiv.innerHTML = `
+        <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
+          Test Period: <b>${results.startDate}</b> — <b>${results.endDate}</b>
+        </div>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px;">
           <div><div style="color:var(--text-muted)">Win Rate</div><div style="font-weight:bold; color: ${results.winRate >= 50 ? 'var(--green)' : 'var(--red)'}">${results.winRate}%</div></div>
           <div><div style="color:var(--text-muted)">Trades</div><div style="font-weight:bold;">${results.totalTrades} (<span style="color:var(--green)">${results.wins}</span>/<span style="color:var(--red)">${results.losses}</span>)</div></div>

@@ -115,6 +115,8 @@ export function runBacktest(strategyId, data, targetPct, slPct) {
     totalReturn: parseFloat(totalReturn.toFixed(2)),
     wins,
     losses,
-    openTrade
+    openTrade,
+    startDate: data.ts[minBars] ? new Date(data.ts[minBars] * 1000).toLocaleDateString() : 'Unknown',
+    endDate: data.ts[n - 1] ? new Date(data.ts[n - 1] * 1000).toLocaleDateString() : 'Unknown'
   };
 }
