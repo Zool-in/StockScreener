@@ -404,7 +404,11 @@ async function runScan() {
                 matchedStrategies.push(s);
               }
             }
-            res = { isMatch: true, reason: 'Unfiltered metrics view', matches: matchedStrategies };
+            if (matchedStrategies.length > 0) {
+              res = { isMatch: true, reason: 'Strategy Match', matches: matchedStrategies };
+            } else {
+              res = { isMatch: false };
+            }
           } else {
             if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
             else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
