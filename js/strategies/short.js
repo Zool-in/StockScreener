@@ -19,6 +19,7 @@ function vcpBreakdown(data) {
   if (hlPct > 4 && cmp < closes[closes.length-2] * 0.96 && currentVol > avgVol * 1.5 && cmp < e200) {
     return {
       isMatch: true,
+      isShort: true,
       reason: 'Tight consolidation snapped downwards on massive volume below the 200 EMA.',
       entry: lows[lows.length-1], // Trigger is breaking today's low
       risk: cmp * 0.03,
@@ -41,9 +42,10 @@ function bearCallSpread(data) {
   if (cmp < e200 && cmp > e200 * 0.95 && rsiVal < 45 && adxVal > 25) {
     return {
       isMatch: true,
-      reason: 'Failing right at the 200-day moving average resistance in a strong downtrend.',
+      isShort: true,
+      reason: 'Bear Call Spread: Trend is solidly down. Good setup to sell Out-of-the-Money Call Spreads above resistance.',
       entry: cmp, // Enter spread at market
-      risk: cmp * 0.05,
+      margin: 40000, 
       metrics: [
         { name: 'RSI', value: rsiVal },
         { name: 'ADX', value: adxVal }
