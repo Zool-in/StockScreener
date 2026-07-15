@@ -35,17 +35,17 @@ const STRATEGY_INFO = {
   btst: {
     name: 'BTST Momentum',
     desc: 'Buy Today, Sell Tomorrow (BTST). Looks for stocks closing at the absolute high of the day on surging volume. This indicates institutional accumulation at the closing bell, which often gaps up the next morning.',
-    example: '<strong>Entry:</strong> Buy at Market Close<br><strong>Stop:</strong> 1.5% below entry<br><strong>Target:</strong> Sell next morning on gap up<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., At 3:25 PM, TATA MOTORS surges to close at the absolute high of the day (₹1050) on massive volume. Buy now to sell on the likely gap-up tomorrow at 9:15 AM.</span>'
+    example: '<img src="/assets/btst_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy at Market Close<br><strong>Stop:</strong> 1.5% below entry<br><strong>Target:</strong> Sell next morning on gap up<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., At 3:25 PM, TATA MOTORS surges to close at the absolute high of the day (₹1050) on massive volume. Buy now to sell on the likely gap-up tomorrow at 9:15 AM.</span>'
   },
   crsi: {
     name: 'Connors RSI',
     desc: 'A mean-reversion strategy that looks for statistically oversold conditions in a long-term uptrend. It uses a 3-period RSI and streak counting to find "rubber band" setups that are stretched too far down.',
-    example: '<strong>Entry:</strong> Buy on the close<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Sell after 2-4 day snapback bounce<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., L&T is in a long-term uptrend but drops 3 days in a row due to market panic, pushing its 3-period RSI below 10. You buy the dip expecting a sharp bounce.</span>'
+    example: '<img src="/assets/crsi_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy on the close<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Sell after 2-4 day snapback bounce<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., L&T is in a long-term uptrend but drops 3 days in a row due to market panic, pushing its 3-period RSI below 10. You buy the dip expecting a sharp bounce.</span>'
   },
   minervini: {
     name: 'Minervini VCP',
     desc: 'Volatility Contraction Pattern. Looks for stocks in a Stage 2 uptrend (above 150 & 200 EMA) that are consolidating in a tight coil near 52-week highs, with volume drying up dramatically.',
-    example: '<strong>Entry:</strong> Breakout of current tight range high<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Multi-week swing trade<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., HAL rallied 50%, then consolidated for 6 weeks. The swings get tighter (15% drop, then 8%, then 3%), and volume disappears. You buy the breakout of the 3% tight range.</span>'
+    example: '<img src="/assets/vcp_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Breakout of current tight range high<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Multi-week swing trade<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., HAL rallied 50%, then consolidated for 6 weeks. The swings get tighter (15% drop, then 8%, then 3%), and volume disappears. You buy the breakout of the 3% tight range.</span>'
   },
   darvas: {
     name: 'Darvas Box',
@@ -55,12 +55,12 @@ const STRATEGY_INFO = {
   xmomentum: {
     name: 'Fresh Momentum Breakout',
     desc: 'Identifies explosive momentum right out of a tight coil. It requires the 21 and 50 EMAs to be tightly pinched (within 4%) and a tight 20-day price range. When MACD, RSI, and CCI turn extremely bullish on massive volume, it flags the start of the breakout, while strictly filtering out stocks that have already run away.',
-    example: '<strong>Entry:</strong> Buy breakout above 20-day high<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Ride the trend until RSI drops below 50<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TATA MOTORS tightens into a narrow range where its 21 and 50 EMAs converge. Suddenly it explodes above its 20-day high on 2x volume. You buy the explosive breakout early, rather than chasing it later.</span>'
+    example: '<img src="/assets/xmomentum_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy breakout above 20-day high<br><strong>Stop:</strong> 4% below entry<br><strong>Target:</strong> Ride the trend until RSI drops below 50<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TATA MOTORS tightens into a narrow range where its 21 and 50 EMAs converge. Suddenly it explodes above its 20-day high on 2x volume. You buy the explosive breakout early, rather than chasing it later.</span>'
   },
   rs: {
     name: 'Relative Strength',
     desc: 'Focuses on stocks showing extreme internal momentum and ignoring market weakness. Looks for ADX > 30 and RSI > 60 in a strong established trend.',
-    example: '<strong>Entry:</strong> Buy breakout<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Ride the runaway trend<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., NIFTY is down 2% today, but ZOMATO is up 4% making new 52-week highs with an ADX of 35. You buy the strength because it is ignoring market gravity.</span>'
+    example: '<img src="/assets/rs_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy breakout<br><strong>Stop:</strong> 5% risk<br><strong>Target:</strong> Ride the runaway trend<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., NIFTY is down 2% today, but ZOMATO is up 4% making new 52-week highs with an ADX of 35. You buy the strength because it is ignoring market gravity.</span>'
   },
   vcp_down: {
     name: 'VCP Breakdown',
@@ -105,7 +105,7 @@ const STRATEGY_INFO = {
   hm_top: {
     name: 'Hilega Milega: Top Catch',
     desc: 'Catches early downside reversals when the RSI and 3-EMA cross below the 21-VWMA from an overbought condition.',
-    example: '<strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is over-extended (RSI > 50), but momentum dies. The RSI and EMA cross below the VWMA volume line, indicating a top.</span>'
+    example: '<img src="/assets/hm_top_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is over-extended (RSI > 50), but momentum dies. The RSI and EMA cross below the VWMA volume line, indicating a top.</span>'
   },
   hm_bullish: {
     name: 'Hilega Milega: Bullish Trend',
@@ -115,22 +115,22 @@ const STRATEGY_INFO = {
   hm_bearish: {
     name: 'Hilega Milega: Bearish Breakdown',
     desc: 'Identifies strong downward momentum where the RSI < 50, and lines are stacked perfectly for a drop: 21-VWMA > 3-EMA > RSI.',
-    example: '<strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume is accelerating to the downside. The red volume line sits heavily on top of the blue and green lines, suppressing price.</span>'
+    example: '<img src="/assets/hm_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume is accelerating to the downside. The red volume line sits heavily on top of the blue and green lines, suppressing price.</span>'
   },
   hm_chop: {
     name: 'Hilega Milega: Consolidation',
     desc: 'Identifies when the RSI, EMA, and VWMA are tangled together tightly near the 50 centerline, indicating no clear trend (Chop).',
-    example: '<strong>Action:</strong> Avoid or watch for a squeeze breakout.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is bouncing sideways. The indicators are flat-lining on top of each other. Do not trade this until it breaks out into a trend.</span>'
+    example: '<img src="/assets/hm_chop_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Avoid or watch for a squeeze breakout.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is bouncing sideways. The indicators are flat-lining on top of each other. Do not trade this until it breaks out into a trend.</span>'
   },
   weinstein: {
     name: 'Stan Weinstein Stage 2',
     desc: 'A classic long-term strategy. Looks for a stock breaking out of a flat Stage 1 base, crossing its 30-period MA on massive (200%+) volume into a Stage 2 markup.',
-    example: '<strong>Entry:</strong> Buy at market<br><strong>Stop:</strong> Below the 30-period MA<br><strong>Target:</strong> Multi-month / multi-year hold<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., SUZLON did nothing for 2 years (Stage 1 base). Suddenly, it crosses its 30-week Moving Average on record volume. You buy and hold for a multi-year Stage 2 uptrend.</span>'
+    example: '<img src="/assets/weinstein_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy at market<br><strong>Stop:</strong> Below the 30-period MA<br><strong>Target:</strong> Multi-month / multi-year hold<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., SUZLON did nothing for 2 years (Stage 1 base). Suddenly, it crosses its 30-week Moving Average on record volume. You buy and hold for a multi-year Stage 2 uptrend.</span>'
   },
   wyckoff: {
     name: 'Wyckoff Stopping Vol',
     desc: 'Identifies institutional accumulation. Looks for a massive volume spike during a downtrend where the price refuses to drop further (e.g. Doji or Hammer), indicating smart money is absorbing all selling pressure.',
-    example: '<strong>Entry:</strong> Buy near close<br><strong>Stop:</strong> Below the stopping candle low<br><strong>Target:</strong> Reversal swing trade<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., PAYTM is crashing for weeks. Today, volume is 5x normal, but the price forms a perfect Doji (it stops going down). This is "Stopping Volume"—institutions are quietly buying the panic.</span>'
+    example: '<img src="/assets/wyckoff_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy near close<br><strong>Stop:</strong> Below the stopping candle low<br><strong>Target:</strong> Reversal swing trade<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., PAYTM is crashing for weeks. Today, volume is 5x normal, but the price forms a perfect Doji (it stops going down). This is "Stopping Volume"—institutions are quietly buying the panic.</span>'
   }
 };
 
