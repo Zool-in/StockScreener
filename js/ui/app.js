@@ -50,7 +50,7 @@ const STRATEGY_INFO = {
   darvas: {
     name: 'Darvas Box',
     desc: 'Identifies stocks that have been trading in a tight horizontal range (< 15%) for multiple months, and are suddenly breaking out of the "Box" top on massive volume.',
-    example: '<strong>Entry:</strong> Breakout of Box Top<br><strong>Stop:</strong> Right below the Box Top line<br><strong>Target:</strong> Ride the trend until a new box forms<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE bounces between ₹2300 and ₹2500 for 4 months (The Box). Today, it rips above ₹2500 on huge volume. You buy the breakout.</span>'
+    example: '<img src="/assets/darvas_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Breakout of Box Top<br><strong>Stop:</strong> Right below the Box Top line<br><strong>Target:</strong> Ride the trend until a new box forms<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE bounces between ₹2300 and ₹2500 for 4 months (The Box). Today, it rips above ₹2500 on huge volume. You buy the breakout.</span>'
   },
   xmomentum: {
     name: 'Fresh Momentum Breakout',
@@ -65,7 +65,7 @@ const STRATEGY_INFO = {
   vcp_down: {
     name: 'VCP Breakdown',
     desc: 'The bearish inverse of VCP. Looks for tight consolidation below the 200 EMA that suddenly snaps downwards on massive volume.',
-    example: '<strong>Entry:</strong> Breakdown of current low<br><strong>Stop:</strong> 3% risk<br><strong>Target:</strong> Heavy drop acceleration<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., WIPRO is in a long downtrend below its 200 EMA. It consolidates tightly for 3 weeks, then suddenly breaks the support level on high volume. You short the breakdown.</span>'
+    example: '<img src="/assets/vcp_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1); filter: hue-rotate(180deg) invert(1);"><strong>Entry:</strong> Breakdown of current low<br><strong>Stop:</strong> 3% risk<br><strong>Target:</strong> Heavy drop acceleration<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., WIPRO is in a long downtrend below its 200 EMA. It consolidates tightly for 3 weeks, then suddenly breaks the support level on high volume. You short the breakdown.</span>'
   },
   bear_call: {
     name: 'Bear Call Spread',
@@ -100,7 +100,7 @@ const STRATEGY_INFO = {
   hm_bottom: {
     name: 'Hilega Milega: Bottom Catch',
     desc: 'Catches early upside reversals when the RSI and 3-EMA cross back above the 21-VWMA from an oversold condition.',
-    example: '<strong>Action:</strong> Buy early reversal.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock has been beaten down (RSI < 50), but momentum suddenly shifts. The RSI and EMA cross above the VWMA volume line. Buy early before the trend becomes obvious.</span>'
+    example: '<img src="/assets/hm_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Buy early reversal.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock has been beaten down (RSI < 50), but momentum suddenly shifts. The RSI and EMA cross above the VWMA volume line. Buy early before the trend becomes obvious.</span>'
   },
   hm_top: {
     name: 'Hilega Milega: Top Catch',
@@ -110,7 +110,7 @@ const STRATEGY_INFO = {
   hm_bullish: {
     name: 'Hilega Milega: Bullish Trend',
     desc: 'Identifies strong upward momentum where the RSI > 50, and lines are stacked perfectly: RSI > 3-EMA > 21-VWMA.',
-    example: '<strong>Action:</strong> Buy breakout/trend continuation.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume and price are pushing higher. The green line is above the blue, which is above the red, confirming a very safe and strong uptrend.</span>'
+    example: '<img src="/assets/hm_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Buy breakout/trend continuation.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume and price are pushing higher. The green line is above the blue, which is above the red, confirming a very safe and strong uptrend.</span>'
   },
   hm_bearish: {
     name: 'Hilega Milega: Bearish Breakdown',
