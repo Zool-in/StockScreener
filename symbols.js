@@ -18,6 +18,9 @@ const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
 // Friendly key → NSE constituent CSV basename.
 const INDEX_FILES = {
   nifty50: 'ind_nifty50list',
+  niftynext50: 'ind_niftynext50list',
+  niftymidcap150: 'ind_niftymidcap150list',
+  niftysmallcap250: 'ind_niftysmallcap250list',
   nifty100: 'ind_nifty100list',
   nifty200: 'ind_nifty200list',
   nifty500: 'ind_nifty500list',

@@ -29,16 +29,17 @@
       <div style="margin-bottom: 24px;">
         <label class="input-label">Stock Universe</label>
         <div class="pill-container" id="universePills">
-          <div class="pill active" data-val="nifty50">Nifty 50</div>
-          <div class="pill" data-val="nifty100">Nifty 100</div>
-          <div class="pill" data-val="nifty200">Nifty 200</div>
-          <div class="pill" data-val="nifty500">Nifty 500</div>
-          <div class="pill" data-val="niftytotal">Nifty Total</div>
-          <div class="pill" data-val="etf">ETFs</div>
-          <div class="pill" data-val="fno">F&O Stocks</div>
-          <div class="pill" data-val="all">All NSE</div>
-          <div class="pill" data-val="bse_exclusive">BSE Exclusives</div>
-          <div class="pill" data-val="custom">Custom List</div>
+          <button class="pill active" data-val="nifty50">Nifty 50</button>
+        <button class="pill" data-val="niftynext50">Nifty Next 50</button>
+        <button class="pill" data-val="niftymidcap150">Midcap 150</button>
+        <button class="pill" data-val="niftysmallcap250">Smallcap 250</button>
+        <button class="pill" data-val="nifty500">Nifty 500</button>
+        <button class="pill" data-val="niftytotal">Nifty Total</button>
+        <button class="pill" data-val="all">All NSE</button>
+        <button class="pill" data-val="fno">F&O Stocks</button>
+        <button class="pill" data-val="etf">ETFs</button>
+        <button class="pill" data-val="bse_exclusive">BSE Exclusives</button>
+        <button class="pill" data-val="custom">Custom List</button>
         </div>
         
         <div id="customTickerWrapper" class="hidden" style="margin-top: 12px;">
@@ -150,6 +151,6 @@
   </div>
 
   <!-- Entry point for UI routing and execution -->
-  <script type="module" src="js/ui/app.js?v=38"></script>
+  <script type="module" src="js/ui/app.js?v=39"></script>
 </body>
 </html>
