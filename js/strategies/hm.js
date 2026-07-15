@@ -90,6 +90,7 @@ function bearishBreakdown(curRSI, curEMA, curVWMA, prevRSI, cmp) {
   if (curRSI < 50 && curVWMA > curEMA && curEMA > curRSI && prevRSI >= 50) {
     return {
       isMatch: true,
+      isShort: true,
       reason: 'Hilega Milega Bearish Breakdown: Lines stacked bearishly (Red > Blue > Black) and crossed below 50.',
       entry: cmp,
       risk: cmp * 0.05,
