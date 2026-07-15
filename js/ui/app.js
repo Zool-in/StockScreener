@@ -2,6 +2,7 @@
 import { AppState } from '../core/state.js?v=6';
 import { fetchOHLCV } from '../core/api.js?v=6';
 import { ema, rsi, adx, macd, cci } from '../core/math.js?v=7';
+import { runBacktest } from '../core/backtest.js?v=1';
 
 // Strategy Modules (We will create these next)
 import * as swingStrats from '../strategies/swing.js?v=6';
@@ -517,6 +518,8 @@ async function runScan() {
 }
 
 // ─── UI Renderer ────────────────────────────────────────────────────────────
+window._cachedStockData = {};
+
 function renderResults(results) {
   if (results.length === 0) {
     DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">No matching setups found for the selected strategy.</div>`;
@@ -759,12 +762,68 @@ function renderResults(results) {
           <div class="lv"><div class="lk">R2</div><div class="lv2">₹${r.r2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="lv"><div class="lk">R3</div><div class="lv2">₹${r.r3.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
         </div>
+        
+        <div class="backtest-bar" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; align-items: center;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
+            <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Target %</span>
+            <input type="number" id="bt-tp-${r.ticker}" value="10" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 100%;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
+            <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Stop %</span>
+            <input type="number" id="bt-sl-${r.ticker}" value="5" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 100%;">
+          </div>
+          <button onclick="triggerBacktest('${r.ticker}', '${AppState.strategy === 'all' ? (r.matches && r.matches.length > 0 ? r.matches[0] : 'minervini') : AppState.strategy}')" style="background: var(--accent); color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; align-self: flex-end; height: 26px; transition: opacity 0.2s;">Run Backtest</button>
+        </div>
+        <div id="bt-results-${r.ticker}" style="display: none; margin-top: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 11px;"></div>
       </div>
     `;
+    
+    // Cache data for backtesting
+    window._cachedStockData[r.ticker] = r.data;
     });
   }
 
   DOM.resultsArea.innerHTML = html;
 }
+
+window.triggerBacktest = (ticker, strategyId) => {
+  const data = window._cachedStockData[ticker];
+  if (!data) return alert("Data not found for backtest");
+  
+  const tpInput = document.getElementById(`bt-tp-${ticker}`);
+  const slInput = document.getElementById(`bt-sl-${ticker}`);
+  const resultsDiv = document.getElementById(`bt-results-${ticker}`);
+  const btn = event.target;
+  
+  const targetPct = parseFloat(tpInput.value) || 10;
+  const slPct = parseFloat(slInput.value) || 5;
+
+  btn.innerText = "Running...";
+  btn.style.opacity = "0.5";
+
+  // Run backtest async to not block UI thread
+  setTimeout(() => {
+    try {
+      const results = runBacktest(strategyId, data, targetPct, slPct);
+      const isProfitable = results.totalReturn >= 0;
+      
+      resultsDiv.style.display = "block";
+      resultsDiv.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px;">
+          <div><div style="color:var(--text-muted)">Win Rate</div><div style="font-weight:bold; color: ${results.winRate >= 50 ? 'var(--green)' : 'var(--red)'}">${results.winRate}%</div></div>
+          <div><div style="color:var(--text-muted)">Trades</div><div style="font-weight:bold;">${results.totalTrades} (<span style="color:var(--green)">${results.wins}</span>/<span style="color:var(--red)">${results.losses}</span>)</div></div>
+          <div><div style="color:var(--text-muted)">Net PnL</div><div style="font-weight:bold; color: ${isProfitable ? 'var(--green)' : 'var(--red)'}">${isProfitable ? '+' : ''}${results.totalReturn}%</div></div>
+        </div>
+        ${results.openTrade ? `<div style="color:var(--blue); margin-top:4px; padding-top:4px; border-top:1px dashed rgba(255,255,255,0.1);">Currently Open Trade: <b>₹${results.openTrade.entryPrice}</b></div>` : ''}
+      `;
+    } catch (err) {
+      console.error(err);
+      alert("Backtest failed: " + err.message);
+    } finally {
+      btn.innerText = "Run Backtest";
+      btn.style.opacity = "1";
+    }
+  }, 10);
+};
 
 document.addEventListener('DOMContentLoaded', init);
