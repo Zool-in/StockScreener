@@ -30,7 +30,7 @@ const STRATEGY_INFO = {
   ttm_orb: {
     name: 'TTM Squeeze + ORB',
     desc: 'Combines the TTM Squeeze (Bollinger Bands narrowing inside Keltner Channels indicating low volatility) with an Opening Range Breakout (ORB) on surging volume. It looks for explosive moves out of tight consolidation.',
-    example: '<strong>Entry:</strong> Breakout of current High<br><strong>Stop:</strong> 1% below entry<br><strong>Target:</strong> High momentum intraday run<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ITC has been trading flat between ₹400-₹405 for 2 weeks (Squeeze). Today at 9:30 AM, it breaks ₹406 on 3x normal volume (ORB).</span>'
+    example: '<img src="/assets/ttm_orb_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Breakout of current High<br><strong>Stop:</strong> 1% below entry<br><strong>Target:</strong> High momentum intraday run<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ITC has been trading flat between ₹400-₹405 for 2 weeks (Squeeze). Today at 9:30 AM, it breaks ₹406 on 3x normal volume (ORB).</span>'
   },
   btst: {
     name: 'BTST Momentum',
@@ -389,15 +389,16 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'wheel', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call'];
+            const allStrategies = ['ttm_orb', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop'];
             for (const s of allStrategies) {
               let tempRes = null;
               if (['ttm_orb'].includes(s)) tempRes = intradayStrats.run(s, data);
-              else if (['minervini', 'darvas', 'rs', 'crsi'].includes(s)) tempRes = swingStrats.run(s, data);
-              else if (['bps', 'strangle', 'iv_crush', 'wheel', 'csp'].includes(s)) tempRes = optionStrats.run(s, data);
+              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(s)) tempRes = swingStrats.run(s, data);
+              else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
               else if (['weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
               else if (['vcp_down', 'bear_call'].includes(s)) tempRes = shortStrats.run(s, data);
+              else if (s.startsWith('hm_')) tempRes = hmStrats.run(s, data);
               
               if (tempRes && tempRes.isMatch) {
                 matchedStrategies.push(s);
@@ -636,14 +637,24 @@ function renderResults(results) {
       iv_crush: 'Earnings IV Crush',
       wheel: 'The Wheel / CSP',
       weinstein: 'Stan Weinstein Stage 2',
-      wyckoff: 'Wyckoff Stopping Vol'
+      wyckoff: 'Wyckoff Stopping Vol',
+      hm_bottom: 'HM Bottom',
+      hm_top: 'HM Top',
+      hm_bullish: 'HM Bullish',
+      hm_bearish: 'HM Bearish',
+      hm_chop: 'HM Chop',
+      xmomentum: 'Fresh Momentum',
+      csp: 'Cash Secured Put',
+      cc: 'Covered Call'
     };
     
     let tagsHtml = '';
-    if (AppState.strategy === 'all' && r.matches && r.matches.length > 0) {
-      r.matches.forEach(m => {
-        tagsHtml += `<span class="setup-tag tag-breakout">${strategyLabels[m] || m.toUpperCase()}</span>`;
-      });
+    if (AppState.strategy === 'all') {
+      if (r.matches && r.matches.length > 0) {
+        r.matches.forEach(m => {
+          tagsHtml += `<span class="setup-tag tag-breakout">${strategyLabels[m] || m.toUpperCase()}</span>`;
+        });
+      }
     } else {
       const setupName = strategyLabels[AppState.strategy] || AppState.strategy.toUpperCase();
       tagsHtml = `<span class="setup-tag tag-breakout">${setupName}</span>`;
