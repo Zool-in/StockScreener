@@ -29,7 +29,7 @@ export function runBacktest(strategyId, data, targetPct, slPct) {
     const currentHigh = data.highs[i];
     const currentLow = data.lows[i];
     const currentClose = data.closes[i];
-    const currentDate = data.dates[i];
+    const currentDate = data.ts[i];
 
     // 1. Manage existing open trade
     if (openTrade) {
@@ -65,7 +65,7 @@ export function runBacktest(strategyId, data, targetPct, slPct) {
       lows: data.lows.slice(0, i + 1),
       closes: data.closes.slice(0, i + 1),
       volumes: data.volumes.slice(0, i + 1),
-      dates: data.dates.slice(0, i + 1),
+      ts: data.ts.slice(0, i + 1),
       cmp: currentClose
     };
 
