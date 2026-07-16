@@ -94,11 +94,9 @@ function getIstDay() {
 function loadSession() {
   try {
     const d = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf8'));
-    if (d.day === getIstDay()) {
-      currentSession = d;
-      lastSessionDay = d.day;
-      return;
-    }
+    currentSession = d;
+    lastSessionDay = d.day;
+    if (d.day === getIstDay()) return;
   } catch (_) {}
   
   // Fallback: if deployment wiped the file, try reading from .env
@@ -145,11 +143,45 @@ function saveSession(data) {
 
 function hasValidSession() {
   if (!currentSession) loadSession();
-  return currentSession && lastSessionDay === getIstDay();
+  // It's valid if it matches today, OR if it has a refresh_token we can try to use
+  return currentSession && (lastSessionDay === getIstDay() || currentSession.refresh_token);
 }
 
-function getAuthHeader() {
-  if (!hasValidSession()) throw new Error('Fyers session expired or missing');
+let tokenRefreshPromise = null;
+
+async function doRefreshToken() {
+  const appIdHash = crypto.createHash('sha256').update(`${CONFIG.appId}:${CONFIG.appSecret}`).digest('hex');
+  try {
+    const res = await request('POST', '/api/v3/validate-refresh-token', {
+      grant_type: 'refresh_token',
+      appIdHash: appIdHash,
+      refresh_token: currentSession.refresh_token
+    });
+    if (res.s === 'ok' && res.access_token) {
+      const newSession = { ...currentSession, ...res };
+      saveSession(newSession);
+      console.log('[Fyers] Successfully auto-refreshed access token via refresh_token');
+      return true;
+    }
+  } catch (err) {
+    console.error('[Fyers] Failed to auto-refresh token:', err.message);
+  }
+  return false;
+}
+
+async function getAuthHeader() {
+  if (!currentSession) loadSession();
+  
+  if (currentSession && lastSessionDay !== getIstDay() && currentSession.refresh_token) {
+    if (!tokenRefreshPromise) {
+      tokenRefreshPromise = doRefreshToken().finally(() => tokenRefreshPromise = null);
+    }
+    await tokenRefreshPromise;
+  }
+
+  if (!currentSession || lastSessionDay !== getIstDay()) {
+    throw new Error('Fyers session expired or missing');
+  }
   return `${CONFIG.appId}:${currentSession.access_token}`;
 }
 
@@ -213,7 +245,7 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
     let success = false;
     for (let attempt = 1; attempt <= 4; attempt++) {
       try {
-        res = await request('GET', url, null, { Authorization: getAuthHeader() });
+        res = await request('GET', url, null, { Authorization: await getAuthHeader() });
         success = true;
         break;
       } catch (e) {
@@ -278,7 +310,7 @@ async function getLtp(symbols) {
     for (let attempt = 1; attempt <= 4; attempt++) {
       try {
         const url = `${FYERS_BASE}/data/quotes?symbols=${encodeURIComponent(fyersSyms)}`;
-        res = await request('GET', url, null, { Authorization: getAuthHeader() });
+        res = await request('GET', url, null, { Authorization: await getAuthHeader() });
         break; // success
       } catch (e) {
         if (e.message === 'FYERS_RATE_LIMIT' && attempt < 4) {
@@ -324,7 +356,7 @@ module.exports = {
 async function fetchOptionChain(symbol, strikecount = 30, expiry = null) {
   let url = `${FYERS_BASE}/data/options-chain-v3?symbol=${encodeURIComponent(symbol)}&strikecount=${strikecount}`;
   if (expiry) url += `&expiry=${encodeURIComponent(expiry)}`;
-  return request('GET', url, null, { Authorization: getAuthHeader() });
+  return request('GET', url, null, { Authorization: await getAuthHeader() });
 }
 
 module.exports.fetchOptionChain = fetchOptionChain;
