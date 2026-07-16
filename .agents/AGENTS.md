@@ -44,24 +44,25 @@ All AI agents and developers must adhere to the following rigorous enterprise-gr
 
 ### Phase 1: Product Definition & Requirements
 1. **Product Requirements Document (PRD)**: Before touching code, define the exact business logic, user personas, and success metrics. If a prompt is vague, refuse to code and ask clarifying questions or use `/grill-me`.
-2. **System Functional Requirements (SFR)**: Document the technical constraints, API contracts, data models, and edge cases. 
+2. **System Functional Requirements (SFR)**: Document the functional capabilities, user interactions, and expected outputs of the system.
+3. **Software Requirements Specification (SRS)**: Document the deep technical constraints, API contracts, data models, and edge cases.
 
 ### Phase 2: Design & Prototyping
-3. **UI/UX Design Handoff**: Translate design files and the Product Specification Document (PSD) into component hierarchies. Define the Design System (typography, spacing, color tokens, and interactive states). 
-4. **Feasibility Review**: Identify any technical limitations in the proposed UI (e.g., complex animations impacting performance) and propose accessible, performant alternatives.
+4. **UI/UX Design Handoff**: Translate design files and the Product Specification Document (PSD) into component hierarchies. Define the Design System (typography, spacing, color tokens, and interactive states). 
+5. **Feasibility Review**: Identify any technical limitations in the proposed UI (e.g., complex animations impacting performance) and propose accessible, performant alternatives.
 
 ### Phase 3: System Architecture
-5. **Technical Design Document**: Draft an `implementation_plan.md` outlining the architecture, state management flow, database schema, and component file structure.
-6. **Security Review**: Identify potential vulnerabilities (XSS, CSRF, rate-limiting) before implementation.
+6. **Technical Design Document**: Draft an `implementation_plan.md` outlining the architecture, state management flow, database schema, and component file structure.
+7. **Security Review**: Identify potential vulnerabilities (XSS, CSRF, rate-limiting) before implementation.
 
 ### Phase 4: Development & Execution
-7. **Atomic Coding**: Write clean, modular, and DRY code adhering to the standards in this rulebook. Use a `task.md` checklist to track progress.
-8. **Version Control**: Maintain clean commit histories. Group related changes into logical commits.
+8. **Atomic Coding**: Write clean, modular, and DRY code adhering to the standards in this rulebook. Use a `task.md` checklist to track progress.
+9. **Version Control**: Maintain clean commit histories. Group related changes into logical commits.
 
 ### Phase 5: Quality Assurance (QA) & Testing
-9. **Automated Testing**: Write unit tests (Jest, Vitest) for utility functions and state logic. Ensure critical user flows are covered by E2E tests (Cypress, Playwright).
-10. **Manual QA Verification**: Rigorously test UI changes in the browser. Verify responsiveness across breakpoints, check console logs for hidden errors, and validate API edge cases (timeouts, 500s).
+10. **Automated Testing**: Write unit tests (Jest, Vitest) for utility functions and state logic. Ensure critical user flows are covered by E2E tests (Cypress, Playwright).
+11. **Manual QA Verification**: Rigorously test UI changes in the browser. Verify responsiveness across breakpoints, check console logs for hidden errors, and validate API edge cases (timeouts, 500s).
 
 ### Phase 6: Deliverables & Deployment
-11. **Documentation**: Output a `walkthrough.md`, updating inline docstrings, and generating release notes summarizing what was accomplished.
-12. **CI/CD & Monitoring**: Ensure the build passes all checks and deployments are monitored for regression.
+12. **Documentation**: Output a `walkthrough.md`, updating inline docstrings, and generating release notes summarizing what was accomplished.
+13. **CI/CD & Monitoring**: Ensure the build passes all checks and deployments are monitored for regression.
