@@ -42,10 +42,10 @@ All AI agents and developers must adhere to the following rigorous enterprise-gr
 
 ### Phase 1: Product Definition & Requirements
 1. **Product Requirements Document (PRD)**: Before touching code, define the exact business logic, user personas, and success metrics. If a prompt is vague, refuse to code and ask clarifying questions or use `/grill-me`.
-2. **Software Requirements Specification (SRS)**: Document the technical constraints, API contracts, data models, and edge cases. 
+2. **System Functional Requirements (SRS)**: Document the technical constraints, API contracts, data models, and edge cases. 
 
 ### Phase 2: Design & Prototyping
-3. **UI/UX Design Handoff**: Translate design files (Figma, Sketch, PSD) into component hierarchies. Define the Design System (typography, spacing, color tokens, and interactive states). 
+3. **UI/UX Design Handoff**: Translate design files and the Product Specification Document (PSD) into component hierarchies. Define the Design System (typography, spacing, color tokens, and interactive states). 
 4. **Feasibility Review**: Identify any technical limitations in the proposed UI (e.g., complex animations impacting performance) and propose accessible, performant alternatives.
 
 ### Phase 3: System Architecture
