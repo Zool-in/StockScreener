@@ -270,6 +270,7 @@ async function getLtp(symbols) {
   for (let i = 0; i < symbols.length; i += 50) {
     const chunk = symbols.slice(i, i + 50);
     const fyersSyms = chunk.map(s => {
+      if (s.startsWith('BSE:') || s.startsWith('NSE:')) return s; // Already fully qualified
       const b = s.replace(/\.NS$/i, '').toUpperCase();
       return b.includes('NIFTY') ? `NSE:${b.replace(/\s+/g, '')}-INDEX` : `NSE:${b}-EQ`;
     }).join(',');
@@ -293,8 +294,10 @@ async function getLtp(symbols) {
       res.d.forEach(item => {
         if (item.v && item.v.lp) {
           // map back to standard symbol (without .NS) so server.js can map it correctly
-          const origin = item.n.replace('NSE:', '').replace('-EQ', '').replace('-INDEX', '');
+          const origin = item.n.replace('NSE:', '').replace('BSE:', '').replace('-EQ', '').replace('-INDEX', '');
           quotes[origin] = item.v.lp;
+          // also store exact match for explicitly queried symbols
+          quotes[item.n] = item.v.lp;
         }
       });
     } else if (res) {
