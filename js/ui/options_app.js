@@ -50,7 +50,7 @@ async function runScan() {
       const qRes = await fetch(`/api/quotes?symbols=${activeIndex}`);
       if (qRes.ok) {
         const qData = await qRes.json();
-        underlyingLtp = qData[activeIndex] || null;
+        underlyingLtp = Object.values(qData)[0] || null;
       }
     } catch(e) { console.warn("Failed to fetch underlying LTP"); }
 
@@ -113,12 +113,18 @@ function renderChain(chainData, underlyingLtp) {
     // AND Volume must be abnormally high compared to OI (e.g., > 3x)
     if (ceOI > (maxCeOI * 0.20) && ceVol > (ceOI * 3)) {
         const info = "BULLISH SIGNAL: Call Writers (Resistance) are panicking and covering shorts. Momentum is moving UP. Suggestion: BUY ATM Call (CE).";
-        alertMsg = `<span class="badge badge-purple" title="${info}" style="cursor:help;">📈 BULLISH: CE Gamma Trap! <span style="font-size:10px">ⓘ</span><br><small style="color:var(--text-green)">Suggest: Buy CE</small></span>`;
+        alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
+            <span class="badge badge-purple">📈 BULLISH: CE Gamma Trap! ⓘ</span>
+            <span style="font-size:10px; color:var(--text-green); font-weight:600; text-transform:uppercase;">Suggest: Buy CE</span>
+        </div>`;
         tr.classList.add('gamma-alert');
     }
     if (peOI > (maxPeOI * 0.20) && peVol > (peOI * 3)) {
         const info = "BEARISH SIGNAL: Put Writers (Support) are panicking and covering shorts. Momentum is moving DOWN. Suggestion: BUY ATM Put (PE).";
-        alertMsg = `<span class="badge badge-purple" title="${info}" style="cursor:help;">📉 BEARISH: PE Gamma Trap! <span style="font-size:10px">ⓘ</span><br><small style="color:var(--text-red)">Suggest: Buy PE</small></span>`;
+        alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
+            <span class="badge badge-purple">📉 BEARISH: PE Gamma Trap! ⓘ</span>
+            <span style="font-size:10px; color:var(--text-red); font-weight:600; text-transform:uppercase;">Suggest: Buy PE</span>
+        </div>`;
         tr.classList.add('gamma-alert');
     }
 
