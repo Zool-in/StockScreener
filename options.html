@@ -18,6 +18,12 @@
     .itm-bg { background: rgba(255, 215, 0, 0.05); } /* Faint gold for In-The-Money */
     .otm-bg { background: rgba(0, 0, 0, 0.15); } /* Darker for Out-Of-The-Money */
     .atm-row { border-top: 2px solid var(--text-main); border-bottom: 2px solid var(--text-main); }
+    
+    .oi-cell { position: relative; }
+    .oi-bar { position: absolute; top: 0; bottom: 0; opacity: 0.15; pointer-events: none; }
+    .oi-bar-call { right: 0; background: var(--red); }
+    .oi-bar-put { left: 0; background: var(--green); }
+    .strike-cell { text-align: center !important; font-weight: bold; background: var(--bg-card); }
   </style>
 </head>
 <body>
@@ -77,13 +83,13 @@
         <table class="options-table" id="optionsTable">
           <thead>
             <tr>
-              <th>Strike</th>
-              <th>Call Price</th>
-              <th>Call Volume</th>
-              <th>Call OI</th>
-              <th>Put Price</th>
-              <th>Put Volume</th>
-              <th>Put OI</th>
+              <th>Delta</th>
+              <th>Call LTP</th>
+              <th>Call OI <div style="display:inline-block; width:12px; height:6px; background:var(--red); border-radius:2px; margin-left:4px;"></div></th>
+              <th style="text-align:center;">Strike</th>
+              <th>Put OI <div style="display:inline-block; width:12px; height:6px; background:var(--green); border-radius:2px; margin-left:4px;"></div></th>
+              <th>Put LTP</th>
+              <th>Delta</th>
               <th>Alert</th>
             </tr>
           </thead>
@@ -96,6 +102,6 @@
     </div>
   </main>
 
-  <script type="module" src="js/ui/options_app.js?v=8" defer></script>
+  <script type="module" src="js/ui/options_app.js?v=9" defer></script>
 </body>
 </html>

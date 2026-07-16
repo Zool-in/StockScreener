@@ -419,3 +419,107 @@ export function findOrderBlocks(ohlcv, pivotLength = 5) {
 
   return { bullishOBs: unmitigatedBullish, bearishOBs: unmitigatedBearish };
 }
+
+// ─── Black-Scholes Option Pricing & Greeks ────────────────────────────────────
+
+// Standard Normal cumulative distribution function (CDF)
+function normCDF(x) {
+  let sign = 1;
+  if (x < 0) {
+    sign = -1;
+    x = -x;
+  }
+  const b1 =  0.319381530;
+  const b2 = -0.356563782;
+  const b3 =  1.781477937;
+  const b4 = -1.821255978;
+  const b5 =  1.330274429;
+  const p  =  0.2316419;
+  const c  =  0.39894228;
+
+  const t = 1.0 / (1.0 + p * x);
+  const e = c * Math.exp(-x * x / 2.0);
+  const poly = t * (b1 + t * (b2 + t * (b3 + t * (b4 + t * b5))));
+  const cdf = 1.0 - e * poly;
+  return sign === 1 ? cdf : 1.0 - cdf;
+}
+
+// Standard Normal probability density function (PDF)
+function normPDF(x) {
+  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+}
+
+// Calculate d1 and d2
+function getD1D2(S, K, T, r, v) {
+  if (v <= 0 || T <= 0) return { d1: 0, d2: 0 };
+  const d1 = (Math.log(S / K) + (r + 0.5 * v * v) * T) / (v * Math.sqrt(T));
+  const d2 = d1 - v * Math.sqrt(T);
+  return { d1, d2 };
+}
+
+// Calculate Option Price
+export function bsPrice(S, K, T, r, v, type = 'CE') {
+  if (T <= 0) return type === 'CE' ? Math.max(0, S - K) : Math.max(0, K - S);
+  const { d1, d2 } = getD1D2(S, K, T, r, v);
+  if (type === 'CE') {
+    return S * normCDF(d1) - K * Math.exp(-r * T) * normCDF(d2);
+  } else {
+    return K * Math.exp(-r * T) * normCDF(-d2) - S * normCDF(-d1);
+  }
+}
+
+// Calculate Option Greeks
+export function bsGreeks(S, K, T, r, v, type = 'CE') {
+  if (T <= 0 || v <= 0) {
+    return { delta: 0, gamma: 0, theta: 0, vega: 0, iv: v };
+  }
+  
+  const { d1, d2 } = getD1D2(S, K, T, r, v);
+  
+  const delta = type === 'CE' ? normCDF(d1) : normCDF(d1) - 1;
+  const gamma = normPDF(d1) / (S * v * Math.sqrt(T));
+  
+  let theta;
+  if (type === 'CE') {
+    theta = -(S * normPDF(d1) * v) / (2 * Math.sqrt(T)) - r * K * Math.exp(-r * T) * normCDF(d2);
+  } else {
+    theta = -(S * normPDF(d1) * v) / (2 * Math.sqrt(T)) + r * K * Math.exp(-r * T) * normCDF(-d2);
+  }
+  
+  // Convert theta to daily decay
+  theta = theta / 365;
+  
+  // Vega per 1% change in volatility
+  const vega = (S * normPDF(d1) * Math.sqrt(T)) / 100;
+  
+  return { delta, gamma, theta, vega, iv: v };
+}
+
+// Implied Volatility calculation using Newton-Raphson
+export function computeIV(targetPrice, S, K, T, r, type = 'CE') {
+  if (T <= 0) return 0;
+  
+  const MAX_ITER = 100;
+  const TOLERANCE = 1e-4;
+  
+  let v = 0.3; // Initial guess: 30% volatility
+  
+  for (let i = 0; i < MAX_ITER; i++) {
+    const price = bsPrice(S, K, T, r, v, type);
+    const diff = price - targetPrice;
+    
+    if (Math.abs(diff) < TOLERANCE) return v;
+    
+    const { d1 } = getD1D2(S, K, T, r, v);
+    const vega = S * normPDF(d1) * Math.sqrt(T); // raw vega
+    
+    if (vega === 0) break; // Derivative is zero, can't continue
+    
+    v = v - (diff / vega);
+    if (v <= 0) {
+      v = 0.01; // Avoid negative volatility
+    }
+  }
+  
+  return v > 0 ? v : 0;
+}

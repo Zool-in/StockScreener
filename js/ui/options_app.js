@@ -1,4 +1,5 @@
 
+import { computeIV, bsGreeks } from '../core/math.js?v=2';
 
 const DOM = {
   indexPills: document.getElementById('indexPills'),
@@ -138,21 +139,50 @@ function renderChain(chainData, underlyingLtp) {
     }
     
     // Attempt to extract the CE and PE symbols if FYERS provided them, to link to charts
-    // Fyers Option Chain API typically returns symbol in the row like `row.symbol` or `ce.symbol`
     const ceSym = ce.symbol || '';
     const peSym = pe.symbol || '';
     const strikeLink = ceSym ? `https://trade.fyers.in/popout/index.html?symbol=${ceSym}&resolution=5&theme=dark` : '#';
 
+    // ─── CALCULATE GREEKS ───
+    // Assume 1 day to expiry for 0-DTE approximation, Risk-Free Rate = 10%
+    const T = 1.0 / 365.0; 
+    const R = 0.10;
+    const S = underlyingLtp || row.strike_price; // fallback to strike if spot unknown
+    const K = row.strike_price;
+    
+    let ceDelta = '-', peDelta = '-';
+    // Only calculate Greeks if there's an actual LTP to save CPU
+    if (ce.ltp > 0) {
+      const ceIV = computeIV(ce.ltp, S, K, T, R, 'CE');
+      const ceGreeks = bsGreeks(S, K, T, R, ceIV, 'CE');
+      ceDelta = ceGreeks.delta.toFixed(2);
+    }
+    if (pe.ltp > 0) {
+      const peIV = computeIV(pe.ltp, S, K, T, R, 'PE');
+      const peGreeks = bsGreeks(S, K, T, R, peIV, 'PE');
+      peDelta = peGreeks.delta.toFixed(2);
+    }
+
+    // OI Visual Progress Bars
+    const ceOiPct = maxCeOI > 0 ? (ceOI / maxCeOI) * 100 : 0;
+    const peOiPct = maxPeOI > 0 ? (peOI / maxPeOI) * 100 : 0;
+
     tr.innerHTML = `
-      <td style="text-align:left; font-weight:bold">
-        <a href="${strikeLink}" target="_blank" style="color:var(--text-main); text-decoration:none;" title="Open in Fyers Web">${row.strike_price || '-'} ↗</a>
-      </td>
+      <td>${ceDelta}</td>
       <td class="call-side ${isCeItm ? 'itm-bg' : 'otm-bg'}">₹${ce.ltp || '-'}</td>
-      <td class="${isCeItm ? 'itm-bg' : 'otm-bg'}">${ceVol}</td>
-      <td class="${isCeItm ? 'itm-bg' : 'otm-bg'}">${ceOI}</td>
+      <td class="oi-cell ${isCeItm ? 'itm-bg' : 'otm-bg'}">
+        <div class="oi-bar oi-bar-call" style="width: ${ceOiPct}%"></div>
+        <span style="position:relative; z-index:1">${ceOI}</span>
+      </td>
+      <td class="strike-cell">
+        <a href="${strikeLink}" target="_blank" style="color:var(--text-main); text-decoration:none;" title="Open in Fyers Web">${K} ↗</a>
+      </td>
+      <td class="oi-cell ${isPeItm ? 'itm-bg' : 'otm-bg'}">
+        <div class="oi-bar oi-bar-put" style="width: ${peOiPct}%"></div>
+        <span style="position:relative; z-index:1">${peOI}</span>
+      </td>
       <td class="put-side ${isPeItm ? 'itm-bg' : 'otm-bg'}">₹${pe.ltp || '-'}</td>
-      <td class="${isPeItm ? 'itm-bg' : 'otm-bg'}">${peVol}</td>
-      <td class="${isPeItm ? 'itm-bg' : 'otm-bg'}">${peOI}</td>
+      <td>${peDelta}</td>
       <td>${alertMsg}</td>
     `;
     DOM.optionsBody.appendChild(tr);
