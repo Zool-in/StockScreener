@@ -40,17 +40,21 @@ Claude Code is a terminal-based tool that natively supports a massive suite (90+
 - **Planning & Review**: `/plan`, `/diff`, `/code-review`, `/security-review`.
 - **Parallel Work**: `/batch` (decomposes big changes into units run in worktrees), `/tasks`, `/background`.
 - **Custom Skills**: You can create your own commands using Markdown files inside `.claude/skills/<name>/SKILL.md`.
+- **Example**: `/code-review --fix` or `/batch "migrate all css to tailwind"`
 
 #### 2. Cowork Plugins
 Cowork supports custom plugins that bundle custom slash commands tailored to specific roles or teams (e.g., a sales plugin exposing commands for prospect research). What commands are available entirely depends on which plugins are installed via Settings.
+- **Example**: `/prospect-research [company_name]` (if a sales plugin is installed)
 
 #### 3. Regular Chat (claude.ai)
 The standard web interface does **not** have a slash-command system. Everything (including triggering Artifacts or Search) happens purely through conversational input and UI toggles.
 - **For `/goal` equivalent**: Rely on a detailed super-prompt asking Claude to generate a full React/Next.js application as a standalone Artifact.
+- **Example**: *"Acting as an expert developer, write a complete React Native login flow and output it as a fully styled Artifact."*
 - **For `/learn`**: Use **Project Knowledge (Project Instructions)** to upload `AGENTS.md`.
 ### ChatGPT (Codex / Canvas for Work)
 ChatGPT's web interface utilizes the newly introduced **Canvas** and **Custom Instructions (GPTs)**:
 - **For `/goal` equivalent**: Trigger **ChatGPT Canvas** by asking ChatGPT to "write this in a Canvas." Canvas opens a dedicated coding/writing workspace on the right side where ChatGPT can autonomously refactor, debug, and review the document without cluttering the chat.
+- **Example**: *"Build a Python script for scraping Yahoo Finance, and write the code in a Canvas."*
 - **For `/learn`**: Use **Custom Instructions** or create a **Custom GPT** for your specific project. You can copy-paste the contents of `AGENTS.md` into the "Instructions" field of your Custom GPT so it acts as your dedicated project assistant.
 - **For `/fix` or `/explain`**: Inside ChatGPT Canvas, you can highlight specific lines of code and click the floating action buttons to "Explain," "Review," or "Add Logs" to that specific block.
 
