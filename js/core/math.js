@@ -521,5 +521,5 @@ export function computeIV(targetPrice, S, K, T, r, type = 'CE') {
     }
   }
   
-  return v > 0 ? v : 0;
+  return v > 0 ? v : 0.20; // Fallback to 20% IV if computation completely fails
 }

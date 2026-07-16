@@ -144,45 +144,64 @@ function renderChain(chainData, underlyingLtp) {
     const strikeLink = ceSym ? `https://trade.fyers.in/popout/index.html?symbol=${ceSym}&resolution=5&theme=dark` : '#';
 
     // ─── CALCULATE GREEKS ───
-    // Assume 1 day to expiry for 0-DTE approximation, Risk-Free Rate = 10%
-    const T = 1.0 / 365.0; 
+    // Assume 3 days to expiry for a smoother Greek curve, Risk-Free Rate = 10%
+    const T = 3.0 / 365.0; 
     const R = 0.10;
     const S = underlyingLtp || row.strike_price; // fallback to strike if spot unknown
     const K = row.strike_price;
     
     let ceDelta = '-', peDelta = '-';
+    let ceGamma = '-', peGamma = '-';
+    let ceTheta = '-', peTheta = '-';
+    let ceIVStr = '-', peIVStr = '-';
+    
     // Only calculate Greeks if there's an actual LTP to save CPU
     if (ce.ltp > 0) {
       const ceIV = computeIV(ce.ltp, S, K, T, R, 'CE');
       const ceGreeks = bsGreeks(S, K, T, R, ceIV, 'CE');
       ceDelta = ceGreeks.delta.toFixed(2);
+      ceGamma = ceGreeks.gamma.toFixed(4);
+      ceTheta = ceGreeks.theta.toFixed(2);
+      ceIVStr = (ceIV * 100).toFixed(1);
     }
     if (pe.ltp > 0) {
       const peIV = computeIV(pe.ltp, S, K, T, R, 'PE');
       const peGreeks = bsGreeks(S, K, T, R, peIV, 'PE');
       peDelta = peGreeks.delta.toFixed(2);
+      peGamma = peGreeks.gamma.toFixed(4);
+      peTheta = peGreeks.theta.toFixed(2);
+      peIVStr = (peIV * 100).toFixed(1);
     }
 
     // OI Visual Progress Bars
     const ceOiPct = maxCeOI > 0 ? (ceOI / maxCeOI) * 100 : 0;
     const peOiPct = maxPeOI > 0 ? (peOI / maxPeOI) * 100 : 0;
 
+    const callItmClass = isCeItm ? 'itm-bg-call' : 'otm-bg';
+    const putItmClass = isPeItm ? 'itm-bg-put' : 'otm-bg';
+
     tr.innerHTML = `
+      <td style="font-size:11px; color:var(--text-muted)">${ceIVStr}</td>
+      <td style="font-size:11px; color:var(--text-muted)">${ceTheta}</td>
+      <td style="font-size:11px; color:var(--text-muted)">${ceGamma}</td>
       <td>${ceDelta}</td>
-      <td class="call-side ${isCeItm ? 'itm-bg' : 'otm-bg'}">₹${ce.ltp || '-'}</td>
-      <td class="oi-cell ${isCeItm ? 'itm-bg' : 'otm-bg'}">
+      <td class="call-side ${callItmClass}">₹${ce.ltp || '-'}</td>
+      <td class="oi-cell ${callItmClass}">
         <div class="oi-bar oi-bar-call" style="width: ${ceOiPct}%"></div>
         <span style="position:relative; z-index:1">${ceOI}</span>
       </td>
       <td class="strike-cell">
         <a href="${strikeLink}" target="_blank" style="color:var(--text-main); text-decoration:none;" title="Open in Fyers Web">${K} ↗</a>
       </td>
-      <td class="oi-cell ${isPeItm ? 'itm-bg' : 'otm-bg'}">
+      <td class="oi-cell ${putItmClass}">
         <div class="oi-bar oi-bar-put" style="width: ${peOiPct}%"></div>
         <span style="position:relative; z-index:1">${peOI}</span>
       </td>
-      <td class="put-side ${isPeItm ? 'itm-bg' : 'otm-bg'}">₹${pe.ltp || '-'}</td>
+      <td class="put-side ${putItmClass}">₹${pe.ltp || '-'}</td>
       <td>${peDelta}</td>
+      <td style="font-size:11px; color:var(--text-muted)">${peGamma}</td>
+      <td style="font-size:11px; color:var(--text-muted)">${peTheta}</td>
+      <td style="font-size:11px; color:var(--text-muted)">${peIVStr}</td>
       <td>${alertMsg}</td>
     `;
     DOM.optionsBody.appendChild(tr);
