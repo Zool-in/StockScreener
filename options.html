@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Options Gamma Screener</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css?v=6">
+  <link rel="stylesheet" href="css/components.css?v=6">
+  <style>
+    .options-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .options-table th, .options-table td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border-color); }
+    .options-table th { background: var(--bg-surface); color: var(--text-muted); font-weight: 500; font-size: 13px; }
+    .options-table th:first-child, .options-table td:first-child { text-align: left; }
+    .gamma-alert { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .call-side { color: var(--text-green); }
+    .put-side { color: var(--text-red); }
+  </style>
+</head>
+<body>
+
+  <!-- Global HUD -->
+  <header class="hud-bar">
+    <div class="logo">StockScan</div>
+    <div style="display: flex; gap: 20px; align-items: center; margin-left: 30px;">
+      <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Stock Screener</a>
+      <a href="options.html" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Options (Gamma)</a>
+    </div>
+    <div class="fyers-status">
+      <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
+    </div>
+  </header>
+
+  <div class="layout-main">
+    
+    <!-- Filter Panel -->
+    <aside class="panel filter-panel">
+      
+      <div class="filter-group">
+        <h2 class="filter-heading">Gamma Squeeze Screener</h2>
+        <div class="input-group">
+          <label class="input-label">Select Index</label>
+          <div class="pill-container" id="indexPills">
+            <button class="pill active" data-val="NSE:NIFTY50-INDEX">Nifty 50</button>
+            <button class="pill" data-val="NSE:NIFTYBANK-INDEX">Bank Nifty</button>
+            <button class="pill" data-val="NSE:FINNIFTY-INDEX">Fin Nifty</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Expiry (Optional)</label>
+          <input type="text" id="expiryInput" class="input" placeholder="e.g. 24JUL">
+        </div>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-primary" id="scanBtn" style="width: 100%;">Detect Gamma Spikes</button>
+      </div>
+      
+    </aside>
+
+    <!-- Results Panel -->
+    <main class="panel results-panel">
+      <div class="results-header">
+        <h2>Live Option Chain</h2>
+        <span class="status-indicator" id="scanStatus">Ready</span>
+      </div>
+      
+      <div id="resultsGrid" style="overflow-x: auto;">
+        <table class="options-table" id="optionsTable">
+          <thead>
+            <tr>
+              <th>Strike</th>
+              <th>Call Price</th>
+              <th>Call Volume</th>
+              <th>Call OI</th>
+              <th>Put Price</th>
+              <th>Put Volume</th>
+              <th>Put OI</th>
+              <th>Alert</th>
+            </tr>
+          </thead>
+          <tbody id="optionsBody">
+            <!-- Results injected here -->
+          </tbody>
+        </table>
+      </div>
+      
+    </main>
+  </div>
+
+  <script type="module" src="js/ui/options_app.js?v=1" defer></script>
+</body>
+</html>

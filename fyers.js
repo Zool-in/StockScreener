@@ -316,3 +316,11 @@ module.exports = {
   isConfigured, hasValidSession, loginUrl, exchangeToken, fetchChart, getLtp, status
 };
 
+
+// ─── Options API ───────────────────────────────────────────────────────────────
+async function fetchOptionChain(symbol, strikecount = 30) {
+  const url = `${FYERS_BASE}/data/options-chain-v3?symbol=${encodeURIComponent(symbol)}&strikecount=${strikecount}`;
+  return request('GET', url, null, { Authorization: getAuthHeader() });
+}
+
+module.exports.fetchOptionChain = fetchOptionChain;

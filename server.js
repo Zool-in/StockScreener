@@ -459,6 +459,7 @@ const server = http.createServer((req, res) => {
   if (p === '/api/lots') return handleLots(res);
   if (p === '/api/mmi') return handleMmi(res);
   if (p === '/api/whoami') return handleWhoami(res);
+  if (p === '/api/options/chain') return handleOptionsChain(res, reqUrl);
 
 
   if (p === '/fyers/status') {
@@ -516,3 +517,28 @@ server.listen(PORT, () => {
   console.log(`\n  NSE Swing Screener running at  http://localhost:${PORT}\n`);
   console.log('  Press Ctrl+C to stop.\n');
 });
+
+// ─── API: Options Chain ──────────────────────────────────────────────────────────
+async function handleOptionsChain(res, reqUrl) {
+  try {
+    const symbol = reqUrl.searchParams.get('symbol');
+    const strikecount = reqUrl.searchParams.get('strikecount') || 30;
+    if (!symbol) return res.writeHead(400).end('Missing symbol');
+
+    if (!fyers.isConfigured()) {
+      return res.writeHead(503).end(JSON.stringify({ error: 'FYERS not configured' }));
+    }
+    
+    // Fallback if not connected: try public Yahoo (though options chain is harder via Yahoo, Fyers is primary)
+    if (!fyers.hasValidSession()) {
+      return res.writeHead(401).end(JSON.stringify({ error: 'FYERS not connected' }));
+    }
+
+    const data = await fyers.fetchOptionChain(symbol, strikecount);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(data));
+  } catch (err) {
+    console.error('Options Chain error:', err.message);
+    res.writeHead(500).end(err.message);
+  }
+}
