@@ -43,6 +43,7 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   
   // Filter out nulls
   const closes = [], highs = [], lows = [], opens = [], volumes = [], ts = [];
+  const ohlcv = [];
   for (let i = 0; i < quote.close.length; i++) {
     if (quote.close[i] !== null && quote.high[i] !== null && quote.low[i] !== null && quote.open[i] !== null) {
       closes.push(quote.close[i]);
@@ -51,6 +52,14 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
       opens.push(quote.open[i]);
       volumes.push(quote.volume[i] || 0);
       ts.push(timestamps[i]);
+      ohlcv.push({
+        open: quote.open[i],
+        high: quote.high[i],
+        low: quote.low[i],
+        close: quote.close[i],
+        volume: quote.volume[i] || 0,
+        time: timestamps[i]
+      });
     }
   }
 
@@ -58,5 +67,5 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   const cmp = closes[closes.length - 1];
   const meta = result.meta;
 
-  return { ticker, sym, closes, highs, lows, opens, volumes, ts, meta, cmp };
+  return { ticker, sym, closes, highs, lows, opens, volumes, ts, meta, cmp, ohlcv };
 }

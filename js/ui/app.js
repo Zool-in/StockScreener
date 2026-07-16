@@ -1,6 +1,6 @@
 // ─── Main App Entry Point ───────────────────────────────────────────────────
 import { AppState } from '../core/state.js?v=6';
-import { fetchOHLCV } from '../core/api.js?v=6';
+import { fetchOHLCV } from '../core/api.js?v=7';
 import { ema, rsi, adx, macd, cci } from '../core/math.js?v=7';
 import { runBacktest } from '../core/backtest.js?v=1';
 
