@@ -37,10 +37,29 @@ This rulebook defines the absolute baseline standards, architectural preferences
 - **Secrets Management**: Never commit secrets or API keys. Always use `.env` files and validate them on application startup.
 - **Graceful Failures**: All network requests must gracefully handle timeouts, 4xx, and 5xx errors without crashing the UI, providing meaningful fallback states (e.g., skeletons or toast notifications).
 
-## 6. Software Development Life Cycle (SDLC)
-All AI agents must adhere to the following product lifecycle workflow for major features:
-1. **Requirements Gathering**: Do not jump straight to coding. If a prompt is vague, ask clarifying questions or use the `/grill-me` approach to resolve edge cases.
-2. **System Design (Planning)**: Draft an `implementation_plan.md` outlining the architecture, state management, and file structure before modifying source code.
-3. **Execution**: Write clean, atomic code following the standards in this rulebook. Update a `task.md` checklist as you progress.
-4. **Testing & Verification**: After coding, rigorously test the changes. Check browser console logs, handle API edge cases, and ensure pixel-perfection.
-5. **Documentation**: Output a `walkthrough.md` or a clear summary of what was accomplished, what changed, and how the user can test it.
+## 6. Enterprise Software Development Life Cycle (SDLC)
+All AI agents and developers must adhere to the following rigorous enterprise-grade SDLC workflow for all features and projects:
+
+### Phase 1: Product Definition & Requirements
+1. **Product Requirements Document (PRD)**: Before touching code, define the exact business logic, user personas, and success metrics. If a prompt is vague, refuse to code and ask clarifying questions or use `/grill-me`.
+2. **Software Requirements Specification (SRS)**: Document the technical constraints, API contracts, data models, and edge cases. 
+
+### Phase 2: Design & Prototyping
+3. **UI/UX Design Handoff**: Translate design files (Figma, Sketch, PSD) into component hierarchies. Define the Design System (typography, spacing, color tokens, and interactive states). 
+4. **Feasibility Review**: Identify any technical limitations in the proposed UI (e.g., complex animations impacting performance) and propose accessible, performant alternatives.
+
+### Phase 3: System Architecture
+5. **Technical Design Document**: Draft an `implementation_plan.md` outlining the architecture, state management flow, database schema, and component file structure.
+6. **Security Review**: Identify potential vulnerabilities (XSS, CSRF, rate-limiting) before implementation.
+
+### Phase 4: Development & Execution
+7. **Atomic Coding**: Write clean, modular, and DRY code adhering to the standards in this rulebook. Use a `task.md` checklist to track progress.
+8. **Version Control**: Maintain clean commit histories. Group related changes into logical commits.
+
+### Phase 5: Quality Assurance (QA) & Testing
+9. **Automated Testing**: Write unit tests (Jest, Vitest) for utility functions and state logic. Ensure critical user flows are covered by E2E tests (Cypress, Playwright).
+10. **Manual QA Verification**: Rigorously test UI changes in the browser. Verify responsiveness across breakpoints, check console logs for hidden errors, and validate API edge cases (timeouts, 500s).
+
+### Phase 6: Deliverables & Deployment
+11. **Documentation**: Output a `walkthrough.md`, updating inline docstrings, and generating release notes summarizing what was accomplished.
+12. **CI/CD & Monitoring**: Ensure the build passes all checks and deployments are monitored for regression.
