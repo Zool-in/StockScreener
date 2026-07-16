@@ -109,29 +109,27 @@ function renderChain(chainData, underlyingLtp) {
     const peVol = pe.volume || 0;
     const peOI = pe.oi || 1;
 
-    // Squeeze Logic: 
-    // It must be a significant strike (OI > 20% of the max OI in the chain)
-    // AND Volume must be abnormally high compared to OI (e.g., > 3x)
-    if (ceOI > (maxCeOI * 0.20) && ceVol > (ceOI * 3)) {
-        const info = "BULLISH SIGNAL: Call Writers (Resistance) are panicking and covering shorts. Momentum is moving UP. Suggestion: BUY ATM Call (CE).";
-        alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
-            <span class="badge badge-purple">📈 BULLISH: CE Gamma Trap! ⓘ</span>
-            <span style="font-size:10px; color:var(--text-green); font-weight:600; text-transform:uppercase;">Suggest: Buy CE</span>
-        </div>`;
-        tr.classList.add('gamma-alert');
-    }
-    if (peOI > (maxPeOI * 0.20) && peVol > (peOI * 3)) {
-        const info = "BEARISH SIGNAL: Put Writers (Support) are panicking and covering shorts. Momentum is moving DOWN. Suggestion: BUY ATM Put (PE).";
-        alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
-            <span class="badge badge-purple">📉 BEARISH: PE Gamma Trap! ⓘ</span>
-            <span style="font-size:10px; color:var(--text-red); font-weight:600; text-transform:uppercase;">Suggest: Buy PE</span>
-        </div>`;
-        tr.classList.add('gamma-alert');
-    }
-
     // Identify ITM/OTM
     const isCeItm = underlyingLtp && row.strike_price < underlyingLtp;
     const isPeItm = underlyingLtp && row.strike_price > underlyingLtp;
+
+    // Squeeze Logic (Trapped Writers)
+    // A writer is trapped if their strike has massive OI, but the price has moved against them (it is now ITM).
+    if (ceOI > (maxCeOI * 0.40) && ceVol > (ceOI * 1.5) && isCeItm) {
+        const info = "BULLISH SIGNAL: Call Writers (Resistance) are trapped! Strike is ITM. Suggestion: BUY ATM Call (CE).";
+        alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
+            <span class="badge badge-purple" style="white-space:nowrap;">📈 BULLISH: CE Gamma Trap! ⓘ</span>
+            <span style="font-size:10px; color:var(--text-green); font-weight:600; text-transform:uppercase; white-space:nowrap;">Suggest: Buy CE</span>
+        </div>`;
+        tr.classList.add('gamma-alert');
+    } else if (peOI > (maxPeOI * 0.40) && peVol > (peOI * 1.5) && isPeItm) {
+        const info = "BEARISH SIGNAL: Put Writers (Support) are trapped! Strike is ITM. Suggestion: BUY ATM Put (PE).";
+        alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
+            <span class="badge badge-purple" style="white-space:nowrap;">📉 BEARISH: PE Gamma Trap! ⓘ</span>
+            <span style="font-size:10px; color:var(--text-red); font-weight:600; text-transform:uppercase; white-space:nowrap;">Suggest: Buy PE</span>
+        </div>`;
+        tr.classList.add('gamma-alert');
+    }
     
     // Highlight ATM row
     if (underlyingLtp && Math.abs(row.strike_price - underlyingLtp) < (activeIndex.includes('BANK') ? 50 : 25)) {
