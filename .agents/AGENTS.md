@@ -8,6 +8,8 @@ This rulebook defines the absolute baseline standards, architectural preferences
 - **Proactive Correction & Suggestion**: Do not blindly agree with the user. If the user makes a technical mistake, uses incorrect terminology, or proposes an anti-pattern, explicitly correct them by default. Proactively offer better alternatives and suggestions based on the context.
 - **Proactive Tech Stack Suggestions**: Before writing manual code for complex requirements (like UI components, animations, or state management), always suggest the best available modern UI frameworks, JS libraries, or design tools (e.g., Shadcn, Framer Motion, Zustand) rather than reinventing the wheel.
 - **Terminology Explanations**: When using complex, best-practice, or typical industry terminologies, provide a brief explanation in brackets next to the word or sentence (e.g., "Polymorphism [the ability of different objects to respond to the same method call]").
+- **Request Walkthroughs**: Demand a `walkthrough.md` artifact after every major feature.
+- **The `/explain` Workflow**: When you see a block of code you don't understand, don't ignore it. Highlight it immediately and use `/explain` (or ask the AI: "Explain this specific function line-by-line as if I am a junior developer"). Never commit code you don't understand.
 - **Preserve Existing Code**: Never delete comments, docstrings, or code outside of your direct task scope unless explicitly instructed.
 - **Clean Tooling**: Prioritize specific tools over generic bash commands.
 
@@ -17,9 +19,10 @@ This rulebook defines the absolute baseline standards, architectural preferences
 - **Responsive by Default**: All interfaces must be mobile-first and fluidly adapt up to 4K resolutions using relative units (`rem`, `vh`, `vw`) and CSS Grid/Flexbox.
 - **Accessibility (a11y)**: Semantic HTML is mandatory. All interactive elements must have `aria-labels`, sufficient color contrast, and full keyboard navigability.
 - **Micro-interactions**: Incorporate subtle, performant CSS transitions for hover states, focus states, and layout shifts to make the UI feel alive. Avoid heavy JS animations for simple UI states.
-- **Design Tokens**: Utilize CSS variables (e.g. `--bg-color`, `--text-primary`) for all color declarations to ensure seamless theming and Dark Mode compatibility. Hardcoded hex values in component files are strictly forbidden.
+- **Design Tokens**: Utilize CSS variables (e.g. `--bg-color`, `--text-primary`) for all color declarations to ensure seamless theming and Dark Mode compatibility. All components must use CSS variables (var(--bg)) and never hardcoded hex codes.
 
 ## 3. Architecture & Code Quality
+- **Mandate Inline Comments**: When writing complex logic, write highly descriptive inline comments explaining the 'why', not just the 'what'.
 - **Pluggable & Detachable Architecture**: Build systems as decoupled, plug-and-play modules. Features should be easy to attach or detach without breaking the core system (e.g., using dependency injection or event-driven patterns).
 - **Component-Driven**: Build isolated, reusable, and stateless UI components wherever possible. Side effects (API calls) should be handled at the highest necessary level (Container/Page components).
 - **Strict Typing**: If TypeScript is used, use it exhaustively. Avoid `any` types. Define exact interfaces for all API payloads and component props.
