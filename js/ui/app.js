@@ -12,6 +12,7 @@ import * as btstStrats from '../strategies/btst.js?v=6';
 import * as longTermStrats from '../strategies/longterm.js?v=6';
 import * as shortStrats from '../strategies/short.js?v=6';
 import * as hmStrats from '../strategies/hm.js?v=1';
+import * as smcStrats from '../strategies/smc.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
 
 const DOM = {
@@ -131,6 +132,16 @@ const STRATEGY_INFO = {
     name: 'Wyckoff Stopping Vol',
     desc: 'Identifies institutional accumulation. Looks for a massive volume spike during a downtrend where the price refuses to drop further (e.g. Doji or Hammer), indicating smart money is absorbing all selling pressure.',
     example: '<img src="/assets/wyckoff_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy near close<br><strong>Stop:</strong> Below the stopping candle low<br><strong>Target:</strong> Reversal swing trade<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., PAYTM is crashing for weeks. Today, volume is 5x normal, but the price forms a perfect Doji (it stops going down). This is "Stopping Volume"—institutions are quietly buying the panic.</span>'
+  },
+  smc_bullish: {
+    name: 'SMC Bullish Bounce',
+    desc: 'Smart Money Concepts. Price dips into an unmitigated Bullish Order Block (Support) and prints a bullish reversal candle.',
+    example: '<img src="/assets/smc_bullish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy near close<br><strong>Stop:</strong> Below the Order Block<br><strong>Target:</strong> Nearest Bearish Order Block<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> Institutions accumulated at a certain price level previously, creating a Bullish OB. Price returns to retest this zone and finds heavy buying pressure, confirming the bounce.</span>'
+  },
+  smc_bearish: {
+    name: 'SMC Bearish Reversal',
+    desc: 'Smart Money Concepts. Price rallies into an unmitigated Bearish Order Block (Resistance) and prints a bearish reversal candle.',
+    example: '<img src="/assets/smc_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short near close<br><strong>Stop:</strong> Above the Order Block<br><strong>Target:</strong> Nearest Bullish Order Block<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> Institutions sold off at this level previously, creating a Bearish OB. Price returns to retest this zone and faces heavy selling pressure, confirming the drop.</span>'
   }
 };
 
@@ -389,7 +400,7 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop'];
+            const allStrategies = ['ttm_orb', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish'];
             for (const s of allStrategies) {
               let tempRes = null;
               if (['ttm_orb'].includes(s)) tempRes = intradayStrats.run(s, data);
@@ -399,6 +410,7 @@ async function runScan() {
               else if (['weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
               else if (['vcp_down', 'bear_call'].includes(s)) tempRes = shortStrats.run(s, data);
               else if (s.startsWith('hm_')) tempRes = hmStrats.run(s, data);
+              else if (s.startsWith('smc_')) tempRes = smcStrats.run(s, data);
               
               if (tempRes && tempRes.isMatch) {
                 matchedStrategies.push(s);

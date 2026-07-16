@@ -306,3 +306,116 @@ export function vwmaSeries(arr, volumes, period) {
   }
   return out;
 }
+
+// ─── Smart Money Concepts (SMC) ───────────────────────────────────────────────
+
+/**
+ * Finds Swing Highs and Swing Lows (Pivots)
+ */
+export function findPivots(highs, lows, leftBars = 5, rightBars = 5) {
+  const pivots = { highs: [], lows: [] };
+  const n = highs.length;
+  
+  for (let i = leftBars; i < n - rightBars; i++) {
+    let isHigh = true;
+    let isLow = true;
+    
+    for (let j = 1; j <= leftBars; j++) {
+      if (highs[i - j] >= highs[i]) isHigh = false;
+      if (lows[i - j] <= lows[i]) isLow = false;
+    }
+    
+    for (let j = 1; j <= rightBars; j++) {
+      if (highs[i + j] >= highs[i]) isHigh = false;
+      if (lows[i + j] <= lows[i]) isLow = false;
+    }
+    
+    if (isHigh) pivots.highs.push({ index: i, price: highs[i] });
+    if (isLow) pivots.lows.push({ index: i, price: lows[i] });
+  }
+  
+  return pivots;
+}
+
+/**
+ * Finds Unmitigated Order Blocks based on Break of Structure (BOS)
+ */
+export function findOrderBlocks(ohlcv, pivotLength = 5) {
+  if (ohlcv.length < pivotLength * 2) return { bullishOBs: [], bearishOBs: [] };
+  
+  const highs = ohlcv.map(c => c.h);
+  const lows = ohlcv.map(c => c.l);
+  const closes = ohlcv.map(c => c.c);
+  const opens = ohlcv.map(c => c.o);
+  
+  const pivots = findPivots(highs, lows, pivotLength, pivotLength);
+  
+  const bullishOBs = [];
+  const bearishOBs = [];
+  
+  let currentSwingHigh = null;
+  let currentSwingLow = null;
+  
+  const findLastBearishCandle = (endIndex, maxLookback = 15) => {
+    for (let i = endIndex - 1; i >= Math.max(0, endIndex - maxLookback); i--) {
+      if (closes[i] < opens[i]) {
+        return { index: i, top: highs[i], bottom: lows[i] };
+      }
+    }
+    return null;
+  };
+  
+  const findLastBullishCandle = (endIndex, maxLookback = 15) => {
+    for (let i = endIndex - 1; i >= Math.max(0, endIndex - maxLookback); i--) {
+      if (closes[i] > opens[i]) {
+        return { index: i, top: highs[i], bottom: lows[i] };
+      }
+    }
+    return null;
+  };
+
+  let activeHighPivotIdx = 0;
+  let activeLowPivotIdx = 0;
+  
+  for (let i = pivotLength * 2; i < ohlcv.length; i++) {
+    while (activeHighPivotIdx < pivots.highs.length && pivots.highs[activeHighPivotIdx].index <= i - pivotLength) {
+      currentSwingHigh = pivots.highs[activeHighPivotIdx];
+      activeHighPivotIdx++;
+    }
+    while (activeLowPivotIdx < pivots.lows.length && pivots.lows[activeLowPivotIdx].index <= i - pivotLength) {
+      currentSwingLow = pivots.lows[activeLowPivotIdx];
+      activeLowPivotIdx++;
+    }
+    
+    // Bullish BOS
+    if (currentSwingHigh && closes[i] > currentSwingHigh.price) {
+      const ob = findLastBearishCandle(i);
+      if (ob) bullishOBs.push(ob);
+      currentSwingHigh = null; // Wait for next swing high
+    }
+    
+    // Bearish BOS
+    if (currentSwingLow && closes[i] < currentSwingLow.price) {
+      const ob = findLastBullishCandle(i);
+      if (ob) bearishOBs.push(ob);
+      currentSwingLow = null; // Wait for next swing low
+    }
+  }
+  
+  // Filter for unmitigated (not closed beyond the OB zone)
+  const unmitigatedBullish = bullishOBs.filter(ob => {
+    for (let i = ob.index + 1; i < ohlcv.length; i++) {
+      if (closes[i] < ob.bottom) return false; 
+    }
+    return true;
+  });
+  
+  const unmitigatedBearish = bearishOBs.filter(ob => {
+    for (let i = ob.index + 1; i < ohlcv.length; i++) {
+      if (closes[i] > ob.top) return false; 
+    }
+    return true;
+  });
+
+  return { bullishOBs: unmitigatedBullish, bearishOBs: unmitigatedBearish };
+}
