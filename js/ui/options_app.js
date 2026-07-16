@@ -68,7 +68,7 @@ function renderChain(chainData) {
   // chainData is an array of objects representing strikes
   // For each strike, we have CE and PE data
   // Sort by strike price
-  chainData.sort((a, b) => a.strikePrice - b.strikePrice);
+  chainData.sort((a, b) => a.strike_price - b.strike_price);
 
   for (const row of chainData) {
     const tr = document.createElement('tr');
@@ -78,11 +78,11 @@ function renderChain(chainData) {
     
     // Simplified Gamma Squeeze Logic:
     // If volume is extremely high relative to OI (e.g. > 100%) and price is up significantly
-    const ce = row.optionType === 'CE' ? row : chainData.find(r => r.strikePrice === row.strikePrice && r.optionType === 'CE') || {};
-    const pe = row.optionType === 'PE' ? row : chainData.find(r => r.strikePrice === row.strikePrice && r.optionType === 'PE') || {};
+    const ce = row.option_type === 'CE' ? row : chainData.find(r => r.strike_price === row.strike_price && r.option_type === 'CE') || {};
+    const pe = row.option_type === 'PE' ? row : chainData.find(r => r.strike_price === row.strike_price && r.option_type === 'PE') || {};
     
     // Skip duplicate iterations (since we combine CE/PE into one row based on strike)
-    if (row.optionType === 'PE' && chainData.some(r => r.strikePrice === row.strikePrice && r.optionType === 'CE')) continue;
+    if (row.option_type === 'PE' && chainData.some(r => r.strike_price === row.strike_price && r.option_type === 'CE')) continue;
     
     const ceVol = ce.volume || 0;
     const ceOI = ce.oi || 1;
@@ -99,7 +99,7 @@ function renderChain(chainData) {
     }
 
     tr.innerHTML = `
-      <td style="text-align:left; font-weight:bold">${row.strikePrice || '-'}</td>
+      <td style="text-align:left; font-weight:bold">${row.strike_price || '-'}</td>
       <td class="call-side">₹${ce.ltp || '-'}</td>
       <td>${ceVol}</td>
       <td>${ceOI}</td>
