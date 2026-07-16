@@ -91,7 +91,7 @@ const STRATEGY_INFO = {
   csp: {
     name: 'Cash Secured Put',
     desc: 'Sells put options on fundamentally strong stocks (above 200 EMA) that are experiencing a short-term oversold dip (RSI < 45). You get paid to wait to buy a great stock at a discount.',
-    example: '<strong>Action:</strong> Sell ATM or slightly OTM Put.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ICICI BANK is a great long-term hold but temporarily drops to ₹1050. You sell the 1000 Put for ₹20 premium. If it stays above 1000, you keep the ₹20. If it drops, you buy it at ₹1000!</span>'
+    example: '<strong>Action:</strong> Sell ATM or slightly OTM Put.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ICICI BANK is a great long-term hold but temporarily drops to ₹1050. You want to buy it, but cheaper. You sell 1 lot of the 1000 Put and collect a ₹20 premium per share upfront. If it stays above 1000, you keep the premium as pure profit. If it drops below 1000, you are assigned and buy the shares at ₹1000 (making your effective cost basis only ₹980!)</span>'
   },
   cc: {
     name: 'Covered Call',
