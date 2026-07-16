@@ -37,10 +37,13 @@ If you are using other AI platforms for your daily design and development work, 
 #### 1. Claude Code (CLI)
 Claude Code is a terminal-based tool that natively supports a massive suite (90+) of true slash commands. The most useful include:
 - **Session/Context**: `/clear` (fresh start), `/compact` (summarize to free context), `/context`, `/resume`, `/branch` (fork), `/rewind`.
+  - **Example**: `/compact` to shrink the context window after a long debugging session.
 - **Planning & Review**: `/plan`, `/diff`, `/code-review`, `/security-review`.
+  - **Example**: `/code-review --fix` to automatically review and fix issues in your PR.
 - **Parallel Work**: `/batch` (decomposes big changes into units run in worktrees), `/tasks`, `/background`.
+  - **Example**: `/batch "migrate all css to tailwind"` to run the migration in parallel.
 - **Custom Skills**: You can create your own commands using Markdown files inside `.claude/skills/<name>/SKILL.md`.
-- **Example**: `/code-review --fix` or `/batch "migrate all css to tailwind"`
+  - **Example**: Define a custom skill so typing `/run-tests` automatically executes your test suite.
 
 #### 2. Cowork Plugins
 Cowork supports custom plugins that bundle custom slash commands tailored to specific roles or teams (e.g., a sales plugin exposing commands for prospect research). What commands are available entirely depends on which plugins are installed via Settings.
@@ -49,27 +52,36 @@ Cowork supports custom plugins that bundle custom slash commands tailored to spe
 #### 3. Regular Chat (claude.ai)
 The standard web interface does **not** have a slash-command system. Everything (including triggering Artifacts or Search) happens purely through conversational input and UI toggles.
 - **For `/goal` equivalent**: Rely on a detailed super-prompt asking Claude to generate a full React/Next.js application as a standalone Artifact.
-- **Example**: *"Acting as an expert developer, write a complete React Native login flow and output it as a fully styled Artifact."*
+  - **Example**: *"Acting as an expert developer, write a complete React Native login flow and output it as a fully styled Artifact."*
 - **For `/learn`**: Use **Project Knowledge (Project Instructions)** to upload `AGENTS.md`.
+  - **Example**: Upload `AGENTS.md` to Project Knowledge so Claude automatically follows your design rules in all chats.
 ### ChatGPT (Codex / Canvas for Work)
 ChatGPT's web interface utilizes the newly introduced **Canvas** and **Custom Instructions (GPTs)**:
 - **For `/goal` equivalent**: Trigger **ChatGPT Canvas** by asking ChatGPT to "write this in a Canvas." Canvas opens a dedicated coding/writing workspace on the right side where ChatGPT can autonomously refactor, debug, and review the document without cluttering the chat.
-- **Example**: *"Build a Python script for scraping Yahoo Finance, and write the code in a Canvas."*
+  - **Example**: *"Build a Python script for scraping Yahoo Finance, and write the code in a Canvas."*
 - **For `/learn`**: Use **Custom Instructions** or create a **Custom GPT** for your specific project. You can copy-paste the contents of `AGENTS.md` into the "Instructions" field of your Custom GPT so it acts as your dedicated project assistant.
+  - **Example**: Paste `AGENTS.md` into a Custom GPT's configuration so it always writes defensive code.
 - **For `/fix` or `/explain`**: Inside ChatGPT Canvas, you can highlight specific lines of code and click the floating action buttons to "Explain," "Review," or "Add Logs" to that specific block.
+  - **Example**: Highlight a complex regex in Canvas and click "Explain" to get a line-by-line breakdown.
 
 ### Cursor IDE (Claude 3.5 Sonnet)
 Cursor does not primarily use `/` slash commands for behaviors. Instead, it relies on `@` contextual tags and different UI features:
 - **For `/goal` equivalent**: Use **Cursor Composer** (`Cmd/Ctrl + I`). This allows Claude to edit multiple files autonomously across your codebase in a single sweep.
-- **Example**: Hit `Cmd+I` to open Composer and type *"Refactor the entire auth flow to use Zustand, referencing @authStore.ts."*
+  - **Example**: Hit `Cmd+I` to open Composer and type *"Refactor the entire auth flow to use Zustand, referencing @authStore.ts."*
 - **For `/learn` equivalent**: Create a `.cursorrules` file in the root of your project. (You can symlink `.agents/AGENTS.md` to `.cursorrules` to share rules!).
+  - **Example**: Add a rule to `.cursorrules` stating *"Always use absolute imports instead of relative imports."*
 - **Context Commands**: Use `@Codebase` to scan the whole repo, `@Web` to search the internet for docs, and `@Files` to inject specific context.
+  - **Example**: Type *"@Codebase find where the user authentication token is being stored and @Web check the best practices for securing it."*
 
 ### GitHub Copilot (Codex)
 Copilot Chat in VS Code uses both `/` commands and `@` agents:
 - **`/explain`**: Explains how a highlighted block of code works.
+  - **Example**: Highlight a confusing mapping function and type `/explain` in the chat to get a breakdown.
 - **`/tests`**: Automatically generates unit tests for the selected code.
+  - **Example**: Highlight a utility file and type `/tests` to generate a Jest test suite for it.
 - **`/fix`**: Proposes a fix for the bugs in the selected code.
-- **Example**: Highlight a broken function and type `/fix handle the edge case where the user object is null.`
+  - **Example**: Highlight a broken function and type `/fix handle the edge case where the user object is null.`
 - **`@workspace`**: Asks a question about your entire repository. E.g., `@workspace where do we handle database connections?`
+  - **Example**: Type `@workspace how do we currently fetch stock data?` to search the repo.
 - **For `/learn` equivalent**: Create a `.github/copilot-instructions.md` file to set custom instructions for Copilot.
+  - **Example**: Add *"Always use arrow functions for components"* to `.github/copilot-instructions.md`.
