@@ -58,11 +58,17 @@ All AI agents and developers must adhere to the following rigorous enterprise-gr
 ### Phase 4: Development & Execution
 8. **Atomic Coding**: Write clean, modular, and DRY code adhering to the standards in this rulebook. Use a `task.md` checklist to track progress.
 9. **Version Control**: Maintain clean commit histories. Group related changes into logical commits.
+10. **Code Review & Pull Requests**: Code must not be pushed directly to `main`. Submit all changes via PR for peer review and static analysis.
 
 ### Phase 5: Quality Assurance (QA) & Testing
-10. **Automated Testing**: Write unit tests (Jest, Vitest) for utility functions and state logic. Ensure critical user flows are covered by E2E tests (Cypress, Playwright).
-11. **Manual QA Verification**: Rigorously test UI changes in the browser. Verify responsiveness across breakpoints, check console logs for hidden errors, and validate API edge cases (timeouts, 500s).
+11. **Automated Testing**: Write unit tests (Jest, Vitest) for utility functions and state logic. Ensure critical user flows are covered by E2E tests (Cypress, Playwright).
+12. **Manual QA Verification**: Rigorously test UI changes in the browser. Verify responsiveness across breakpoints, check console logs for hidden errors, and validate API edge cases (timeouts, 500s).
+13. **User Acceptance Testing (UAT)**: Deploy to a staging environment for stakeholder/client sign-off against the original PRD before production release.
 
 ### Phase 6: Deliverables & Deployment
-12. **Documentation**: Output a `walkthrough.md`, updating inline docstrings, and generating release notes summarizing what was accomplished.
-13. **CI/CD & Monitoring**: Ensure the build passes all checks and deployments are monitored for regression.
+14. **Documentation**: Output a `walkthrough.md`, updating inline docstrings, and generating release notes summarizing what was accomplished.
+15. **CI/CD & Monitoring**: Ensure the build passes all checks and deployments are monitored for regression.
+
+### Phase 7: Maintenance & Support
+16. **Post-Release Monitoring**: Monitor application logs and error trackers to triage new bugs and performance bottlenecks.
+17. **Feedback Loop**: Gather user feedback and metrics to inform the PRD for the next feature iteration.
