@@ -19,7 +19,7 @@ This rulebook defines the absolute baseline standards, architectural preferences
 - **Responsive by Default**: All interfaces must be mobile-first and fluidly adapt up to 4K resolutions using relative units (`rem`, `vh`, `vw`) and CSS Grid/Flexbox.
 - **Accessibility (a11y)**: Semantic HTML is mandatory. All interactive elements must have `aria-labels`, sufficient color contrast, and full keyboard navigability.
 - **Micro-interactions**: Incorporate subtle, performant CSS transitions for hover states, focus states, and layout shifts to make the UI feel alive. Avoid heavy JS animations for simple UI states.
-- **Design Tokens**: Utilize CSS variables (e.g. `--bg-color`, `--text-primary`) for all color declarations to ensure seamless theming and Dark Mode compatibility. All components must use CSS variables (var(--bg)) and never hardcoded hex codes.
+- **Design Tokens**: Utilize CSS variables (e.g. `--bg-color`, `--text-primary`) for all color declarations to ensure seamless theming and Dark Mode compatibility. Create a `design_tokens.css` file first. Establish a strict rule: "You may only use variables defined in design_tokens.css. Never invent new colors." All components must use CSS variables (`var(--bg)`) and never hardcoded hex codes.
 
 ## 3. Architecture & Code Quality
 - **Mandate Inline Comments**: When writing complex logic, write highly descriptive inline comments explaining the 'why', not just the 'what'.
@@ -49,7 +49,7 @@ This rulebook defines the absolute baseline standards, architectural preferences
 All AI agents and developers must adhere to the following rigorous enterprise-grade SDLC workflow for all features and projects:
 
 ### Phase 1: Product Definition & Requirements
-1. **Product Requirements Document (PRD)**: Before touching code, define the exact business logic, user personas, and success metrics. If a prompt is vague, refuse to code and ask clarifying questions or use `/grill-me`.
+1. **Product Requirements Document (PRD)**: Before touching code, define the exact business logic, user personas, and success metrics. This file must explicitly list every single field, every single API endpoint, and every single page route. If a prompt is vague, refuse to code and ask clarifying questions or use `/grill-me`.
 2. **System Functional Requirements (SFR)**: Document the functional capabilities, user interactions, and expected outputs of the system.
 3. **Software Requirements Specification (SRS)**: Document the deep technical constraints, API contracts, data models, and edge cases.
 
@@ -64,10 +64,10 @@ All AI agents and developers must adhere to the following rigorous enterprise-gr
 ### Phase 4: Development & Execution
 8. **Atomic Coding**: Write clean, modular, and DRY code adhering to the standards in this rulebook. Use a `task.md` checklist to track progress.
 9. **Version Control**: Maintain clean commit histories. Group related changes into logical commits.
-10. **Code Review & Pull Requests**: Code must not be pushed directly to `main`. Submit all changes via PR for peer review and static analysis.
+10. **Code Review & Pull Requests**: Code must not be pushed directly to `main`. Submit all changes via PR for peer review and static analysis. Act as a strict Senior Engineer to do a critical code review of your own code, pointing out any security flaws, performance bottlenecks, or tight coupling before merging.
 
 ### Phase 5: Quality Assurance (QA) & Testing
-11. **Automated Testing**: Write unit tests (Jest, Vitest) for utility functions and state logic. Ensure critical user flows are covered by E2E tests (Cypress, Playwright).
+11. **Automated Testing**: Write unit tests (Jest, Vitest) for utility functions and state logic. Ensure critical user flows are covered by E2E tests (Cypress, Playwright). Write tests for a feature *first*, then write the code to make the tests pass (TDD) to validate AI-generated code.
 12. **Manual QA Verification**: Rigorously test UI changes in the browser. Verify responsiveness across breakpoints, check console logs for hidden errors, and validate API edge cases (timeouts, 500s).
 13. **User Acceptance Testing (UAT)**: Deploy to a staging environment for stakeholder/client sign-off against the original PRD before production release.
 
