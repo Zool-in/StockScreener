@@ -36,6 +36,12 @@ const ETF_LIST = [
   'HDFCGOLD', 'MOSMALL250', 'MOREALTY',
 ];
 
+const INDICES_LIST = [
+  'NIFTY 50', 'NIFTY BANK', 'NIFTY FIN SERVICE', 'NIFTY MIDCAP 100', 'NIFTY SMALLCAP 100',
+  'NIFTY IT', 'NIFTY AUTO', 'NIFTY PHARMA', 'NIFTY METAL', 'NIFTY FMCG', 'NIFTY REALTY', 
+  'NIFTY ENERGY', 'INDIA VIX'
+];
+
 function get(urlStr, timeoutMs = 15000) {
   return new Promise((resolve, reject) => {
     const u = new URL(urlStr);
@@ -100,6 +106,7 @@ async function getList(index) {
   }
   if (index === 'all') return bhavcopy.listSymbols();
   if (index === 'etf') return ETF_LIST.slice();
+  if (index === 'indices') return INDICES_LIST.slice();
   if (index === 'fno') return Object.keys(await require('./lots').getLots());
   if (!INDEX_FILES[index]) throw new Error(`Unknown index "${index}"`);
   return fetchIndex(index);
