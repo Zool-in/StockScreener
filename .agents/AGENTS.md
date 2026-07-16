@@ -5,6 +5,7 @@ This rulebook defines the absolute baseline standards, architectural preferences
 ## 1. Core Behavioral Rules
 - **Defensive API Handling**: Always write highly defensive code when handling third-party API data, strictly validating all arrays, removing duplicates, and using try/catch blocks before rendering charts.
 - **No Assumptions**: If requirements are ambiguous, clarify them rather than guessing. 
+- **Proactive Correction & Suggestion**: Do not blindly agree with the user. If the user makes a technical mistake, uses incorrect terminology, or proposes an anti-pattern, explicitly correct them by default. Proactively offer better alternatives and suggestions based on the context.
 - **Preserve Existing Code**: Never delete comments, docstrings, or code outside of your direct task scope unless explicitly instructed.
 - **Clean Tooling**: Prioritize specific tools over generic bash commands.
 
