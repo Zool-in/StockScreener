@@ -112,11 +112,13 @@ function renderChain(chainData, underlyingLtp) {
     // It must be a significant strike (OI > 20% of the max OI in the chain)
     // AND Volume must be abnormally high compared to OI (e.g., > 3x)
     if (ceOI > (maxCeOI * 0.20) && ceVol > (ceOI * 3)) {
-        alertMsg = '<span class="badge badge-purple">CE Gamma Trap!</span>';
+        const info = "BULLISH SIGNAL: Call Writers (Resistance) are panicking and covering shorts. Momentum is moving UP. Suggestion: BUY ATM Call (CE).";
+        alertMsg = `<span class="badge badge-purple" title="${info}" style="cursor:help;">📈 BULLISH: CE Gamma Trap! <span style="font-size:10px">ⓘ</span><br><small style="color:var(--text-green)">Suggest: Buy CE</small></span>`;
         tr.classList.add('gamma-alert');
     }
     if (peOI > (maxPeOI * 0.20) && peVol > (peOI * 3)) {
-        alertMsg = '<span class="badge badge-purple">PE Gamma Trap!</span>';
+        const info = "BEARISH SIGNAL: Put Writers (Support) are panicking and covering shorts. Momentum is moving DOWN. Suggestion: BUY ATM Put (PE).";
+        alertMsg = `<span class="badge badge-purple" title="${info}" style="cursor:help;">📉 BEARISH: PE Gamma Trap! <span style="font-size:10px">ⓘ</span><br><small style="color:var(--text-red)">Suggest: Buy PE</small></span>`;
         tr.classList.add('gamma-alert');
     }
 
@@ -128,9 +130,17 @@ function renderChain(chainData, underlyingLtp) {
     if (underlyingLtp && Math.abs(row.strike_price - underlyingLtp) < (activeIndex.includes('BANK') ? 50 : 25)) {
         tr.classList.add('atm-row');
     }
+    
+    // Attempt to extract the CE and PE symbols if FYERS provided them, to link to charts
+    // Fyers Option Chain API typically returns symbol in the row like `row.symbol` or `ce.symbol`
+    const ceSym = ce.symbol || '';
+    const peSym = pe.symbol || '';
+    const strikeLink = ceSym ? `https://trade.fyers.in/?sym=${ceSym}` : '#';
 
     tr.innerHTML = `
-      <td style="text-align:left; font-weight:bold">${row.strike_price || '-'}</td>
+      <td style="text-align:left; font-weight:bold">
+        <a href="${strikeLink}" target="_blank" style="color:var(--text-main); text-decoration:none;" title="Open in Fyers Web">${row.strike_price || '-'} ↗</a>
+      </td>
       <td class="call-side ${isCeItm ? 'itm-bg' : ''}">₹${ce.ltp || '-'}</td>
       <td class="${isCeItm ? 'itm-bg' : ''}">${ceVol}</td>
       <td class="${isCeItm ? 'itm-bg' : ''}">${ceOI}</td>
