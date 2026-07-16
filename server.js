@@ -534,7 +534,7 @@ async function handleOptionsChain(res, reqUrl) {
       return res.writeHead(401).end(JSON.stringify({ error: 'FYERS not connected' }));
     }
 
-    const data = await fyers.fetchOptionChain(symbol, strikecount);
+    const data = await fyers.fetchOptionChain(symbol, strikecount, reqUrl.searchParams.get('expiry'));
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   } catch (err) {

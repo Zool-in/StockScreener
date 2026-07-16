@@ -12,6 +12,8 @@ const DOM = {
 };
 
 let activeIndex = 'NSE:NIFTY50-INDEX';
+let selectedExpiry = null;
+let lastIndexScanned = null;
 
 async function init() {
   try {
@@ -55,7 +57,12 @@ function initEventHandlers() {
 
 async function runScan() {
   const activePill = DOM.indexPills.querySelector('.active');
-  const activeIndex = DOM.stockSelect.value || (activePill ? activePill.dataset.val : 'NSE:NIFTY50-INDEX');
+  const currentIndex = DOM.stockSelect.value || (activePill ? activePill.dataset.val : 'NSE:NIFTY50-INDEX');
+  
+  if (currentIndex !== lastIndexScanned) {
+      selectedExpiry = null; // reset expiry when switching symbols
+      lastIndexScanned = currentIndex;
+  }
 
   DOM.scanStatus.textContent = 'Scanning...';
   DOM.scanBtn.disabled = true;
@@ -65,7 +72,7 @@ async function runScan() {
     // Fetch underlying live price
     let underlyingLtp = null;
     try {
-      const qRes = await fetch(`/api/quotes?symbols=${activeIndex}`);
+      const qRes = await fetch(`/api/quotes?symbols=${currentIndex}`);
       if (qRes.ok) {
         const qData = await qRes.json();
         const val = Object.values(qData)[0];
@@ -77,12 +84,19 @@ async function runScan() {
       }
     } catch(e) { console.warn("Failed to fetch underlying LTP"); }
 
-    const res = await fetch(`/api/options/chain?symbol=${activeIndex}&strikecount=40`);
+    let url = `/api/options/chain?symbol=${currentIndex}&strikecount=40`;
+    if (selectedExpiry) url += `&expiry=${encodeURIComponent(selectedExpiry)}`;
+    
+    const res = await fetch(url);
     if (!res.ok) throw new Error(await res.text());
     
     const data = await res.json();
     if (data.s !== 'ok' || !data.data || !data.data.optionsChain) {
       throw new Error('Invalid data from FYERS');
+    }
+
+    if (data.data.expiryData) {
+      renderExpiryPills(data.data.expiryData);
     }
 
     renderChain(data.data.optionsChain, underlyingLtp);
@@ -93,6 +107,30 @@ async function runScan() {
   } finally {
     DOM.scanBtn.disabled = false;
   }
+}
+
+function renderExpiryPills(expiryData) {
+  DOM.expiryPills.innerHTML = '';
+  if (!expiryData || expiryData.length === 0) return;
+  
+  const expiries = expiryData.map(e => (typeof e === 'object' ? (e.expiry || e.date) : e)).filter(Boolean);
+  
+  expiries.slice(0, 8).forEach(exp => {
+    const btn = document.createElement('button');
+    btn.className = 'pill';
+    if (selectedExpiry === exp || (!selectedExpiry && exp === expiries[0])) {
+      btn.classList.add('active');
+    }
+    btn.textContent = exp;
+    btn.dataset.val = exp;
+    btn.addEventListener('click', (e) => {
+      DOM.expiryPills.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      selectedExpiry = e.target.dataset.val;
+      runScan(); // re-fetch with new expiry
+    });
+    DOM.expiryPills.appendChild(btn);
+  });
 }
 
 function renderChain(chainData, underlyingLtp) {
