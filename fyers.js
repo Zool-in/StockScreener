@@ -184,7 +184,7 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
   }
 
   // Map interval to Fyers resolution
-  const resMap = { '15m': '15', '60m': '60', '1h': '60', '1d': '1D', '1wk': '1W', '1mo': '1M' };
+  const resMap = { '5m': '5', '15m': '15', '60m': '60', '1h': '60', '1d': '1D', '1wk': '1W', '1mo': '1M' };
   const resolution = resMap[interval] || '1D';
 
   // Calculate range_from and range_to (Epoch seconds)
