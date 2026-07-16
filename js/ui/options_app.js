@@ -1,4 +1,4 @@
-import { checkFyersConnection } from '../core/api.js?v=6';
+
 
 const DOM = {
   indexPills: document.getElementById('indexPills'),
@@ -12,13 +12,19 @@ const DOM = {
 let activeIndex = 'NSE:NIFTY50-INDEX';
 
 async function init() {
-  const isConnected = await checkFyersConnection();
-  if (isConnected) {
-    DOM.connStatus.textContent = 'Brokers: Connected';
-    DOM.connStatus.classList.remove('badge-muted', 'badge-red');
-    DOM.connStatus.classList.add('badge-green');
-  } else {
-    DOM.connStatus.textContent = 'Brokers: Offline';
+  try {
+    const res = await fetch('/fyers/status');
+    const data = await res.json();
+    if (data.connected) {
+      DOM.connStatus.textContent = 'Brokers: Connected (Fyers)';
+      DOM.connStatus.classList.remove('badge-muted', 'badge-red');
+      DOM.connStatus.classList.add('badge-green');
+    } else {
+      DOM.connStatus.textContent = 'Brokers: Offline';
+      DOM.connStatus.classList.add('badge-red');
+    }
+  } catch (e) {
+    DOM.connStatus.textContent = 'Brokers: Error';
     DOM.connStatus.classList.add('badge-red');
   }
 
