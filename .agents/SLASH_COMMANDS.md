@@ -61,6 +61,7 @@ ChatGPT's web interface utilizes the newly introduced **Canvas** and **Custom In
 ### Cursor IDE (Claude 3.5 Sonnet)
 Cursor does not primarily use `/` slash commands for behaviors. Instead, it relies on `@` contextual tags and different UI features:
 - **For `/goal` equivalent**: Use **Cursor Composer** (`Cmd/Ctrl + I`). This allows Claude to edit multiple files autonomously across your codebase in a single sweep.
+- **Example**: Hit `Cmd+I` to open Composer and type *"Refactor the entire auth flow to use Zustand, referencing @authStore.ts."*
 - **For `/learn` equivalent**: Create a `.cursorrules` file in the root of your project. (You can symlink `.agents/AGENTS.md` to `.cursorrules` to share rules!).
 - **Context Commands**: Use `@Codebase` to scan the whole repo, `@Web` to search the internet for docs, and `@Files` to inject specific context.
 
@@ -69,5 +70,6 @@ Copilot Chat in VS Code uses both `/` commands and `@` agents:
 - **`/explain`**: Explains how a highlighted block of code works.
 - **`/tests`**: Automatically generates unit tests for the selected code.
 - **`/fix`**: Proposes a fix for the bugs in the selected code.
+- **Example**: Highlight a broken function and type `/fix handle the edge case where the user object is null.`
 - **`@workspace`**: Asks a question about your entire repository. E.g., `@workspace where do we handle database connections?`
 - **For `/learn` equivalent**: Create a `.github/copilot-instructions.md` file to set custom instructions for Copilot.
