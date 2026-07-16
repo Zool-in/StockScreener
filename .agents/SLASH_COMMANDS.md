@@ -30,19 +30,31 @@ These commands instantly switch the AI into a highly specialized operating mode:
 
 ## Equivalents in Other AI Tools
 
-If you are using other AI Coding Assistants alongside this one, here is how you access similar functionality.
+If you are using other AI platforms for your daily design and development work, here is how you access similar functionality.
 
-### Cursor (Claude 3.5 Sonnet)
+### Anthropic Claude (Web UI / Artifacts for Code & Design)
+Claude's web interface excels at "cowork" for coding and UI design through its **Artifacts** feature:
+- **For `/goal` equivalent**: Claude Web relies on detailed prompting rather than autonomous background loops. To simulate a goal, provide a comprehensive super-prompt asking Claude to generate a full React/Next.js application as a standalone Artifact.
+- **For `/grill-me`**: Simply prompt: *"Before writing any code or designing the UI, act as a senior product designer and architect. Ask me multiple-choice questions one-by-one to align on the technical requirements and aesthetic."*
+- **For `/learn`**: Claude Web uses **Project Knowledge (Project Instructions)**. You can upload `AGENTS.md` directly into your Claude Project's Knowledge base, and Claude will automatically apply those rules to every chat in that project.
+- **For Design Work**: When asking Claude to generate UI/UX, specify that you want it rendered as an interactive React/Tailwind **Artifact** so you can preview the design live in the browser.
+
+### ChatGPT (Codex / Canvas for Work)
+ChatGPT's web interface utilizes the newly introduced **Canvas** and **Custom Instructions (GPTs)**:
+- **For `/goal` equivalent**: Trigger **ChatGPT Canvas** by asking ChatGPT to "write this in a Canvas." Canvas opens a dedicated coding/writing workspace on the right side where ChatGPT can autonomously refactor, debug, and review the document without cluttering the chat.
+- **For `/learn`**: Use **Custom Instructions** or create a **Custom GPT** for your specific project. You can copy-paste the contents of `AGENTS.md` into the "Instructions" field of your Custom GPT so it acts as your dedicated project assistant.
+- **For `/fix` or `/explain`**: Inside ChatGPT Canvas, you can highlight specific lines of code and click the floating action buttons to "Explain," "Review," or "Add Logs" to that specific block.
+
+### Cursor IDE (Claude 3.5 Sonnet)
 Cursor does not primarily use `/` slash commands for behaviors. Instead, it relies on `@` contextual tags and different UI features:
 - **For `/goal` equivalent**: Use **Cursor Composer** (`Cmd/Ctrl + I`). This allows Claude to edit multiple files autonomously across your codebase in a single sweep.
-- **For `/learn` equivalent**: Create a `.cursorrules` file in the root of your project. Cursor will automatically read this on every prompt. (You can actually just symlink `.agents/AGENTS.md` to `.cursorrules` to share rules!).
-- **For `/grill-me`**: Simply type exactly what you want: *"Act as a senior architect. Ask me questions one by one about this feature before writing code."*
+- **For `/learn` equivalent**: Create a `.cursorrules` file in the root of your project. (You can symlink `.agents/AGENTS.md` to `.cursorrules` to share rules!).
 - **Context Commands**: Use `@Codebase` to scan the whole repo, `@Web` to search the internet for docs, and `@Files` to inject specific context.
 
-### GitHub Copilot (Codex / OpenAI)
-Copilot Chat uses both `/` commands and `@` agents:
+### GitHub Copilot (Codex)
+Copilot Chat in VS Code uses both `/` commands and `@` agents:
 - **`/explain`**: Explains how a highlighted block of code works.
 - **`/tests`**: Automatically generates unit tests for the selected code.
 - **`/fix`**: Proposes a fix for the bugs in the selected code.
-- **`@workspace`**: (Similar to Cursor's `@Codebase`) - Asks a question about your entire repository. E.g., `@workspace where do we handle database connections?`
+- **`@workspace`**: Asks a question about your entire repository. E.g., `@workspace where do we handle database connections?`
 - **For `/learn` equivalent**: Create a `.github/copilot-instructions.md` file to set custom instructions for Copilot.
