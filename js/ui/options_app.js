@@ -70,7 +70,18 @@ function renderChain(chainData) {
   // Sort by strike price
   chainData.sort((a, b) => a.strike_price - b.strike_price);
 
+  // 1. Find the highest OI to identify major support/resistance levels
+  let maxCeOI = 1;
+  let maxPeOI = 1;
   for (const row of chainData) {
+    if (row.strike_price <= 0) continue; // Skip invalid strikes
+    if (row.option_type === 'CE' && row.oi > maxCeOI) maxCeOI = row.oi;
+    if (row.option_type === 'PE' && row.oi > maxPeOI) maxPeOI = row.oi;
+  }
+
+  for (const row of chainData) {
+    if (row.strike_price <= 0) continue; // Skip invalid strikes
+    
     const tr = document.createElement('tr');
     
     // Analyze for Gamma Squeeze Alerts
@@ -89,12 +100,15 @@ function renderChain(chainData) {
     const peVol = pe.volume || 0;
     const peOI = pe.oi || 1;
 
-    if (ceVol > ceOI * 2 && ceOI > 10000) {
-        alertMsg = '<span class="badge badge-purple">CE Gamma Squeeze!</span>';
+    // Squeeze Logic: 
+    // It must be a significant strike (OI > 20% of the max OI in the chain)
+    // AND Volume must be abnormally high compared to OI (e.g., > 3x)
+    if (ceOI > (maxCeOI * 0.20) && ceVol > (ceOI * 3)) {
+        alertMsg = '<span class="badge badge-purple">CE Gamma Trap!</span>';
         tr.classList.add('gamma-alert');
     }
-    if (peVol > peOI * 2 && peOI > 10000) {
-        alertMsg = '<span class="badge badge-purple">PE Gamma Squeeze!</span>';
+    if (peOI > (maxPeOI * 0.20) && peVol > (peOI * 3)) {
+        alertMsg = '<span class="badge badge-purple">PE Gamma Trap!</span>';
         tr.classList.add('gamma-alert');
     }
 
