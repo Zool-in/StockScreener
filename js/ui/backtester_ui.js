@@ -57,11 +57,8 @@ export function openStrategyTester(ticker, timeframe, strategyId, backtestResult
   });
 
   // Format historical data for chart
-  const candleData = [];
+  let candleData = [];
   for (let i = 0; i < rawData.closes.length; i++) {
-    // Lightweight charts requires strictly increasing unique timestamps
-    if (i > 0 && rawData.ts[i] <= rawData.ts[i-1]) continue; 
-    
     candleData.push({
       time: rawData.ts[i],
       open: rawData.opens[i],
@@ -70,33 +67,57 @@ export function openStrategyTester(ticker, timeframe, strategyId, backtestResult
       close: rawData.closes[i],
     });
   }
-  currentCandleSeries.setData(candleData);
+  
+  // Lightweight charts strictly requires data to be ascending by time
+  candleData.sort((a, b) => a.time - b.time);
+  
+  // Remove duplicate timestamps
+  const uniqueCandles = [];
+  for (let i = 0; i < candleData.length; i++) {
+    if (i > 0 && candleData[i].time === candleData[i-1].time) continue;
+    uniqueCandles.push(candleData[i]);
+  }
+  
+  try {
+    currentCandleSeries.setData(uniqueCandles);
+  } catch(e) {
+    console.error("Chart setData error:", e);
+  }
 
   // Generate Buy/Sell Markers from Trades
   const markers = [];
+  const validTimes = new Set(uniqueCandles.map(c => c.time));
+  
   backtestResults.trades.forEach(t => {
-    // Entry Marker
-    markers.push({
-      time: t.entryDate,
-      position: t.isShort ? 'aboveBar' : 'belowBar',
-      color: t.isShort ? '#ef5350' : '#26a69a',
-      shape: t.isShort ? 'arrowDown' : 'arrowUp',
-      text: t.isShort ? 'Sell' : 'Buy'
-    });
+    // Only add markers if the time exists in the candle data (required by lightweight-charts)
+    if (validTimes.has(t.entryDate)) {
+      markers.push({
+        time: t.entryDate,
+        position: t.isShort ? 'aboveBar' : 'belowBar',
+        color: t.isShort ? '#ef5350' : '#26a69a',
+        shape: t.isShort ? 'arrowDown' : 'arrowUp',
+        text: t.isShort ? 'Sell' : 'Buy'
+      });
+    }
     
-    // Exit Marker
-    markers.push({
-      time: t.exitDate,
-      position: t.isShort ? 'belowBar' : 'aboveBar',
-      color: '#e1bee7',
-      shape: t.isShort ? 'arrowUp' : 'arrowDown',
-      text: 'Exit'
-    });
+    if (validTimes.has(t.exitDate)) {
+      markers.push({
+        time: t.exitDate,
+        position: t.isShort ? 'belowBar' : 'aboveBar',
+        color: '#e1bee7',
+        shape: t.isShort ? 'arrowUp' : 'arrowDown',
+        text: 'Exit'
+      });
+    }
   });
   
   // Sort markers by time as required by lightweight-charts
   markers.sort((a, b) => a.time - b.time);
-  currentCandleSeries.setMarkers(markers);
+  try {
+    currentCandleSeries.setMarkers(markers);
+  } catch(e) {
+    console.error("Chart setMarkers error:", e);
+  }
 
   // Switch to Summary Tab by default
   window.switchBtTab('summary');
