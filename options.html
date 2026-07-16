@@ -55,11 +55,25 @@
       <div class="filter-group">
         <h2 class="filter-heading">Gamma Squeeze Screener</h2>
         <div class="input-group">
-          <label class="input-label">Select Index</label>
-          <div class="pill-container" id="indexPills">
+          <label class="input-label">Select Asset</label>
+          <div class="pill-container" id="indexPills" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             <button class="pill active" data-val="NSE:NIFTY50-INDEX">Nifty 50</button>
             <button class="pill" data-val="NSE:NIFTYBANK-INDEX">Bank Nifty</button>
             <button class="pill" data-val="NSE:FINNIFTY-INDEX">Fin Nifty</button>
+            
+            <select id="stockSelect" style="margin-left: 10px; background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 12px; outline: none; cursor: pointer; font-size: 13px;">
+              <option value="">-- Nifty 50 Stocks --</option>
+              <option value="NSE:RELIANCE-EQ">RELIANCE</option>
+              <option value="NSE:HDFCBANK-EQ">HDFCBANK</option>
+              <option value="NSE:ICICIBANK-EQ">ICICIBANK</option>
+              <option value="NSE:INFY-EQ">INFY</option>
+              <option value="NSE:TCS-EQ">TCS</option>
+              <option value="NSE:ITC-EQ">ITC</option>
+              <option value="NSE:LT-EQ">L&T</option>
+              <option value="NSE:SBIN-EQ">SBIN</option>
+              <option value="NSE:BHARTIARTL-EQ">BHARTIARTL</option>
+              <option value="NSE:KOTAKBANK-EQ">KOTAKBANK</option>
+            </select>
           </div>
         </div>
 
@@ -115,6 +129,6 @@
     </div>
   </main>
 
-  <script type="module" src="js/ui/options_app.js?v=11" defer></script>
+  <script type="module" src="js/ui/options_app.js?v=12" defer></script>
 </body>
 </html>

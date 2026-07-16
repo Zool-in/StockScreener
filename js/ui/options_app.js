@@ -5,6 +5,7 @@ const DOM = {
   indexPills: document.getElementById('indexPills'),
   expiryPills: document.getElementById('expiryPills'),
   scanBtn: document.getElementById('scanBtn'),
+  stockSelect: document.getElementById('stockSelect'),
   scanStatus: document.getElementById('scanStatus'),
   optionsBody: document.getElementById('optionsBody'),
   connStatus: document.getElementById('connStatus')
@@ -29,29 +30,50 @@ async function init() {
     DOM.connStatus.classList.add('badge-red');
   }
 
-  DOM.indexPills.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('pill')) return;
-    Array.from(DOM.indexPills.children).forEach(p => p.classList.remove('active'));
-    e.target.classList.add('active');
-    activeIndex = e.target.dataset.val;
+  initEventHandlers();
+}
+
+function initEventHandlers() {
+  DOM.scanBtn.addEventListener('click', runScan);
+  
+  DOM.indexPills.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      DOM.indexPills.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      DOM.stockSelect.value = ""; // reset stock dropdown
+    });
   });
 
-  DOM.scanBtn.addEventListener('click', runScan);
+  DOM.stockSelect.addEventListener('change', () => {
+    if (DOM.stockSelect.value) {
+      DOM.indexPills.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+    } else {
+      DOM.indexPills.querySelector('[data-val="NSE:NIFTY50-INDEX"]').classList.add('active');
+    }
+  });
 }
 
 async function runScan() {
+  const activePill = DOM.indexPills.querySelector('.active');
+  const activeIndex = DOM.stockSelect.value || (activePill ? activePill.dataset.val : 'NSE:NIFTY50-INDEX');
+
   DOM.scanStatus.textContent = 'Scanning...';
   DOM.scanBtn.disabled = true;
   DOM.optionsBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Loading Option Chain...</td></tr>';
   
   try {
-    // Fetch underlying LTP
+    // Fetch underlying live price
     let underlyingLtp = null;
     try {
       const qRes = await fetch(`/api/quotes?symbols=${activeIndex}`);
       if (qRes.ok) {
         const qData = await qRes.json();
-        underlyingLtp = Object.values(qData)[0] || null;
+        const val = Object.values(qData)[0];
+        if (typeof val === 'number' && !isNaN(val)) {
+            underlyingLtp = val;
+        } else if (val && val.ltp && !isNaN(val.ltp)) {
+            underlyingLtp = val.ltp;
+        }
       }
     } catch(e) { console.warn("Failed to fetch underlying LTP"); }
 
