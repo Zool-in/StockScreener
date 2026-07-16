@@ -12,9 +12,11 @@
     .options-table th, .options-table td { padding: 12px; text-align: right; border-bottom: 1px solid var(--border-color); }
     .options-table th { background: var(--bg-surface); color: var(--text-muted); font-weight: 500; font-size: 13px; }
     .options-table th:first-child, .options-table td:first-child { text-align: left; }
-    .gamma-alert { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .gamma-alert { background: rgba(239, 68, 68, 0.1) !important; border: 1px solid rgba(239, 68, 68, 0.3); }
     .call-side { color: var(--text-green); }
     .put-side { color: var(--text-red); }
+    .itm-bg { background: rgba(255, 255, 255, 0.03); }
+    .atm-row { border-top: 2px solid var(--border-color); border-bottom: 2px solid var(--border-color); }
   </style>
 </head>
 <body>
@@ -93,6 +95,6 @@
     </div>
   </main>
 
-  <script type="module" src="js/ui/options_app.js?v=4" defer></script>
+  <script type="module" src="js/ui/options_app.js?v=5" defer></script>
 </body>
 </html>

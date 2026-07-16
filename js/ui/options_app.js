@@ -44,7 +44,17 @@ async function runScan() {
   DOM.optionsBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Loading Option Chain...</td></tr>';
   
   try {
-    const res = await fetch(`/api/options/chain?symbol=${activeIndex}&strikecount=30`);
+    // Fetch underlying LTP
+    let underlyingLtp = null;
+    try {
+      const qRes = await fetch(`/api/quotes?symbols=${activeIndex}`);
+      if (qRes.ok) {
+        const qData = await qRes.json();
+        underlyingLtp = qData[activeIndex] || null;
+      }
+    } catch(e) { console.warn("Failed to fetch underlying LTP"); }
+
+    const res = await fetch(`/api/options/chain?symbol=${activeIndex}&strikecount=40`);
     if (!res.ok) throw new Error(await res.text());
     
     const data = await res.json();
@@ -52,8 +62,8 @@ async function runScan() {
       throw new Error('Invalid data from FYERS');
     }
 
-    renderChain(data.data.optionsChain);
-    DOM.scanStatus.textContent = `Updated at ${new Date().toLocaleTimeString()}`;
+    renderChain(data.data.optionsChain, underlyingLtp);
+    DOM.scanStatus.textContent = `Updated at ${new Date().toLocaleTimeString()} ${underlyingLtp ? `(Spot: ${underlyingLtp})` : ''}`;
   } catch (err) {
     DOM.scanStatus.textContent = 'Error';
     DOM.optionsBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:red">${err.message}</td></tr>`;
@@ -62,11 +72,9 @@ async function runScan() {
   }
 }
 
-function renderChain(chainData) {
+function renderChain(chainData, underlyingLtp) {
   DOM.optionsBody.innerHTML = '';
   
-  // chainData is an array of objects representing strikes
-  // For each strike, we have CE and PE data
   // Sort by strike price
   chainData.sort((a, b) => a.strike_price - b.strike_price);
 
@@ -112,14 +120,23 @@ function renderChain(chainData) {
         tr.classList.add('gamma-alert');
     }
 
+    // Identify ITM/OTM
+    const isCeItm = underlyingLtp && row.strike_price < underlyingLtp;
+    const isPeItm = underlyingLtp && row.strike_price > underlyingLtp;
+    
+    // Highlight ATM row
+    if (underlyingLtp && Math.abs(row.strike_price - underlyingLtp) < (activeIndex.includes('BANK') ? 50 : 25)) {
+        tr.classList.add('atm-row');
+    }
+
     tr.innerHTML = `
       <td style="text-align:left; font-weight:bold">${row.strike_price || '-'}</td>
-      <td class="call-side">₹${ce.ltp || '-'}</td>
-      <td>${ceVol}</td>
-      <td>${ceOI}</td>
-      <td class="put-side">₹${pe.ltp || '-'}</td>
-      <td>${peVol}</td>
-      <td>${peOI}</td>
+      <td class="call-side ${isCeItm ? 'itm-bg' : ''}">₹${ce.ltp || '-'}</td>
+      <td class="${isCeItm ? 'itm-bg' : ''}">${ceVol}</td>
+      <td class="${isCeItm ? 'itm-bg' : ''}">${ceOI}</td>
+      <td class="put-side ${isPeItm ? 'itm-bg' : ''}">₹${pe.ltp || '-'}</td>
+      <td class="${isPeItm ? 'itm-bg' : ''}">${peVol}</td>
+      <td class="${isPeItm ? 'itm-bg' : ''}">${peOI}</td>
       <td>${alertMsg}</td>
     `;
     DOM.optionsBody.appendChild(tr);
