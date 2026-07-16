@@ -36,3 +36,11 @@ This rulebook defines the absolute baseline standards, architectural preferences
 - **Sanitize Inputs**: Never trust client-side data. Sanitize all user inputs before rendering to prevent XSS attacks.
 - **Secrets Management**: Never commit secrets or API keys. Always use `.env` files and validate them on application startup.
 - **Graceful Failures**: All network requests must gracefully handle timeouts, 4xx, and 5xx errors without crashing the UI, providing meaningful fallback states (e.g., skeletons or toast notifications).
+
+## 6. Software Development Life Cycle (SDLC)
+All AI agents must adhere to the following product lifecycle workflow for major features:
+1. **Requirements Gathering**: Do not jump straight to coding. If a prompt is vague, ask clarifying questions or use the `/grill-me` approach to resolve edge cases.
+2. **System Design (Planning)**: Draft an `implementation_plan.md` outlining the architecture, state management, and file structure before modifying source code.
+3. **Execution**: Write clean, atomic code following the standards in this rulebook. Update a `task.md` checklist as you progress.
+4. **Testing & Verification**: After coding, rigorously test the changes. Check browser console logs, handle API edge cases, and ensure pixel-perfection.
+5. **Documentation**: Output a `walkthrough.md` or a clear summary of what was accomplished, what changed, and how the user can test it.
