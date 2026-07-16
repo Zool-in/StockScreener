@@ -19,12 +19,11 @@
     .call-side { color: var(--text-green); }
     .put-side { color: var(--text-red); }
     
-    .itm-bg-call { background: rgba(255, 235, 100, 0.05); } /* Yellowish for Call ITM */
-    .itm-bg-put { background: rgba(100, 255, 150, 0.05); } /* Greenish for Put ITM */
-    .otm-bg { background: rgba(0, 0, 0, 0.2); }
+    .itm-bg { background: rgba(255, 215, 0, 0.12) !important; } /* Faint gold for In-The-Money */
+    .otm-bg { background: transparent; } /* Clear for OTM */
     
     .atm-row { border-top: 2px solid var(--border-color); border-bottom: 2px solid var(--border-color); }
-    .atm-row td { background: rgba(255, 255, 255, 0.05); border-top: 1px solid var(--text-main); border-bottom: 1px solid var(--text-main); }
+    .atm-row td { background: rgba(255, 255, 255, 0.08); border-top: 1px solid var(--text-muted); border-bottom: 1px solid var(--text-muted); }
     
     .oi-cell { position: relative; }
     .oi-bar { position: absolute; top: 0; bottom: 0; opacity: 0.2; pointer-events: none; }
@@ -129,6 +128,6 @@
     </div>
   </main>
 
-  <script type="module" src="js/ui/options_app.js?v=15" defer></script>
+  <script type="module" src="js/ui/options_app.js?v=17" defer></script>
 </body>
 </html>

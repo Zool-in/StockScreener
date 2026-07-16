@@ -247,8 +247,8 @@ function renderChain(chainData, underlyingLtp) {
     const ceOiPct = maxCeOI > 0 ? (ceOI / maxCeOI) * 100 : 0;
     const peOiPct = maxPeOI > 0 ? (peOI / maxPeOI) * 100 : 0;
 
-    const callItmClass = isCeItm ? 'itm-bg-call' : 'otm-bg';
-    const putItmClass = isPeItm ? 'itm-bg-put' : 'otm-bg';
+    const callItmClass = isCeItm ? 'itm-bg' : 'otm-bg';
+    const putItmClass = isPeItm ? 'itm-bg' : 'otm-bg';
 
     tr.innerHTML = `
       <td style="font-size:11px; color:var(--text-muted)">${ceIVStr}</td>
