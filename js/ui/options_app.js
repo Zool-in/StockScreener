@@ -135,18 +135,18 @@ function renderChain(chainData, underlyingLtp) {
     // Fyers Option Chain API typically returns symbol in the row like `row.symbol` or `ce.symbol`
     const ceSym = ce.symbol || '';
     const peSym = pe.symbol || '';
-    const strikeLink = ceSym ? `https://trade.fyers.in/?sym=${ceSym}` : '#';
+    const strikeLink = ceSym ? `https://trade.fyers.in/popout/index.html?symbol=${ceSym}&resolution=5&theme=dark` : '#';
 
     tr.innerHTML = `
       <td style="text-align:left; font-weight:bold">
         <a href="${strikeLink}" target="_blank" style="color:var(--text-main); text-decoration:none;" title="Open in Fyers Web">${row.strike_price || '-'} ↗</a>
       </td>
-      <td class="call-side ${isCeItm ? 'itm-bg' : ''}">₹${ce.ltp || '-'}</td>
-      <td class="${isCeItm ? 'itm-bg' : ''}">${ceVol}</td>
-      <td class="${isCeItm ? 'itm-bg' : ''}">${ceOI}</td>
-      <td class="put-side ${isPeItm ? 'itm-bg' : ''}">₹${pe.ltp || '-'}</td>
-      <td class="${isPeItm ? 'itm-bg' : ''}">${peVol}</td>
-      <td class="${isPeItm ? 'itm-bg' : ''}">${peOI}</td>
+      <td class="call-side ${isCeItm ? 'itm-bg' : 'otm-bg'}">₹${ce.ltp || '-'}</td>
+      <td class="${isCeItm ? 'itm-bg' : 'otm-bg'}">${ceVol}</td>
+      <td class="${isCeItm ? 'itm-bg' : 'otm-bg'}">${ceOI}</td>
+      <td class="put-side ${isPeItm ? 'itm-bg' : 'otm-bg'}">₹${pe.ltp || '-'}</td>
+      <td class="${isPeItm ? 'itm-bg' : 'otm-bg'}">${peVol}</td>
+      <td class="${isPeItm ? 'itm-bg' : 'otm-bg'}">${peOI}</td>
       <td>${alertMsg}</td>
     `;
     DOM.optionsBody.appendChild(tr);
