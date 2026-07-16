@@ -104,10 +104,21 @@ function renderChain(chainData, underlyingLtp) {
   // 1. Find the highest OI to identify major support/resistance levels
   let maxCeOI = 1;
   let maxPeOI = 1;
+  let atmStrike = null;
+  let minDiff = Infinity;
+
   for (const row of chainData) {
     if (row.strike_price <= 0) continue; // Skip invalid strikes
     if (row.option_type === 'CE' && row.oi > maxCeOI) maxCeOI = row.oi;
     if (row.option_type === 'PE' && row.oi > maxPeOI) maxPeOI = row.oi;
+    
+    if (underlyingLtp) {
+      const diff = Math.abs(row.strike_price - underlyingLtp);
+      if (diff < minDiff) {
+        minDiff = diff;
+        atmStrike = row.strike_price;
+      }
+    }
   }
 
   for (const row of chainData) {
@@ -136,15 +147,15 @@ function renderChain(chainData, underlyingLtp) {
     const isPeItm = underlyingLtp && row.strike_price > underlyingLtp;
 
     // Squeeze Logic (Trapped Writers)
-    // A writer is trapped if their strike has massive OI, but the price has moved against them (it is now ITM).
-    if (ceOI > (maxCeOI * 0.40) && ceVol > (ceOI * 1.5) && isCeItm) {
+    // A writer is trapped if their strike has significant OI (at least 15% of max) AND price moved against them (is ITM) AND volume is spiking
+    if (ceOI > (maxCeOI * 0.15) && ceVol > (ceOI * 1.5) && isCeItm) {
         const info = "BULLISH SIGNAL: Call Writers (Resistance) are trapped! Strike is ITM. Suggestion: BUY ATM Call (CE).";
         alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
             <span class="badge badge-purple" style="white-space:nowrap;">📈 BULLISH: CE Gamma Trap! ⓘ</span>
             <span style="font-size:10px; color:var(--text-green); font-weight:600; text-transform:uppercase; white-space:nowrap;">Suggest: Buy CE</span>
         </div>`;
         tr.classList.add('gamma-alert');
-    } else if (peOI > (maxPeOI * 0.40) && peVol > (peOI * 1.5) && isPeItm) {
+    } else if (peOI > (maxPeOI * 0.15) && peVol > (peOI * 1.5) && isPeItm) {
         const info = "BEARISH SIGNAL: Put Writers (Support) are trapped! Strike is ITM. Suggestion: BUY ATM Put (PE).";
         alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
             <span class="badge badge-purple" style="white-space:nowrap;">📉 BEARISH: PE Gamma Trap! ⓘ</span>
@@ -153,8 +164,9 @@ function renderChain(chainData, underlyingLtp) {
         tr.classList.add('gamma-alert');
     }
     
-    // Highlight ATM row
-    if (underlyingLtp && Math.abs(row.strike_price - underlyingLtp) < (activeIndex.includes('BANK') ? 50 : 25)) {
+    // Highlight exact ATM row
+    const isAtm = (row.strike_price === atmStrike);
+    if (isAtm) {
         tr.classList.add('atm-row');
     }
     
@@ -210,7 +222,8 @@ function renderChain(chainData, underlyingLtp) {
         <div class="oi-bar oi-bar-call" style="width: ${ceOiPct}%"></div>
         <span style="position:relative; z-index:1">${ceOI}</span>
       </td>
-      <td class="strike-cell">
+      <td class="strike-cell" style="${isAtm ? 'background: var(--bg-surface);' : ''}">
+        ${isAtm ? '<div style="font-size:9px; color:var(--text-main); font-weight:900; letter-spacing:1px; background:rgba(255,255,255,0.1); padding:2px 4px; border-radius:2px; display:inline-block; margin-bottom:2px;">ATM</div><br>' : ''}
         <a href="${strikeLink}" target="_blank" style="color:var(--text-main); text-decoration:none;" title="Open in Fyers Web">${K} ↗</a>
       </td>
       <td class="oi-cell ${putItmClass}">
