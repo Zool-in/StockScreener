@@ -2,7 +2,7 @@
 
 const DOM = {
   indexPills: document.getElementById('indexPills'),
-  expiryInput: document.getElementById('expiryInput'),
+  expiryPills: document.getElementById('expiryPills'),
   scanBtn: document.getElementById('scanBtn'),
   scanStatus: document.getElementById('scanStatus'),
   optionsBody: document.getElementById('optionsBody'),
@@ -20,7 +20,7 @@ async function init() {
       DOM.connStatus.classList.remove('badge-muted', 'badge-red');
       DOM.connStatus.classList.add('badge-green');
     } else {
-      DOM.connStatus.textContent = 'Brokers: Offline';
+      DOM.connStatus.innerHTML = 'Brokers: Offline <a href="/fyers/login" style="margin-left:8px; color:inherit; text-decoration:underline;">Login</a>';
       DOM.connStatus.classList.add('badge-red');
     }
   } catch (e) {

@@ -48,8 +48,12 @@
         </div>
 
         <div class="input-group">
-          <label class="input-label">Expiry (Optional)</label>
-          <input type="text" id="expiryInput" class="input" placeholder="e.g. 24JUL">
+          <label class="input-label">Expiry</label>
+          <div class="pill-container" id="expiryPills">
+            <button class="pill active" data-val="">Nearest Expiry</button>
+            <button class="pill" data-val="next">Next Week</button>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Nearest expiry is auto-selected for 0-DTE Gamma blasts.</p>
         </div>
       </div>
       
@@ -89,6 +93,6 @@
     </div>
   </main>
 
-  <script type="module" src="js/ui/options_app.js?v=1" defer></script>
+  <script type="module" src="js/ui/options_app.js?v=2" defer></script>
 </body>
 </html>
