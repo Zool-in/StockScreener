@@ -32,13 +32,22 @@ These commands instantly switch the AI into a highly specialized operating mode:
 
 If you are using other AI platforms for your daily design and development work, here is how you access similar functionality.
 
-### Anthropic Claude (Web UI / Artifacts for Code & Design)
-Claude's web interface excels at "cowork" for coding and UI design through its **Artifacts** feature:
-- **For `/goal` equivalent**: Claude Web relies on detailed prompting rather than autonomous background loops. To simulate a goal, provide a comprehensive super-prompt asking Claude to generate a full React/Next.js application as a standalone Artifact.
-- **For `/grill-me`**: Simply prompt: *"Before writing any code or designing the UI, act as a senior product designer and architect. Ask me multiple-choice questions one-by-one to align on the technical requirements and aesthetic."*
-- **For `/learn`**: Claude Web uses **Project Knowledge (Project Instructions)**. You can upload `AGENTS.md` directly into your Claude Project's Knowledge base, and Claude will automatically apply those rules to every chat in that project.
-- **For Design Work**: When asking Claude to generate UI/UX, specify that you want it rendered as an interactive React/Tailwind **Artifact** so you can preview the design live in the browser.
+### Anthropic Claude Ecosystem
 
+#### 1. Claude Code (CLI)
+Claude Code is a terminal-based tool that natively supports a massive suite (90+) of true slash commands. The most useful include:
+- **Session/Context**: `/clear` (fresh start), `/compact` (summarize to free context), `/context`, `/resume`, `/branch` (fork), `/rewind`.
+- **Planning & Review**: `/plan`, `/diff`, `/code-review`, `/security-review`.
+- **Parallel Work**: `/batch` (decomposes big changes into units run in worktrees), `/tasks`, `/background`.
+- **Custom Skills**: You can create your own commands using Markdown files inside `.claude/skills/<name>/SKILL.md`.
+
+#### 2. Cowork Plugins
+Cowork supports custom plugins that bundle custom slash commands tailored to specific roles or teams (e.g., a sales plugin exposing commands for prospect research). What commands are available entirely depends on which plugins are installed via Settings.
+
+#### 3. Regular Chat (claude.ai)
+The standard web interface does **not** have a slash-command system. Everything (including triggering Artifacts or Search) happens purely through conversational input and UI toggles.
+- **For `/goal` equivalent**: Rely on a detailed super-prompt asking Claude to generate a full React/Next.js application as a standalone Artifact.
+- **For `/learn`**: Use **Project Knowledge (Project Instructions)** to upload `AGENTS.md`.
 ### ChatGPT (Codex / Canvas for Work)
 ChatGPT's web interface utilizes the newly introduced **Canvas** and **Custom Instructions (GPTs)**:
 - **For `/goal` equivalent**: Trigger **ChatGPT Canvas** by asking ChatGPT to "write this in a Canvas." Canvas opens a dedicated coding/writing workspace on the right side where ChatGPT can autonomously refactor, debug, and review the document without cluttering the chat.
