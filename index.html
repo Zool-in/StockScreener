@@ -7,6 +7,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css?v=6">
   <link rel="stylesheet" href="css/components.css?v=6">
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    /* Backtester Modal Specific Styles */
+    #backtesterModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; }
+    #backtesterModal .modal-overlay { background: rgba(0,0,0,0.8); width: 100%; height: 100%; position: absolute; }
+    #backtesterModal .bt-panel { position: absolute; top: 2vh; left: 2vw; width: 96vw; height: 96vh; background: var(--bg-card); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
+    #backtesterModal .bt-header { padding: 12px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); }
+    #backtesterModal .bt-body { display: flex; flex-direction: column; flex: 1; height: 0; } /* height 0 forces flex child to scroll */
+    #backtesterModal .bt-chart-container { flex: 2; border-bottom: 1px solid var(--border-color); position: relative; }
+    #backtesterModal .bt-tabs { display: flex; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); }
+    #backtesterModal .bt-tab { padding: 8px 16px; cursor: pointer; color: var(--text-muted); font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; }
+    #backtesterModal .bt-tab.active { color: var(--text-main); border-bottom: 2px solid var(--v-accent); }
+    #backtesterModal .bt-content { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg-body); }
+    
+    .bt-trade-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .bt-trade-table th, .bt-trade-table td { padding: 8px; text-align: right; border-bottom: 1px solid var(--border-color); }
+    .bt-trade-table th { text-align: right; color: var(--text-muted); font-weight: 500; }
+    .bt-trade-table td { font-variant-numeric: tabular-nums; }
+    .bt-trade-table th:first-child, .bt-trade-table td:first-child { text-align: left; }
+    
+    .bt-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 16px; }
+    .bt-summary-card { background: var(--bg-surface); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
+    .bt-summary-val { font-size: 24px; font-weight: 700; margin-top: 8px; }
+  </style>
 </head>
 <body>
 
@@ -160,7 +184,42 @@
     </div>
   </div>
 
+  <!-- Strategy Tester Modal -->
+  <div id="backtesterModal">
+    <div class="modal-overlay" onclick="closeBacktester()"></div>
+    <div class="bt-panel">
+      <div class="bt-header">
+        <div>
+          <h2 id="btTitle" style="margin:0; font-size:16px;">Strategy Tester</h2>
+          <div id="btSubtitle" style="font-size:12px; color:var(--text-muted); margin-top:2px;">Ticker • Timeframe</div>
+        </div>
+        <button onclick="closeBacktester()" class="modal-close">&times;</button>
+      </div>
+      <div class="bt-body">
+        <div id="btChart" class="bt-chart-container"></div>
+        <div class="bt-tabs">
+          <div class="bt-tab active" onclick="switchBtTab('summary')" id="tab-summary">Performance Summary</div>
+          <div class="bt-tab" onclick="switchBtTab('trades')" id="tab-trades">List of Trades</div>
+        </div>
+        <div class="bt-content" id="btContentArea">
+          <!-- Content injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function closeBacktester() {
+      document.getElementById('backtesterModal').style.display = 'none';
+    }
+    function switchBtTab(tab) {
+      document.querySelectorAll('.bt-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      window.renderBtTab(tab);
+    }
+  </script>
+
   <!-- Entry point for UI routing and execution -->
-  <script type="module" src="js/ui/app.js?v=45" defer></script>
+  <script type="module" src="js/ui/app.js?v=46" defer></script>
 </body>
 </html>

@@ -2,7 +2,8 @@
 import { AppState } from '../core/state.js?v=6';
 import { fetchOHLCV } from '../core/api.js?v=7';
 import { ema, rsi, adx, macd, cci } from '../core/math.js?v=7';
-import { runBacktest } from '../core/backtest.js?v=1';
+import { runBacktest } from '../core/backtest.js?v=2';
+import { openStrategyTester } from './backtester_ui.js?v=1';
 
 // Strategy Modules (We will create these next)
 import * as swingStrats from '../strategies/swing.js?v=6';
@@ -835,7 +836,6 @@ window.triggerBacktest = (ticker, strategyId) => {
     try {
       const results = runBacktest(strategyId, data, targetPct, slPct);
       const isProfitable = results.totalReturn >= 0;
-      
       resultsDiv.style.display = "block";
       resultsDiv.innerHTML = `
         <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
@@ -846,8 +846,15 @@ window.triggerBacktest = (ticker, strategyId) => {
           <div><div style="color:var(--text-muted)">Trades</div><div style="font-weight:bold;">${results.totalTrades} (<span style="color:var(--green)">${results.wins}</span>/<span style="color:var(--red)">${results.losses}</span>)</div></div>
           <div><div style="color:var(--text-muted)">Net PnL</div><div style="font-weight:bold; color: ${isProfitable ? 'var(--green)' : 'var(--red)'}">${isProfitable ? '+' : ''}${results.totalReturn}%</div></div>
         </div>
-        ${results.openTrade ? `<div style="color:var(--blue); margin-top:4px; padding-top:4px; border-top:1px dashed rgba(255,255,255,0.1);">Currently Open Trade: <b>₹${results.openTrade.entryPrice}</b></div>` : ''}
+        <div style="margin-top: 8px;">
+          <button class="btn btn-primary" style="width: 100%; font-size: 12px; padding: 6px;" onclick="window._openBtUI('${ticker}', '${strategyId}')">View Detailed Report 📈</button>
+        </div>
       `;
+
+      // Expose function for the button
+      window._openBtUI = (tck, str) => {
+        openStrategyTester(tck, AppState.timeframe, str, results, data);
+      };
     } catch (err) {
       console.error(err);
       alert("Backtest failed: " + err.message);

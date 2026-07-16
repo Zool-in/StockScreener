@@ -99,10 +99,20 @@ export function runBacktest(strategyId, data, targetPct, slPct) {
   let losses = 0;
   let totalReturn = 0;
   
+  let peakReturn = 0;
+  let maxDrawdown = 0;
+  let equityCurve = [];
+  
   trades.forEach(t => {
     if (t.result === 'WIN') wins++;
     if (t.result === 'LOSS') losses++;
     totalReturn += t.pnlPct;
+    
+    if (totalReturn > peakReturn) peakReturn = totalReturn;
+    const drawdown = peakReturn - totalReturn;
+    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    
+    equityCurve.push({ time: t.exitDate, value: parseFloat(totalReturn.toFixed(2)) });
   });
 
   const totalTrades = trades.length;
@@ -113,6 +123,8 @@ export function runBacktest(strategyId, data, targetPct, slPct) {
     totalTrades,
     winRate,
     totalReturn: parseFloat(totalReturn.toFixed(2)),
+    maxDrawdown: parseFloat(maxDrawdown.toFixed(2)),
+    equityCurve,
     wins,
     losses,
     openTrade,
