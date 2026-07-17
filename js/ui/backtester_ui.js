@@ -8,9 +8,13 @@ let currentResults = null;
 export function openStrategyTester(ticker, timeframe, strategyId, backtestResults, rawData) {
   currentResults = backtestResults;
   
-  // Show modal
-  const modal = document.getElementById('backtesterModal');
-  modal.style.display = 'block';
+  // Show modal with premium animation
+  if (window.openBacktester) {
+    window.openBacktester();
+  } else {
+    const modal = document.getElementById('backtesterModal');
+    modal.style.display = 'block';
+  }
   
   // Update Header
   document.getElementById('btTitle').innerText = `Strategy Tester: ${strategyId.toUpperCase()}`;
@@ -24,36 +28,44 @@ export function openStrategyTester(ticker, timeframe, strategyId, backtestResult
     currentChart = null;
   }
   
+  // Dynamically load premium theme colors from design_tokens.css
+  const style = getComputedStyle(document.documentElement);
+  const bgPrimary = style.getPropertyValue('--bg-primary').trim() || '#0D1117';
+  const textPrimary = style.getPropertyValue('--text-primary').trim() || '#E6EDF3';
+  const gridColor = style.getPropertyValue('--border-color').trim() || '#30363D';
+  const profitColor = style.getPropertyValue('--profit-color').trim() || '#2EA043';
+  const lossColor = style.getPropertyValue('--loss-color').trim() || '#F85149';
+
   // Initialize TradingView Lightweight Chart
   currentChart = LightweightCharts.createChart(chartContainer, {
     layout: {
-      background: { type: 'solid', color: '#131722' },
-      textColor: '#d1d4dc',
+      background: { type: 'solid', color: 'transparent' }, // Use container background
+      textColor: textPrimary,
     },
     grid: {
-      vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
-      horzLines: { color: 'rgba(42, 46, 57, 0.5)' },
+      vertLines: { color: gridColor },
+      horzLines: { color: gridColor },
     },
     crosshair: {
       mode: LightweightCharts.CrosshairMode.Normal,
     },
     rightPriceScale: {
-      borderColor: 'rgba(197, 203, 206, 0.8)',
+      borderColor: gridColor,
     },
     timeScale: {
-      borderColor: 'rgba(197, 203, 206, 0.8)',
+      borderColor: gridColor,
       timeVisible: true,
     },
   });
 
   // Add Candlestick Series
   currentCandleSeries = currentChart.addCandlestickSeries({
-    upColor: '#26a69a',
-    downColor: '#ef5350',
-    borderDownColor: '#ef5350',
-    borderUpColor: '#26a69a',
-    wickDownColor: '#ef5350',
-    wickUpColor: '#26a69a',
+    upColor: profitColor,
+    downColor: lossColor,
+    borderDownColor: lossColor,
+    borderUpColor: profitColor,
+    wickDownColor: lossColor,
+    wickUpColor: profitColor,
   });
 
   // Format historical data for chart
@@ -94,7 +106,7 @@ export function openStrategyTester(ticker, timeframe, strategyId, backtestResult
       markers.push({
         time: t.entryDate,
         position: t.isShort ? 'aboveBar' : 'belowBar',
-        color: t.isShort ? '#ef5350' : '#26a69a',
+        color: t.isShort ? lossColor : profitColor,
         shape: t.isShort ? 'arrowDown' : 'arrowUp',
         text: t.isShort ? 'Sell' : 'Buy'
       });
@@ -138,7 +150,7 @@ window.renderBtTab = function(tab) {
 
   if (tab === 'summary') {
     const isProfitable = res.totalReturn >= 0;
-    const pfColor = isProfitable ? 'var(--green)' : 'var(--red)';
+    const pfColor = isProfitable ? 'var(--profit-color)' : 'var(--loss-color)';
     content.innerHTML = `
       <div class="bt-summary-grid">
         <div class="bt-summary-card">
@@ -151,11 +163,11 @@ window.renderBtTab = function(tab) {
         </div>
         <div class="bt-summary-card">
           <div style="color:var(--text-muted); font-size:12px;">Percent Profitable</div>
-          <div class="bt-summary-val" style="color:${res.winRate >= 50 ? 'var(--green)' : 'var(--red)'}">${res.winRate}%</div>
+          <div class="bt-summary-val" style="color:${res.winRate >= 50 ? 'var(--profit-color)' : 'var(--loss-color)'}">${res.winRate}%</div>
         </div>
         <div class="bt-summary-card">
           <div style="color:var(--text-muted); font-size:12px;">Max Drawdown</div>
-          <div class="bt-summary-val" style="color:var(--red)">${res.maxDrawdown}%</div>
+          <div class="bt-summary-val" style="color:var(--loss-color)">${res.maxDrawdown}%</div>
         </div>
       </div>
     `;
@@ -182,11 +194,11 @@ window.renderBtTab = function(tab) {
     
     reversedTrades.forEach((t, i) => {
       const isWin = t.result === 'WIN';
-      const pColor = isWin ? 'var(--green)' : 'var(--red)';
+      const pColor = isWin ? 'var(--profit-color)' : 'var(--loss-color)';
       tableHtml += `
         <tr>
           <td>${res.trades.length - i}</td>
-          <td style="color:${t.isShort ? 'var(--red)' : 'var(--green)'}">${t.isShort ? 'Short' : 'Long'}</td>
+          <td style="color:${t.isShort ? 'var(--loss-color)' : 'var(--profit-color)'}">${t.isShort ? 'Short' : 'Long'}</td>
           <td>${new Date(t.entryDate * 1000).toLocaleDateString()}</td>
           <td>₹${t.entryPrice.toFixed(2)}</td>
           <td>${new Date(t.exitDate * 1000).toLocaleDateString()}</td>

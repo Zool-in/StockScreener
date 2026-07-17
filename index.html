@@ -5,14 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StockScan Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design_tokens.css">
   <link rel="stylesheet" href="css/theme.css?v=6">
   <link rel="stylesheet" href="css/components.css?v=6">
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
-    /* Backtester Modal Specific Styles */
-    #backtesterModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; }
-    #backtesterModal .modal-overlay { background: rgba(0,0,0,0.8); width: 100%; height: 100%; position: absolute; }
-    #backtesterModal .bt-panel { position: absolute; top: 2vh; left: 2vw; width: 96vw; height: 96vh; background: var(--bg-card); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
+    /* Backtester Modal Specific Styles - Premium Glassmorphism Bottom Panel */
+    #backtesterModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; overflow: hidden; }
+    #backtesterModal .modal-overlay { background: rgba(0,0,0,0.4); width: 100%; height: 100%; position: absolute; transition: opacity 0.3s ease; }
+    #backtesterModal .bt-panel { position: absolute; bottom: 0; left: 0; width: 100vw; height: 70vh; background: var(--bg-panel, rgba(22, 27, 34, 0.7)); backdrop-filter: var(--glass-blur, blur(12px)); -webkit-backdrop-filter: var(--glass-blur, blur(12px)); border-radius: 24px 24px 0 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--box-shadow-premium, 0 -8px 32px rgba(0,0,0,0.5)); border-top: 1px solid var(--border-color, #30363D); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    #backtesterModal.show { display: block; }
+    #backtesterModal.show .bt-panel { transform: translateY(0); }
     #backtesterModal .bt-header { padding: 12px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); }
     #backtesterModal .bt-body { display: flex; flex-direction: column; flex: 1; height: 0; } /* height 0 forces flex child to scroll */
     #backtesterModal .bt-chart-container { flex: 2; border-bottom: 1px solid var(--border-color); position: relative; }
@@ -210,8 +213,19 @@
 
   <script>
     function closeBacktester() {
-      document.getElementById('backtesterModal').style.display = 'none';
+      const modal = document.getElementById('backtesterModal');
+      modal.querySelector('.bt-panel').style.transform = 'translateY(100%)';
+      setTimeout(() => { modal.classList.remove('show'); modal.style.display = 'none'; }, 400);
     }
+    
+    function openBacktester() {
+      const modal = document.getElementById('backtesterModal');
+      modal.style.display = 'block';
+      // Force reflow for transition
+      void modal.offsetWidth; 
+      modal.classList.add('show');
+    }
+
     function switchBtTab(tab) {
       document.querySelectorAll('.bt-tab').forEach(el => el.classList.remove('active'));
       document.getElementById(`tab-${tab}`).classList.add('active');
