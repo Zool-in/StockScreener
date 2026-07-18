@@ -15,6 +15,7 @@ import * as shortStrats from '../strategies/short.js?v=6';
 import * as hmStrats from '../strategies/hm.js?v=1';
 import * as smcStrats from '../strategies/smc.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
+import { scriptLibrary } from '../data/scripts.js';
 
 const DOM = {
   tickerInput: document.getElementById('tickerInput'),
@@ -26,6 +27,33 @@ const DOM = {
   scanBtn: document.getElementById('scanBtn'),
   scanBtn: document.getElementById('scanBtn'),
   resultsArea: document.getElementById('resultsArea'),
+  resultsArea: document.getElementById('resultsArea'),
+};
+
+function renderScripts() {
+  const tbody = document.getElementById('scriptsTableBody');
+  if (!tbody) return;
+  
+  tbody.innerHTML = scriptLibrary.map(s => `
+    <tr>
+      <td style="font-weight: 500; color: var(--text-main);">${s.name}</td>
+      <td><span class="badge badge-muted">${s.platform}</span></td>
+      <td><span class="badge badge-green">${s.type}</span></td>
+      <td style="color: var(--text-muted); max-width: 300px;">${s.description}</td>
+      <td style="text-align: right;">
+        <button class="btn btn-outline" style="padding: 4px 12px; font-size: 12px;" onclick="window.copyScript('${s.id}')">Copy Code</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+window.copyScript = (id) => {
+  const script = scriptLibrary.find(s => s.id === id);
+  if (script && script.code) {
+    navigator.clipboard.writeText(script.code).then(() => {
+      alert(script.name + " copied to clipboard!");
+    }).catch(err => console.error("Failed to copy", err));
+  }
 };
 
 const STRATEGY_INFO = {
@@ -155,6 +183,30 @@ const STRATEGY_INFO = {
 async function init() {
   fetchStatus();
   setInterval(fetchStatus, 30000); // refresh every 30s
+  
+  // Tab Switching
+  const tabScreener = document.getElementById('tabScreener');
+  const tabScripts = document.getElementById('tabScripts');
+  const screenerView = document.getElementById('screener-view');
+  const scriptsView = document.getElementById('scripts-view');
+  
+  if (tabScreener && tabScripts) {
+    tabScreener.addEventListener('click', (e) => {
+      e.preventDefault();
+      tabScreener.style.color = 'var(--text-main)';
+      tabScripts.style.color = 'var(--text-muted)';
+      screenerView.style.display = 'block';
+      scriptsView.style.display = 'none';
+    });
+    tabScripts.addEventListener('click', (e) => {
+      e.preventDefault();
+      tabScripts.style.color = 'var(--text-main)';
+      tabScreener.style.color = 'var(--text-muted)';
+      screenerView.style.display = 'none';
+      scriptsView.style.display = 'block';
+      renderScripts();
+    });
+  }
   
   // Setup Universe Pills
   const assetToggle = document.getElementById('assetToggle');

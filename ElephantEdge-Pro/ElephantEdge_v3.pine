@@ -1,0 +1,84 @@
+//@version=6
+strategy("ELEPHANT EDGE PRO v3.0", shorttitle="EEP 3.0", overlay=true, initial_capital=100000, default_qty_type=strategy.percent_of_equity, default_qty_value=10)
+
+// ====================================================
+// USER INPUTS
+// ====================================================
+grp_main = "Main Settings"
+rsi_len = input.int(14, "RSI Length", group=grp_main)
+ema_fast = input.int(9, "Fast EMA", group=grp_main)
+ema_slow = input.int(200, "Slow EMA", group=grp_main)
+atr_mult = input.float(1.5, "ATR Multiplier (Stop Loss)", group=grp_main)
+
+// ====================================================
+// MODULE 1: TREND ENGINE
+// ====================================================
+emaFast = ta.ema(close, ema_fast)
+emaSlow = ta.ema(close, ema_slow)
+trendScore = (close > emaSlow ? 12.5 : 0.0) + (emaFast > emaSlow ? 12.5 : 0.0)
+
+// ====================================================
+// MODULE 2: MOMENTUM ENGINE
+// ====================================================
+rsi_val = ta.rsi(close, rsi_len)
+momScore = (rsi_val > 50 and rsi_val < 70 ? 20.0 : 0.0)
+
+// ====================================================
+// MODULE 3: VOLUME ENGINE
+// ====================================================
+rvol = volume / ta.sma(volume, 20)
+volScore = (rvol > 1.5 ? 20.0 : 0.0)
+
+// ====================================================
+// MODULE 4: VOLATILITY ENGINE
+// ====================================================
+atr_val = ta.atr(14)
+volaScore = (atr_val > ta.sma(atr_val, 20) ? 10.0 : 0.0)
+
+// ====================================================
+// MODULE 5: PRICE ACTION
+// ====================================================
+swingHigh = ta.pivothigh(high, 5, 5)
+swingLow = ta.pivotlow(low, 5, 5)
+isBreakout = close > ta.highest(high, 20)[1]
+
+// ====================================================
+// MODULE 6: SMART MONEY CONCEPTS
+// ====================================================
+bullish_ob = low[1] < low[2] and close > high[1]
+smcScore = (bullish_ob ? 20.0 : 0.0)
+
+// ====================================================
+// MODULE 7: ENTRIES & SCORING
+// ====================================================
+riskScore = 5.0
+elephantScore = trendScore + momScore + volScore + volaScore + smcScore + riskScore
+
+isBuy = (elephantScore >= 85) and isBreakout
+isStrongBuy = isBuy and (elephantScore >= 92)
+isSell = (elephantScore <= 15)
+
+// ====================================================
+// MODULE 8 & 11: RISK ENGINE & STRATEGY
+// ====================================================
+sl = close - (atr_mult * atr_val)
+tp = close + ((atr_mult * 2) * atr_val) // 2R Target
+
+if isStrongBuy
+    strategy.entry("Long", strategy.long)
+    
+strategy.exit("Exit Long", "Long", stop=sl, limit=tp)
+
+// ====================================================
+// MODULE 9: DASHBOARD
+// ====================================================
+var table dash = table.new(position.top_right, 2, 2, bgcolor=color.new(color.black, 20), border_color=color.gray, border_width=1)
+if barstate.islast
+    table.cell(dash, 0, 0, "Elephant Score", text_color=color.white)
+    table.cell(dash, 1, 0, str.tostring(elephantScore), text_color=(elephantScore > 85 ? color.green : color.red))
+
+// ====================================================
+// MODULE 10: ALERTS
+// ====================================================
+alertcondition(isStrongBuy, title="Strong Buy Alert", message="Elephant Edge Pro: STRONG BUY Signal")
+alertcondition(isSell, title="Sell Alert", message="Elephant Edge Pro: SELL Signal")

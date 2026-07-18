@@ -1,0 +1,80 @@
+//@version=6
+indicator("Elephant Edge Zones (Support & Resistance)", "EE Zones", overlay=true, max_boxes_count=500)
+
+// ====================================================
+// USER INPUTS
+// ====================================================
+grp_zones = "Zone Settings"
+pivot_len = input.int(10, "Pivot Lookback Length", group=grp_zones, minval=3, tooltip="Number of bars to check for swing highs/lows.")
+zone_width = input.float(0.5, "Zone Width (%)", group=grp_zones, minval=0.1, step=0.1, tooltip="Vertical thickness of the drawn zones.")
+max_zones = input.int(10, "Max Active Zones (per type)", group=grp_zones, minval=1, maxval=50)
+
+// Colors
+res_color = input.color(color.new(#FF5252, 85), "Resistance Zone Color", group=grp_zones)
+res_border = input.color(color.new(#FF5252, 50), "Resistance Border", group=grp_zones)
+sup_color = input.color(color.new(#00E676, 85), "Support Zone Color", group=grp_zones)
+sup_border = input.color(color.new(#00E676, 50), "Support Border", group=grp_zones)
+
+// ====================================================
+// STATE ARRAYS
+// ====================================================
+var box[] res_boxes = array.new_box()
+var box[] sup_boxes = array.new_box()
+var bool[] res_active = array.new_bool()
+var bool[] sup_active = array.new_bool()
+
+// ====================================================
+// PIVOT DETECTION & BOX CREATION
+// ====================================================
+ph = ta.pivothigh(high, pivot_len, pivot_len)
+if not na(ph)
+    top = high[pivot_len]
+    bot = top * (1 - (zone_width / 100))
+    b = box.new(left=bar_index[pivot_len], top=top, right=bar_index, bottom=bot, border_color=res_border, border_width=1, bgcolor=res_color)
+    array.push(res_boxes, b)
+    array.push(res_active, true)
+    
+    // Garbage collection
+    if array.size(res_boxes) > max_zones
+        box.delete(array.shift(res_boxes))
+        array.shift(res_active)
+
+pl = ta.pivotlow(low, pivot_len, pivot_len)
+if not na(pl)
+    bot = low[pivot_len]
+    top = bot * (1 + (zone_width / 100))
+    b = box.new(left=bar_index[pivot_len], top=top, right=bar_index, bottom=bot, border_color=sup_border, border_width=1, bgcolor=sup_color)
+    array.push(sup_boxes, b)
+    array.push(sup_active, true)
+    
+    // Garbage collection
+    if array.size(sup_boxes) > max_zones
+        box.delete(array.shift(sup_boxes))
+        array.shift(sup_active)
+
+// ====================================================
+// EXTENSION & MITIGATION LOGIC
+// ====================================================
+if array.size(res_boxes) > 0
+    for i = 0 to array.size(res_boxes) - 1
+        if array.get(res_active, i)
+            bx = array.get(res_boxes, i)
+            // Extend box to current bar
+            box.set_right(bx, bar_index)
+            // Check for mitigation (price closes above resistance)
+            if close > box.get_top(bx)
+                array.set(res_active, i, false) // Zone broken, stop extending
+                box.set_bgcolor(bx, color.new(color.gray, 90))
+                box.set_border_color(bx, color.new(color.gray, 80))
+
+if array.size(sup_boxes) > 0
+    for i = 0 to array.size(sup_boxes) - 1
+        if array.get(sup_active, i)
+            bx = array.get(sup_boxes, i)
+            // Extend box to current bar
+            box.set_right(bx, bar_index)
+            // Check for mitigation (price closes below support)
+            if close < box.get_bottom(bx)
+                array.set(sup_active, i, false) // Zone broken, stop extending
+                box.set_bgcolor(bx, color.new(color.gray, 90))
+                box.set_border_color(bx, color.new(color.gray, 80))

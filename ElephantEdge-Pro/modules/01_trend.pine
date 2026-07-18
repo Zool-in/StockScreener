@@ -1,0 +1,4 @@
+// MODULE 1: Trend Engine
+ema9 = ta.ema(close, 9)
+ema200 = ta.ema(close, 200)
+trendScore = close > ema200 ? 25 : 0

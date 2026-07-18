@@ -1,0 +1,3 @@
+// MODULE 3: Volume Engine
+rvol = volume / ta.sma(volume, 20)
+volScore = rvol > 1.2 ? 20 : 0

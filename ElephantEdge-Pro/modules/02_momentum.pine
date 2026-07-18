@@ -1,0 +1,3 @@
+// MODULE 2: Momentum Engine
+rsi_val = ta.rsi(close, 14)
+momScore = rsi_val > 50 ? 20 : 0

@@ -1,0 +1,3 @@
+// MODULE 6: Smart Money Concepts
+bullish_ob = low[1] < low[2] and close > high[1]
+smcScore = bullish_ob ? 20 : 0

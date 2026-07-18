@@ -1,0 +1,5 @@
+// MODULE 9: Dashboard
+var table dash = table.new(position.top_right, 2, 2)
+if barstate.islast
+    table.cell(dash, 0, 0, "Score")
+    table.cell(dash, 1, 0, str.tostring(elephantScore))

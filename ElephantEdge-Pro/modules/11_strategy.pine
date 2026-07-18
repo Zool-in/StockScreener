@@ -1,0 +1,4 @@
+// MODULE 11: Strategy Integration
+if isBuy
+    strategy.entry("Long", strategy.long)
+strategy.exit("Exit Long", "Long", stop=sl, limit=tp)

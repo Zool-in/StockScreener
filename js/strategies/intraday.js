@@ -44,18 +44,18 @@ function smcIntradayRetest(data) {
   const n = ohlcv.length;
   if (n < 25) return { isMatch: false }; 
 
-  // 1. Find a recent external liquidity pool (Pivot High) in the window [n-25 to n-5]
+  // 1. Find a recent external liquidity pool (Pivot High) in the window [n-40 to n-10]
   let pivotHigh = 0;
-  for (let i = n - 25; i <= n - 5; i++) {
+  for (let i = n - 40; i <= n - 10; i++) {
     if (i < 0) continue;
     if (highs[i] > pivotHigh) pivotHigh = highs[i];
   }
   if (pivotHigh === 0) return { isMatch: false };
 
-  // 2. Liquidity Sweep: Price must have broken above the pivot high in the last 4 candles
+  // 2. Liquidity Sweep: Price must have broken above the pivot high in the last 10 candles
   let didSweep = false;
   let highestAfterSweep = 0;
-  for (let i = n - 4; i <= n - 1; i++) {
+  for (let i = n - 9; i <= n - 1; i++) {
      if (highs[i] > pivotHigh) {
          didSweep = true;
          if (highs[i] > highestAfterSweep) highestAfterSweep = highs[i];
@@ -63,17 +63,16 @@ function smcIntradayRetest(data) {
   }
   if (!didSweep) return { isMatch: false };
 
-  // 3. The Retest (Internal Liquidity): Price must pull back to within 0.5% of the original Pivot High
-  // It shouldn't fall significantly below it (which would invalidate the setup)
+  // 3. The Retest (Internal Liquidity): Price must pull back to within 1% of the original Pivot High
   const diffPct = (cmp - pivotHigh) / pivotHigh;
-  const isRetesting = diffPct >= -0.002 && diffPct <= 0.005; // -0.2% to +0.5% zone
+  const isRetesting = diffPct >= -0.005 && diffPct <= 0.015; // -0.5% to +1.5% zone
   if (!isRetesting) return { isMatch: false };
 
   // 4. Entry Trigger: Reversal candle (Green close or long lower wick)
   const isGreen = closes[n-1] > opens[n-1];
   const lowerWick = Math.min(opens[n-1], closes[n-1]) - lows[n-1];
   const body = Math.abs(closes[n-1] - opens[n-1]);
-  const isRejection = lowerWick >= body;
+  const isRejection = lowerWick >= (body * 0.8);
 
   if (isGreen || isRejection) {
      return {

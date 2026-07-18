@@ -1,0 +1,3 @@
+// MODULE 8: Risk Engine
+sl = close - (1.5 * atr_val)
+tp = close + (3 * atr_val)

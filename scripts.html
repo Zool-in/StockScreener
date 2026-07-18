@@ -41,9 +41,8 @@
   <header class="hud-bar">
     <div class="logo">StockScan</div>
     <div style="display: flex; gap: 20px; align-items: center; margin-left: 30px;">
-      <a href="#" id="tabScreener" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock Screener</a>
+      <a href="index.html" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock Screener</a>
       <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options (Gamma)</a>
-      <a href="#" id="tabScripts" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
     </div>
     <div class="fyers-status">
       <a href="lots.html?v=2" class="badge badge-amber" style="text-decoration:none;">F&O Lot Sizes</a>
@@ -54,10 +53,8 @@
 
   <main class="app-container">
     
-    <!-- Screener View -->
-    <div id="screener-view">
-      <!-- Command Bar -->
-      <div class="card" style="margin-bottom: 32px;">
+    <!-- Command Bar -->
+    <div class="card" style="margin-bottom: 32px;">
       
       <!-- Universe Section -->
       <div style="margin-bottom: 24px;">
@@ -173,33 +170,6 @@
         Ready. Select a strategy and hit Run Scan.
       </div>
     </div>
-    </div><!-- End Screener View -->
-
-    <!-- Scripts View -->
-    <div id="scripts-view" style="display: none;">
-      <div class="card" style="margin-bottom: 24px;">
-        <h2 style="margin-top:0; color:var(--text-main);">Script Library</h2>
-        <p style="color:var(--text-muted); font-size:14px; margin-bottom: 24px;">A collection of algorithmic trading scripts (Pine Script / Python) for use in external platforms.</p>
-        
-        <div style="overflow-x: auto;">
-          <table class="bt-trade-table" id="scriptsTable" style="width: 100%; text-align: left;">
-            <thead>
-              <tr>
-                <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Name</th>
-                <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Platform</th>
-                <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Type</th>
-                <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Description</th>
-                <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border-color);">Action</th>
-              </tr>
-            </thead>
-            <tbody id="scriptsTableBody">
-              <!-- Scripts injected via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <!-- End Scripts View -->
 
   </main>
 

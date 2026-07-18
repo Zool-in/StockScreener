@@ -1,0 +1,3 @@
+// MODULE 5: Price Action
+swingHigh = ta.pivothigh(high, 5, 5)
+swingLow = ta.pivotlow(low, 5, 5)

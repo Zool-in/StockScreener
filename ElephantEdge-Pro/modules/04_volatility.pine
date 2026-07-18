@@ -1,0 +1,3 @@
+// MODULE 4: Volatility Engine
+atr_val = ta.atr(14)
+volaScore = atr_val > ta.sma(atr_val, 20) ? 10 : 0

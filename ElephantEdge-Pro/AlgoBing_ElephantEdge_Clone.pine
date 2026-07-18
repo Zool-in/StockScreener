@@ -1,0 +1,74 @@
+//@version=6
+indicator("AlgoBing Elephant Edge (True Clone)", "Elephant Edge Clone", overlay=true, max_boxes_count=500, max_lines_count=500)
+
+// ====================================================
+// USER INPUTS
+// ====================================================
+grp_main = "Main Settings"
+use_atr = input.bool(true, "Use ATR for Expected Range", group=grp_main)
+atr_len = input.int(14, "ATR Length", group=grp_main)
+
+grp_bands = "Percentile Offsets"
+res_pct_1 = input.float(0.63, "Resistance Percentile 1 (Inner)", group=grp_bands, step=0.01)
+res_pct_2 = input.float(0.74, "Resistance Percentile 2 (Outer)", group=grp_bands, step=0.01)
+sup_pct_1 = input.float(0.25, "Support Percentile 1 (Inner)", group=grp_bands, step=0.01)
+sup_pct_2 = input.float(0.35, "Support Percentile 2 (Outer)", group=grp_bands, step=0.01)
+
+// Colors
+color_res = input.color(color.new(#FF5252, 80), "Resistance Zone Color", group=grp_bands)
+color_sup = input.color(color.new(#00E676, 80), "Support Zone Color", group=grp_bands)
+color_open = input.color(color.new(color.white, 30), "Session Open Color", group=grp_bands)
+
+// ====================================================
+// HIGHER TIMEFRAME DATA (DAILY)
+// ====================================================
+[pd_high, pd_low, pd_close, d_atr] = request.security(syminfo.tickerid, "D", [high[1], low[1], close[1], ta.atr(atr_len)], lookahead=barmerge.lookahead_on)
+expected_range = use_atr ? d_atr : (pd_high - pd_low)
+
+// ====================================================
+// SESSION STATE & BOXES
+// ====================================================
+var float session_open = na
+var box res_box = na
+var box sup_box = na
+var line open_line = na
+
+is_new_session = ta.change(time("D")) != 0
+
+if is_new_session
+    // Set anchor price
+    session_open := open
+    
+    // Calculate static percentile levels for the day based on expected range
+    // Since we are projecting symmetrically, we use the open as the anchor
+    // We treat expected range as the 100% boundary.
+    float expected_low = session_open - (expected_range / 2)
+    
+    // Support and Resistance Levels (AlgoBing style)
+    res_1 = expected_low + (expected_range * res_pct_1)
+    res_2 = expected_low + (expected_range * res_pct_2)
+    sup_1 = expected_low + (expected_range * sup_pct_1)
+    sup_2 = expected_low + (expected_range * sup_pct_2)
+    
+    // Draw the static Resistance Box for this session
+    res_box := box.new(left=bar_index, top=res_2, right=bar_index, bottom=res_1, bgcolor=color_res, border_color=color.new(color_res, 100))
+    
+    // Draw the static Support Box for this session
+    sup_box := box.new(left=bar_index, top=sup_2, right=bar_index, bottom=sup_1, bgcolor=color_sup, border_color=color.new(color_sup, 100))
+    
+    // Draw the Session Open line
+    open_line := line.new(x1=bar_index, y1=session_open, x2=bar_index, y2=session_open, color=color_open, style=line.style_dotted)
+
+// If it's the same session, extend the boxes to the right to cover the new candle
+if not is_new_session
+    if not na(res_box)
+        box.set_right(res_box, bar_index)
+    if not na(sup_box)
+        box.set_right(sup_box, bar_index)
+    if not na(open_line)
+        line.set_x2(open_line, bar_index)
+
+// Previous Day OHLC
+plot(pd_high, title="PDH", color=color.new(color.gray, 60), style=plot.style_cross, linewidth=1, display=display.none)
+plot(pd_low, title="PDL", color=color.new(color.gray, 60), style=plot.style_cross, linewidth=1, display=display.none)
+plot(pd_close, title="PDC", color=color.new(color.gray, 60), style=plot.style_circles, linewidth=1, display=display.none)
