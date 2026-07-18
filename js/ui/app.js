@@ -34,6 +34,11 @@ const STRATEGY_INFO = {
     desc: 'Combines the TTM Squeeze (Bollinger Bands narrowing inside Keltner Channels indicating low volatility) with an Opening Range Breakout (ORB) on surging volume. It looks for explosive moves out of tight consolidation.',
     example: '<img src="/assets/ttm_orb_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Breakout of current High<br><strong>Stop:</strong> 1% below entry<br><strong>Target:</strong> High momentum intraday run<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., ITC has been trading flat between ₹400-₹405 for 2 weeks (Squeeze). Today at 9:30 AM, it breaks ₹406 on 3x normal volume (ORB).</span>'
   },
+  intraday_retest: {
+    name: 'SMC Intraday Sweep & Retest',
+    desc: 'An Intraday Smart Money Concepts (SMC) strategy. It identifies when price sweeps external liquidity (a recent pivot high), and then pulls back to perfectly retest that same level (internal liquidity) before bouncing higher.',
+    example: '<img src="/assets/media__1784048568250.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> On the retest of the Pivot High<br><strong>Stop:</strong> 0.5% below entry<br><strong>Target:</strong> New highs above the sweep<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> Institutional players sweep breakout traders\' stops at the swing high, wait for price to drop to internal liquidity, and then initiate the real markup.</span>'
+  },
   btst: {
     name: 'BTST Momentum',
     desc: 'Buy Today, Sell Tomorrow (BTST). Looks for stocks closing at the absolute high of the day on surging volume. This indicates institutional accumulation at the closing bell, which often gaps up the next morning.',
@@ -401,10 +406,10 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish'];
             for (const s of allStrategies) {
               let tempRes = null;
-              if (['ttm_orb'].includes(s)) tempRes = intradayStrats.run(s, data);
+              if (['ttm_orb', 'intraday_retest'].includes(s)) tempRes = intradayStrats.run(s, data);
               else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(s)) tempRes = swingStrats.run(s, data);
               else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
@@ -423,7 +428,7 @@ async function runScan() {
               res = { isMatch: false };
             }
           } else {
-            if (['ttm_orb'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
+            if (['ttm_orb', 'intraday_retest'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
             else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
             else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
               res = optionStrats.run(strategyId, data);
@@ -642,6 +647,7 @@ function renderResults(results) {
     const strategyLabels = {
       all: 'All Stocks',
       ttm_orb: 'TTM Squeeze + ORB',
+      intraday_retest: 'SMC Sweep & Retest',
       btst: 'BTST Momentum',
       crsi: 'Connors RSI',
       minervini: 'Minervini VCP',
@@ -691,8 +697,8 @@ function renderResults(results) {
     
     tagsHtml = `<div class="tags-container" style="margin-bottom:8px;">${tagsHtml}</div>`;
 
-    // Calculate Estimated Hold Time
-    const estHold = (['ttm_orb'].includes(AppState.strategy)) ? 'Intraday'
+    // Estimate holding period based on strategy
+    const estHold = (['ttm_orb', 'intraday_retest'].includes(AppState.strategy)) ? 'Intraday'
                   : (['btst'].includes(AppState.strategy)) ? '1-2 Days'
                   : (['minervini', 'darvas', 'xmomentum'].includes(AppState.strategy)) ? '2-6 Weeks'
                   : (['crsi', 'vcp_down'].includes(AppState.strategy)) ? '3-10 Days'

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+  <div id="chart" style="width: 400px; height: 300px;"></div>
+  <script>
+    const chart = LightweightCharts.createChart(document.getElementById('chart'));
+    const series = chart.addCandlestickSeries();
+    series.setData([
+      { time: 1625097600, open: 100, high: 105, low: 95, close: 102 },
+      { time: 1625184000, open: 102, high: 108, low: 100, close: 107 }
+    ]);
+    series.setMarkers([
+      { time: 1625097600, position: 'belowBar', color: 'red', shape: 'arrowUp', text: 'Buy' }
+    ]);
+    console.log("Success");
+  </script>
+</body>
+</html>

@@ -115,14 +115,48 @@ function renderExpiryPills(expiryData) {
   
   const expiries = expiryData.map(e => (typeof e === 'object' ? (e.expiry || e.date) : e)).filter(Boolean);
   
-  expiries.slice(0, 8).forEach(exp => {
+  // Parse all expiries to determine monthly vs weekly
+  const parsedExpiries = expiries.map(val => {
+    let ms = val;
+    if (typeof val === 'number' || (typeof val === 'string' && /^\d+$/.test(val))) {
+      const epoch = parseInt(val);
+      ms = epoch > 9999999999 ? epoch : epoch * 1000;
+    } else if (typeof val === 'string' && val.includes('-')) {
+      ms = new Date(val).getTime(); // handle YYYY-MM-DD just in case
+    }
+    const d = new Date(ms);
+    return {
+      raw: val,
+      ms,
+      date: d,
+      month: d.getMonth(),
+      year: d.getFullYear()
+    };
+  });
+  
+  // Find the last expiry for each month to mark as Monthly (M)
+  const lastExpiries = {};
+  parsedExpiries.forEach(p => {
+    const key = `${p.year}-${p.month}`;
+    if (!lastExpiries[key] || p.ms > lastExpiries[key]) {
+      lastExpiries[key] = p.ms;
+    }
+  });
+  
+  parsedExpiries.slice(0, 8).forEach(p => {
+    const isMonthly = lastExpiries[`${p.year}-${p.month}`] === p.ms;
+    const tag = isMonthly ? '(M)' : '(W)';
+    
+    // Format: 17 Jul (W)
+    const formatted = p.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ' ' + tag;
+    
     const btn = document.createElement('button');
     btn.className = 'pill';
-    if (selectedExpiry === exp || (!selectedExpiry && exp === expiries[0])) {
+    if (selectedExpiry === p.raw || (!selectedExpiry && p.raw === parsedExpiries[0].raw)) {
       btn.classList.add('active');
     }
-    btn.textContent = exp;
-    btn.dataset.val = exp;
+    btn.textContent = formatted;
+    btn.dataset.val = p.raw;
     btn.addEventListener('click', (e) => {
       DOM.expiryPills.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
@@ -185,15 +219,15 @@ function renderChain(chainData, underlyingLtp) {
     const isPeItm = underlyingLtp && row.strike_price > underlyingLtp;
 
     // Squeeze Logic (Trapped Writers)
-    // A writer is trapped if their strike has significant OI (at least 15% of max) AND price moved against them (is ITM) AND volume is spiking
-    if (ceOI > (maxCeOI * 0.15) && ceVol > (ceOI * 1.5) && isCeItm) {
+    // A writer is trapped if their strike has significant OI (at least 10% of max) AND price moved against them (is ITM) AND volume is spiking
+    if (ceOI > (maxCeOI * 0.10) && ceVol > (ceOI * 0.8) && isCeItm) {
         const info = "BULLISH SIGNAL: Call Writers (Resistance) are trapped! Strike is ITM. Suggestion: BUY ATM Call (CE).";
         alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
             <span class="badge badge-purple" style="white-space:nowrap;">📈 BULLISH: CE Gamma Trap! ⓘ</span>
             <span style="font-size:10px; color:var(--text-green); font-weight:600; text-transform:uppercase; white-space:nowrap;">Suggest: Buy CE</span>
         </div>`;
         tr.classList.add('gamma-alert');
-    } else if (peOI > (maxPeOI * 0.15) && peVol > (peOI * 1.5) && isPeItm) {
+    } else if (peOI > (maxPeOI * 0.10) && peVol > (peOI * 0.8) && isPeItm) {
         const info = "BEARISH SIGNAL: Put Writers (Support) are trapped! Strike is ITM. Suggestion: BUY ATM Put (PE).";
         alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
             <span class="badge badge-purple" style="white-space:nowrap;">📉 BEARISH: PE Gamma Trap! ⓘ</span>
