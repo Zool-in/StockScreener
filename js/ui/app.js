@@ -65,7 +65,7 @@ const STRATEGY_INFO = {
   intraday_retest: {
     name: 'SMC Intraday Sweep & Retest',
     desc: 'An Intraday Smart Money Concepts (SMC) strategy. It identifies when price sweeps external liquidity (a recent pivot high), and then pulls back to perfectly retest that same level (internal liquidity) before bouncing higher.',
-    example: '<img src="/assets/media__1784048568250.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> On the retest of the Pivot High<br><strong>Stop:</strong> 0.5% below entry<br><strong>Target:</strong> New highs above the sweep<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> Institutional players sweep breakout traders\' stops at the swing high, wait for price to drop to internal liquidity, and then initiate the real markup.</span>'
+    example: '<img src="/assets/smc_sweep_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> On the retest of the Pivot High<br><strong>Stop:</strong> 0.5% below entry<br><strong>Target:</strong> New highs above the sweep<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> Institutional players sweep breakout traders\' stops at the swing high, wait for price to drop to internal liquidity, and then initiate the real markup.</span>'
   },
   btst: {
     name: 'BTST Momentum',
