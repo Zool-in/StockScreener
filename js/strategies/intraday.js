@@ -6,8 +6,17 @@ export function run(strategyId, data) {
   return { isMatch: false };
 }
 
+function getCandleAnatomy(high, low, close, open) {
+  const range = high - low || 1;
+  const closePercent = (close - low) / range;
+  const isGreen = close > open;
+  return { closePercent, isGreen };
+}
+
 function ttmSqueezeORB(data) {
-  const { closes, highs, lows } = data;
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 25) return { isMatch: false };
   
   // TTM Squeeze logic: Bollinger Bands entirely inside Keltner Channels
   const bb = bollingerBands(closes, 20, 2);
@@ -18,16 +27,20 @@ function ttmSqueezeORB(data) {
   const isSqueeze = (bb.upper < kc.upper) && (bb.lower > kc.lower);
   
   // ORB logic: For a 15m timeframe, the current candle volume should be surging
-  const currentVol = data.volumes[data.volumes.length - 1];
-  const avgVol = data.volumes.slice(-20).reduce((a,b)=>a+b,0) / 20;
+  const currentVol = volumes[n - 1];
+  const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0) / 20;
   const isVolSurge = currentVol > avgVol * 1.5;
 
-  if (isSqueeze && isVolSurge) {
-    const risk = data.cmp * 0.01; // 1% stop loss for intraday
+  // STRICT FILTER: Strong breakout candle (no nasty upper wicks)
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isStrongClose = isGreen && closePercent >= 0.7; // Top 30% close
+
+  if (isSqueeze && isVolSurge && isStrongClose) {
+    const risk = cmp * 0.01; // 1% stop loss for intraday
     return {
       isMatch: true,
-      reason: 'Bollinger Bands inside Keltner Channels (Squeeze) + Volume Surge.',
-      entry: highs[highs.length-1], // Trigger is breaking today's high
+      reason: 'Bollinger Bands inside Keltner Channels (Squeeze) + Volume Surge. Strong breakout candle structure.',
+      entry: highs[n-1], // Trigger is breaking today's high
       risk: risk,
       metrics: [
         { name: 'Avg Vol', value: Math.round(avgVol).toLocaleString() },
@@ -40,7 +53,7 @@ function ttmSqueezeORB(data) {
 }
 
 function smcIntradayRetest(data) {
-  const { ohlcv, closes, highs, lows, opens, cmp } = data;
+  const { ohlcv, closes, highs, lows, opens, volumes, cmp } = data;
   const n = ohlcv.length;
   if (n < 25) return { isMatch: false }; 
 
@@ -68,21 +81,27 @@ function smcIntradayRetest(data) {
   const isRetesting = diffPct >= -0.005 && diffPct <= 0.015; // -0.5% to +1.5% zone
   if (!isRetesting) return { isMatch: false };
 
-  // 4. Entry Trigger: Reversal candle (Green close or long lower wick)
+  // 4. STRICT FILTER: Volume Defense Check
+  // The reversal candle must have higher volume than the average of the 3 candles before it (which were the drop).
+  const currentVol = volumes[n-1];
+  const dropVolAvg = (volumes[n-2] + volumes[n-3] + volumes[n-4]) / 3;
+  const isVolumeDefended = currentVol > dropVolAvg * 1.1;
+
+  // 5. Entry Trigger: Reversal candle (Green close or long lower wick)
   const isGreen = closes[n-1] > opens[n-1];
   const lowerWick = Math.min(opens[n-1], closes[n-1]) - lows[n-1];
   const body = Math.abs(closes[n-1] - opens[n-1]);
   const isRejection = lowerWick >= (body * 0.8);
 
-  if (isGreen || isRejection) {
+  if ((isGreen || isRejection) && isVolumeDefended) {
      return {
         isMatch: true,
-        reason: 'SMC Setup: Swept external liquidity (recent high), and has now pulled back to test internal liquidity (previous pivot). Bullish rejection detected.',
+        reason: 'SMC Setup: Swept external liquidity (recent high), pulled back to internal liquidity. Bullish rejection confirmed by defense volume.',
         entry: pivotHigh,
         risk: cmp * 0.005, // 0.5% stop loss for intraday
         metrics: [
            { name: 'Pivot (Liq)', value: pivotHigh.toFixed(1) },
-           { name: 'Sweep Peak', value: highestAfterSweep.toFixed(1) }
+           { name: 'Defense Vol', value: `${(currentVol/dropVolAvg).toFixed(1)}x` }
         ]
      };
   }

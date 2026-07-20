@@ -16,16 +16,19 @@ function btstMomentum(data) {
   
   const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0) / 20;
   const currentVol = volumes[volumes.length - 1];
-  const volSurge = currentVol > avgVol * 1.2;
+  
+  // STRICT FILTER: BTST requires extremely strong institutional accumulation at close
+  const volSurge = currentVol > avgVol * 1.5;
 
   // Delivery percentage tracking (requires meta object)
   const deliv = data.meta && data.meta.delivPer ? data.meta.delivPer : 0;
 
-  if (closingStrength > 90 && volSurge) {
+  // Must close in the absolute top 5% of its daily range
+  if (closingStrength > 95 && volSurge) {
     const risk = cmp * 0.015; // standard BTST stop loss
     return {
       isMatch: true,
-      reason: 'Institutional accumulation at the bell. Closing at the absolute high of the day.',
+      reason: 'Institutional accumulation at the bell. Closing at the absolute high of the day on massive volume.',
       entry: cmp, // Enter exactly at market price on the close
       risk: risk,
       metrics: [

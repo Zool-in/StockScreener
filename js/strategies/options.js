@@ -9,21 +9,38 @@ export function run(strategyId, data) {
   return { isMatch: false };
 }
 
+function getCandleAnatomy(high, low, close, open) {
+  const range = high - low || 1;
+  const closePercent = (close - low) / range;
+  const isGreen = close > open;
+  const isRed = close < open;
+  return { closePercent, isGreen, isRed };
+}
+
 function bullPutSpread(data) {
-  const { closes, highs, lows, cmp } = data;
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
   const e200 = ema(closes, 200);
   const e50 = ema(closes, 50);
   const adxVal = adx(highs, lows, closes);
   const vol = hv(closes, 30);
+  
+  const currentVol = volumes[n-1];
+  const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0) / 20;
 
-  if (cmp > e50 && cmp > e200 && adxVal > 25 && vol > 0.25) {
+  // STRICT FILTER: Check that the uptrend is currently being supported (not breaking down)
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isSupported = isGreen || closePercent >= 0.5; // Avoid entering BPS if today is a massive red dump
+  const hasVolume = currentVol > avgVol * 0.9;
+
+  if (cmp > e50 && cmp > e200 && adxVal > 25 && vol > 0.25 && isSupported && hasVolume) {
     return {
       isMatch: true,
-      reason: 'Strong verified uptrend (ADX > 25) with high Historical Volatility. Great premium for Credit Spread.',
-      entry: cmp, // Enter spread at market
-      margin: 40000, // Roughly 40k INR margin per spread lot
+      reason: 'Strong verified uptrend (ADX > 25) with high Historical Volatility, showing daily support. Great premium for Credit Spread.',
+      entry: cmp, 
+      margin: 40000, 
       metrics: [
-        { name: 'ADX', value: adxVal },
+        { name: 'ADX', value: adxVal.toFixed(1) },
         { name: 'HV', value: `${(vol*100).toFixed(1)}%` }
       ]
     };
@@ -40,10 +57,10 @@ function shortStrangle(data) {
     return {
       isMatch: true,
       reason: 'Dead sideways trend (ADX < 20) but massive volatility pricing. Perfect for premium decay.',
-      entry: cmp, // Enter at market
-      margin: 120000, // Naked strangle margin
+      entry: cmp, 
+      margin: 120000, 
       metrics: [
-        { name: 'ADX', value: adxVal },
+        { name: 'ADX', value: adxVal.toFixed(1) },
         { name: 'HV', value: `${(vol*100).toFixed(1)}%` }
       ]
     };
@@ -55,14 +72,13 @@ function ivCrushCondor(data) {
   const { closes, cmp } = data;
   const vol = hv(closes, 30);
   
-  // Proxy for IV crush: Look for extremely unusual short term volatility spikes
   const shortVol = hv(closes, 10);
   if (shortVol > vol * 1.5 && shortVol > 0.40) {
     return {
       isMatch: true,
       reason: 'Massive short-term volatility spike detected (likely pending earnings/event). Sell Iron Condor to capture IV crush.',
-      entry: cmp, // Enter at market
-      margin: 50000, // Margin for Iron Condor
+      entry: cmp, 
+      margin: 50000, 
       metrics: [
         { name: 'Short Vol', value: `${(shortVol*100).toFixed(1)}%` },
         { name: 'Base Vol', value: `${(vol*100).toFixed(1)}%` }
@@ -73,20 +89,24 @@ function ivCrushCondor(data) {
 }
 
 function csp(data) {
-  const { closes, cmp } = data;
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
   const e200 = ema(closes, 200);
   const rsiVal = rsi(closes);
 
-  // CSP: Strong stock on a temporary dip
-  if (cmp > e200 && rsiVal < 45) {
+  const { closePercent, isRed } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  // Avoid selling puts on days with a massive red candle closing near its absolute low
+  const isRejection = !isRed || closePercent >= 0.3; 
+
+  if (cmp > e200 && rsiVal < 45 && isRejection) {
     return {
       isMatch: true,
-      reason: 'Fundamentally strong stock (Above 200 EMA) on a short-term oversold dip. Perfect to sell a Cash Secured Put.',
+      reason: 'Fundamentally strong stock (Above 200 EMA) on a short-term oversold dip showing support. Perfect to sell a Cash Secured Put.',
       entry: cmp,
-      margin: Math.round(cmp * 500 * 0.20), // Proxy margin approx 20% of contract value
+      margin: Math.round(cmp * 500 * 0.20), 
       metrics: [
-        { name: 'RSI', value: rsiVal },
-        { name: 'Trend', value: 'Intact' }
+        { name: 'RSI', value: rsiVal.toFixed(1) },
+        { name: 'Trend', value: 'Supported Dip' }
       ]
     };
   }
@@ -94,20 +114,24 @@ function csp(data) {
 }
 
 function coveredCall(data) {
-  const { closes, cmp } = data;
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
   const e200 = ema(closes, 200);
   const rsiVal = rsi(closes);
 
-  // Covered Call: Strong stock, but becoming overbought short term
-  if (cmp > e200 && rsiVal > 70) {
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  // Wait for the rally to show weakness before selling calls (e.g. red candle or long upper wick)
+  const isWeakness = !isGreen || closePercent <= 0.6;
+
+  if (cmp > e200 && rsiVal > 70 && isWeakness) {
     return {
       isMatch: true,
-      reason: 'Stock is in a strong uptrend but currently overbought (RSI > 70). Great time to sell a Covered Call to collect premium.',
+      reason: 'Stock is in a strong uptrend but overbought (RSI > 70) and showing daily weakness. Great time to sell a Covered Call to collect premium.',
       entry: cmp,
-      margin: Math.round(cmp * 500), // Proxy margin holding the underlying
+      margin: Math.round(cmp * 500), 
       metrics: [
-        { name: 'RSI', value: rsiVal },
-        { name: 'Trend', value: 'Overbought' }
+        { name: 'RSI', value: rsiVal.toFixed(1) },
+        { name: 'Trend', value: 'Overbought / Weak' }
       ]
     };
   }

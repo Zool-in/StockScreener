@@ -4,32 +4,41 @@ export function run(strategyId, data) {
   return { isMatch: false };
 }
 
-function stanWeinstein(data) {
-  const { closes, volumes, cmp } = data;
+function getCandleAnatomy(high, low, close, open) {
+  const range = high - low || 1;
+  const closePercent = (close - low) / range;
+  const isGreen = close > open;
   
-  // Weekly chart approximations (assuming data is weekly if this strategy is selected)
-  // 30-week MA is roughly 150-day EMA if daily data is passed, but we'll assume it's weekly
-  // We'll calculate a 30-period Simple Moving Average
-  if (closes.length < 35) return { isMatch: false };
+  const lowerWick = Math.min(open, close) - low;
+  const lowerWickPercent = lowerWick / range;
+  
+  return { closePercent, isGreen, lowerWickPercent };
+}
+
+function stanWeinstein(data) {
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 35) return { isMatch: false };
   
   const sma30 = closes.slice(-30).reduce((a,b)=>a+b,0) / 30;
-  
-  // Stage 1 to Stage 2 transition:
-  // Price crosses above 30-week MA on massive volume after being flat
   const prevSma = closes.slice(-31, -1).reduce((a,b)=>a+b,0) / 30;
-  const isFlat = Math.abs(sma30 - prevSma) / prevSma < 0.05; // MA is flat
+  const isFlat = Math.abs(sma30 - prevSma) / prevSma < 0.05;
   
   const avgVol = volumes.slice(-30).reduce((a,b)=>a+b,0) / 30;
-  const currentVol = volumes[volumes.length-1];
+  const currentVol = volumes[n-1];
   
-  const breakout = cmp > sma30 && closes[closes.length-2] < prevSma;
+  const breakout = cmp > sma30 && closes[n-2] < prevSma;
   const volumeSurge = currentVol > avgVol * 2.0;
 
-  if (isFlat && breakout && volumeSurge) {
+  // STRICT FILTER: No massive upper wicks on Stage 2 transition
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isStrongClose = isGreen && closePercent >= 0.6; // Top 40% close
+
+  if (isFlat && breakout && volumeSurge && isStrongClose) {
     return {
       isMatch: true,
-      reason: 'Stan Weinstein Stage 2 Markup detected. Price crossing 30-period MA on 200%+ volume.',
-      entry: cmp, // Buy the breakout at market
+      reason: 'Stan Weinstein Stage 2 Markup detected. Price crossing 30-period MA on 200%+ volume with a strong conviction close.',
+      entry: cmp, 
       risk: cmp - sma30,
       metrics: [
         { name: 'MA Breakout', value: `Above ${sma30.toFixed(2)}` },
@@ -41,31 +50,30 @@ function stanWeinstein(data) {
 }
 
 function wyckoffStoppingVolume(data) {
-  const { closes, opens, volumes, cmp } = data;
-  if (closes.length < 50) return { isMatch: false };
+  const { closes, opens, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 50) return { isMatch: false };
 
-  // Look for massive volume on a down day where the close is near the open (or higher)
-  // indicating smart money bought everything the weak hands sold.
-  const currentVol = volumes[volumes.length-1];
+  const currentVol = volumes[n-1];
   const avgVol = volumes.slice(-50).reduce((a,b)=>a+b,0) / 50;
-
-  const currentOpen = opens[opens.length-1];
-  const currentClose = closes[closes.length-1];
   
-  // High volume, but price barely dropped or ended as a doji/hammer
   const isHighVol = currentVol > avgVol * 3.0;
-  const isStopping = Math.abs(currentClose - currentOpen) / currentOpen < 0.01;
-  const isDowntrend = cmp < closes[closes.length-20]; // Overall stock has been dropping
+  const isDowntrend = cmp < closes[n-20]; // Overall stock has been dropping
 
-  if (isDowntrend && isHighVol && isStopping) {
+  // STRICT FILTER: Institutional Absorption Check
+  // A down day with massive volume must have a long lower wick (min 70% of candle body) indicating absorption
+  const { lowerWickPercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isAbsorbing = lowerWickPercent >= 0.7 || (isGreen && lowerWickPercent >= 0.5);
+
+  if (isDowntrend && isHighVol && isAbsorbing) {
     return {
       isMatch: true,
-      reason: 'Downtrend halting on massive relative volume. Smart money accumulation suspected.',
-      entry: cmp, // Enter at market near the close
-      risk: lows[lows.length-1] * 0.98, // Stop below the stopping candle low
+      reason: 'Downtrend halting on massive relative volume. Long lower wick proves Smart money accumulation absorbed retail panic.',
+      entry: cmp, 
+      risk: lows[n-1] * 0.98, 
       metrics: [
         { name: 'Vol Anomaly', value: `${(currentVol/avgVol).toFixed(1)}x` },
-        { name: 'Price Action', value: 'Accumulation Doji' }
+        { name: 'Price Action', value: 'Absorption Wick' }
       ]
     };
   }

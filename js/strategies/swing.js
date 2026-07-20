@@ -9,8 +9,15 @@ export function run(strategyId, data) {
   return { isMatch: false };
 }
 
+function getCandleAnatomy(high, low, close, open) {
+  const range = high - low || 1;
+  const closePercent = (close - low) / range;
+  const isGreen = close > open;
+  return { closePercent, isGreen };
+}
+
 function extremeMomentum(data) {
-  const { closes, highs, lows, volumes, cmp } = data;
+  const { opens, closes, highs, lows, volumes, cmp } = data;
   const n = closes.length;
   if (n < 50) return { isMatch: false };
 
@@ -46,13 +53,11 @@ function extremeMomentum(data) {
   const isTight = ((twentyDayHigh - twentyDayLow) / twentyDayLow) <= 0.12;
 
   // EMA Conjunction (Squeeze) Filter
-  // The 9, 21, and 50 EMAs should be coiled tightly together (within a 5% band)
   const maxEma = Math.max(curE9, curE21, curE50);
   const minEma = Math.min(curE9, curE21, curE50);
   const emaConjunction = (maxEma - minEma) / minEma <= 0.05;
   
-  // Not Overextended Filter (Prevent buying after it ran away)
-  // Price should not be more than 6% above the 9 EMA on the breakout day
+  // Not Overextended Filter
   const notOverextended = cmp <= curE9 * 1.06;
 
   // Volume Surge Filter
@@ -60,12 +65,16 @@ function extremeMomentum(data) {
   const avgVol = volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20;
   const volSurge = currentVol > avgVol * 1.5;
 
-  if (macdBullish && rsiBullish && cciBullish && isBreakout && isTight && emaConjunction && notOverextended && volSurge) {
+  // STRICT FILTER: No massive upper wicks on breakout
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isStrongClose = isGreen && closePercent >= 0.75; // Must close in top 25% of range
+
+  if (macdBullish && rsiBullish && cciBullish && isBreakout && isTight && emaConjunction && notOverextended && volSurge && isStrongClose) {
     return {
       isMatch: true,
-      reason: 'Fresh Momentum Breakout: EMAs pinched, tight range, breaking out with volume. Not overextended.',
+      reason: 'Fresh Momentum Breakout: EMAs pinched, tight range, volume surge, and a strong close without upper wick rejection.',
       entry: twentyDayHigh, 
-      risk: cmp * 0.04, // 4% stop loss
+      risk: cmp * 0.04,
       metrics: [
         { name: 'RSI', value: rsiVal.toFixed(1) },
         { name: 'CCI 34', value: cciVal.toFixed(1) },
@@ -77,8 +86,9 @@ function extremeMomentum(data) {
 }
 
 function minerviniVCP(data) {
-  const { closes, highs, lows, volumes, cmp } = data;
-  if (closes.length < 200) return { isMatch: false };
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 200) return { isMatch: false };
 
   const e200 = ema(closes, 200);
   const e150 = ema(closes, 150);
@@ -89,36 +99,55 @@ function minerviniVCP(data) {
   if (!stage2) return { isMatch: false };
 
   const week52High = Math.max(...highs.slice(-250));
-  const nearHigh = cmp >= week52High * 0.75; // Within 25% of 52-week high
+  const nearHigh = cmp >= week52High * 0.75; 
 
-  const hlPct = ((highs[highs.length-1] - lows[lows.length-1]) / lows[lows.length-1]) * 100;
+  const hlPct = ((highs[n-1] - lows[n-1]) / lows[n-1]) * 100;
+  
+  // Either we are tight and dry (setup phase) OR we are breaking out (action phase)
   const tightRange = hlPct < 2.5;
-
-  const currentVol = volumes[volumes.length-1];
+  const currentVol = volumes[n-1];
   const avgVol = volumes.slice(-50).reduce((a,b)=>a+b,0) / 50;
   const volumeDryUp = currentVol < avgVol * 0.8;
 
-  if (nearHigh && tightRange && volumeDryUp) {
-    return {
-      isMatch: true,
-      reason: 'Minervini Stage 2 uptrend with extreme volume and price contraction. Coil is tight.',
-      entry: highs[highs.length-1], // Entry trigger is breaking today's high
-      risk: cmp * 0.05,
-      metrics: [
-        { name: 'Daily Range', value: `${hlPct.toFixed(1)}%` },
-        { name: 'Vol vs Avg', value: `${(currentVol/avgVol).toFixed(2)}x` },
-        { name: 'Vs 52w High', value: `-${(((week52High-cmp)/week52High)*100).toFixed(1)}%` }
-      ]
-    };
+  // ACTION PHASE: Breakout with massive volume and strong close
+  const isBreakout = cmp >= week52High * 0.98; // Very close to or breaking 52-week high
+  const volSurge = currentVol > avgVol * 1.5;
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isStrongClose = isGreen && closePercent >= 0.75;
+
+  if (nearHigh) {
+    if (isBreakout && volSurge && isStrongClose) {
+      return {
+        isMatch: true,
+        reason: 'Minervini VCP Breakout: Breaking 52-week high on massive volume with a strong conviction close.',
+        entry: cmp, 
+        risk: cmp * 0.05,
+        metrics: [
+          { name: 'Vol Surge', value: `${(currentVol/avgVol).toFixed(1)}x` },
+          { name: 'Breakout', value: 'Confirmed' }
+        ]
+      };
+    } else if (tightRange && volumeDryUp) {
+      return {
+        isMatch: true,
+        reason: 'Minervini Stage 2 VCP Setup: Extreme volume and price contraction. Coil is tight (watch for breakout).',
+        entry: highs[n-1], 
+        risk: cmp * 0.05,
+        metrics: [
+          { name: 'Daily Range', value: `${hlPct.toFixed(1)}%` },
+          { name: 'Vol vs Avg', value: `${(currentVol/avgVol).toFixed(2)}x` }
+        ]
+      };
+    }
   }
   return { isMatch: false };
 }
 
 function darvasBox(data) {
-  const { highs, lows, volumes, cmp } = data;
-  if (highs.length < 60) return { isMatch: false };
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 60) return { isMatch: false };
 
-  // Check last 60 days for range bound box (Top and bottom within 15%)
   const recentHighs = highs.slice(-60, -1);
   const recentLows = lows.slice(-60, -1);
   
@@ -126,20 +155,22 @@ function darvasBox(data) {
   const boxBottom = Math.min(...recentLows);
   const boxSizePct = ((boxTop - boxBottom) / boxBottom) * 100;
 
-  // The stock must have been trapped in a < 15% box for 60 days
   const isBoxed = boxSizePct < 15;
 
-  // Today, it's piercing the top of the box on massive volume
-  const currentVol = volumes[volumes.length-1];
+  const currentVol = volumes[n-1];
   const avgVol = volumes.slice(-60).reduce((a,b)=>a+b,0) / 60;
   const isBreakout = cmp > boxTop && currentVol > avgVol * 2.5;
 
-  if (isBoxed && isBreakout) {
+  // STRICT FILTER: Candle Structure
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isStrongClose = isGreen && closePercent >= 0.8; // Must close in top 20%
+
+  if (isBoxed && isBreakout && isStrongClose) {
     return {
       isMatch: true,
-      reason: 'Exploding out of a multi-month flat Darvas Box on massive volume.',
-      entry: boxTop, // The specific trigger level
-      risk: cmp - boxTop, // Stop loss right below the top of the box
+      reason: 'Exploding out of a multi-month flat Darvas Box on massive volume, closing strongly near the high.',
+      entry: boxTop, 
+      risk: cmp - boxTop,
       metrics: [
         { name: 'Box Duration', value: '> 60 days' },
         { name: 'Box Size', value: `${boxSizePct.toFixed(1)}%` },
@@ -151,21 +182,29 @@ function darvasBox(data) {
 }
 
 function rsLeader(data) {
-  const { closes, highs, lows, cmp } = data;
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 50) return { isMatch: false };
+
   const adxVal = adx(highs, lows, closes);
   const rsiVal = rsi(closes);
   
-  // A true RS leader ignores the market. 
-  // Without tracking Nifty dynamically here, we use pure extreme trend logic.
-  if (cmp > ema(closes, 20) && ema(closes, 20) > ema(closes, 50) && adxVal > 30 && rsiVal > 60) {
+  const currentVol = volumes[n-1];
+  const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0) / 20;
+
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  const isStrongClose = isGreen && closePercent >= 0.6; // No massive rejection wicks
+  const hasVolume = currentVol > avgVol * 1.2;
+
+  if (cmp > ema(closes, 20) && ema(closes, 20) > ema(closes, 50) && adxVal > 30 && rsiVal > 60 && hasVolume && isStrongClose) {
     return {
       isMatch: true,
-      reason: 'Extreme internal Relative Strength. ADX > 30 indicates a runaway trend.',
-      entry: highs[highs.length-1], // Entry trigger is breaking today's high
+      reason: 'Extreme internal Relative Strength with volume confirmation. ADX > 30 indicates a runaway trend.',
+      entry: highs[n-1],
       risk: cmp * 0.05,
       metrics: [
-        { name: 'ADX Trend', value: adxVal },
-        { name: 'RSI', value: rsiVal }
+        { name: 'ADX Trend', value: adxVal.toFixed(1) },
+        { name: 'RSI', value: rsiVal.toFixed(1) }
       ]
     };
   }
@@ -173,20 +212,32 @@ function rsLeader(data) {
 }
 
 function crsiMeanReversion(data) {
-  const { closes, cmp } = data;
+  const { opens, closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 200) return { isMatch: false };
+
   const crsiVal = connorsRSI(closes);
   const e200 = ema(closes, 200);
 
-  // Buy the extreme dip in a long term uptrend
-  if (cmp > e200 && crsiVal < 10) {
+  // STRICT FILTER: We don't buy a falling knife blindly. 
+  // We need evidence of buyers stepping in (e.g., a long lower wick / hammer or a green close on volume).
+  const currentVol = volumes[n-1];
+  const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0) / 20;
+  
+  const { closePercent, isGreen } = getCandleAnatomy(highs[n-1], lows[n-1], closes[n-1], opens[n-1]);
+  // A "hammer" means it closes in the top 30% of its range (long lower wick)
+  const isHammer = closePercent >= 0.7; 
+  const isVolumeSupported = currentVol > avgVol * 1.1;
+
+  if (cmp > e200 && crsiVal < 10 && (isHammer || (isGreen && isVolumeSupported))) {
     return {
       isMatch: true,
-      reason: 'Connors RSI < 10. Statistically oversold rubber-band setup. Buy for a 2-4 day snapback.',
-      entry: cmp, // Enter at market to catch the dip
+      reason: 'Connors RSI < 10. Statistically oversold dip in uptrend, confirmed by lower wick rejection / buying volume.',
+      entry: cmp, 
       risk: cmp * 0.04,
       metrics: [
         { name: 'Connors RSI', value: crsiVal.toFixed(1) },
-        { name: 'Trend', value: 'Above 200 EMA' }
+        { name: 'Rejection', value: 'Confirmed' }
       ]
     };
   }
