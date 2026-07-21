@@ -459,6 +459,7 @@ async function runScan() {
 
           if (strategyId === 'all') {
             const allStrategies = ['ttm_orb', 'intraday_retest', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish'];
+            let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
               if (['ttm_orb', 'intraday_retest'].includes(s)) tempRes = intradayStrats.run(s, data);
@@ -472,10 +473,12 @@ async function runScan() {
               
               if (tempRes && tempRes.isMatch) {
                 matchedStrategies.push(s);
+                if (tempRes.reason) combinedReasons.push(`<b>${strategies[s]?.name || s}:</b> ${tempRes.reason}`);
               }
             }
             if (matchedStrategies.length > 0) {
-              res = { isMatch: true, reason: 'Strategy Match', matches: matchedStrategies };
+              const finalReason = combinedReasons.length > 0 ? combinedReasons.join('<br>') : 'Strategy Match';
+              res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
             } else {
               res = { isMatch: false };
             }
