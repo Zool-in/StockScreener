@@ -771,9 +771,9 @@ function renderResults(results) {
         const lots = Math.floor(cap / r.margin);
         const investment = lots * r.margin;
         positionHtml = `
-          <div class="levels" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 6px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3);">
-            <div class="lv"><div class="lk">Suggested Lots</div><div class="lv2">${lots} Lots</div></div>
-            <div class="lv"><div class="lk">Est. Margin Reqd</div><div class="lv2">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div></div>
+          <div style="margin-bottom: 12px; padding: 10px 12px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3); border-radius: 6px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Suggested Lots</span><span style="font-weight:600; color:var(--text-main)">${lots} Lots</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Est. Margin Reqd</span><span style="font-weight:600; color:var(--text-main)">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</span></div>
           </div>
         `;
       } else {
@@ -783,11 +783,11 @@ function renderResults(results) {
         const projReturn = qty * (r.t1 - r.entry);
         if (qty > 0) {
           positionHtml = `
-            <div class="levels" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 6px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3);">
-              <div class="lv"><div class="lk">Qty (Pos Size)</div><div class="lv2">${qty}</div></div>
-              <div class="lv"><div class="lk">Est. Hold Time</div><div class="lv2">${estHold}</div></div>
-              <div class="lv"><div class="lk">Investment</div><div class="lv2">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</div></div>
-              <div class="lv"><div class="lk">Risk / Reward (T1)</div><div class="lv2"><span style="color:var(--red)">-₹${Math.abs(riskAmt).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> / <span style="color:var(--green)">+₹${projReturn.toLocaleString('en-IN', {maximumFractionDigits:0})}</span></div></div>
+            <div style="margin-bottom: 12px; padding: 10px 12px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3); border-radius: 6px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Qty (Pos Size)</span><span style="font-weight:600; color:var(--text-main)">${qty}</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Est. Hold Time</span><span style="font-weight:600; color:var(--text-main)">${estHold}</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Investment</span><span style="font-weight:600; color:var(--text-main)">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Risk / Reward (T1)</span><span style="font-weight:600"><span style="color:var(--red)">-₹${Math.abs(riskAmt).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span style="color:var(--text-muted)">/</span> <span style="color:var(--green)">+₹${projReturn.toLocaleString('en-IN', {maximumFractionDigits:0})}</span></span></div>
             </div>
           `;
         }
