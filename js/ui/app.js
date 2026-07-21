@@ -458,11 +458,11 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'intraday_retest', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
-              if (['ttm_orb', 'intraday_retest'].includes(s)) tempRes = intradayStrats.run(s, data);
+              if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(s)) tempRes = intradayStrats.run(s, data);
               else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(s)) tempRes = swingStrats.run(s, data);
               else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
@@ -483,7 +483,7 @@ async function runScan() {
               res = { isMatch: false };
             }
           } else {
-            if (['ttm_orb', 'intraday_retest'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
+            if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
             else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
             else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
               res = optionStrats.run(strategyId, data);
@@ -703,6 +703,8 @@ function renderResults(results) {
       all: 'All Stocks',
       ttm_orb: 'TTM Squeeze + ORB',
       intraday_retest: 'SMC Sweep & Retest',
+      ohl_bullish: 'Open = Low',
+      ohl_bearish: 'Open = High',
       btst: 'BTST Momentum',
       crsi: 'Connors RSI',
       minervini: 'Minervini VCP',
@@ -753,7 +755,7 @@ function renderResults(results) {
     tagsHtml = `<div class="tags-container" style="margin-bottom:8px;">${tagsHtml}</div>`;
 
     // Estimate holding period based on strategy
-    const estHold = (['ttm_orb', 'intraday_retest'].includes(AppState.strategy)) ? 'Intraday'
+    const estHold = (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(AppState.strategy)) ? 'Intraday'
                   : (['btst'].includes(AppState.strategy)) ? '1-2 Days'
                   : (['minervini', 'darvas', 'xmomentum'].includes(AppState.strategy)) ? '2-6 Weeks'
                   : (['crsi', 'vcp_down'].includes(AppState.strategy)) ? '3-10 Days'
