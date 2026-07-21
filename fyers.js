@@ -355,7 +355,7 @@ module.exports = {
 // ─── Options API ───────────────────────────────────────────────────────────────
 async function fetchOptionChain(symbol, strikecount = 30, expiry = null) {
   let url = `${FYERS_BASE}/data/options-chain-v3?symbol=${encodeURIComponent(symbol)}&strikecount=${strikecount}`;
-  if (expiry) url += `&expiry=${encodeURIComponent(expiry)}`;
+  if (expiry) url += `&timestamp=${encodeURIComponent(expiry)}`;
   return request('GET', url, null, { Authorization: await getAuthHeader() });
 }
 

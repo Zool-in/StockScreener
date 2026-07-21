@@ -5,15 +5,17 @@ import * as btstStrats from '../strategies/btst.js?v=6';
 import * as longTermStrats from '../strategies/longterm.js?v=6';
 import * as shortStrats from '../strategies/short.js?v=6';
 import * as hmStrats from '../strategies/hm.js?v=1';
+import * as smcStrats from '../strategies/smc.js?v=1';
 
 function runStrategy(strategyId, data) {
-  if (['ttm_orb'].includes(strategyId)) return intradayStrats.run(strategyId, data);
+  if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(strategyId)) return intradayStrats.run(strategyId, data);
   if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) return swingStrats.run(strategyId, data);
   if (['bps', 'strangle', 'iv_crush', 'csp', 'cc', 'wheel'].includes(strategyId)) return optionStrats.run(strategyId, data);
   if (['btst'].includes(strategyId)) return btstStrats.run(strategyId, data);
   if (['weinstein', 'wyckoff'].includes(strategyId)) return longTermStrats.run(strategyId, data);
   if (['vcp_down', 'bear_call'].includes(strategyId)) return shortStrats.run(strategyId, data);
   if (strategyId.startsWith('hm_')) return hmStrats.run(strategyId, data);
+  if (strategyId.startsWith('smc_')) return smcStrats.run(strategyId, data);
   return { isMatch: false };
 }
 
@@ -72,7 +74,7 @@ export function runBacktest(strategyId, data, targetPct, slPct) {
     const res = runStrategy(strategyId, slicedData);
     if (res && res.isMatch) {
       // For short strategies, the SL is higher than entry and TP is lower than entry
-      const isShort = ['vcp_down', 'bear_call', 'hm_bearish'].includes(strategyId);
+      const isShort = ['vcp_down', 'bear_call', 'hm_bearish', 'ohl_bearish', 'smc_bearish'].includes(strategyId);
       
       let slPrice, tpPrice;
       if (isShort) {

@@ -150,17 +150,15 @@ function renderExpiryPills(expiryData) {
     // Format: 17 Jul (W)
     const formatted = p.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ' ' + tag;
     
-    // Format for FYERS API: 17-Jul-2024
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const fyersExpiryStr = `${p.date.getDate().toString().padStart(2, '0')}-${months[p.date.getMonth()]}-${p.date.getFullYear()}`;
-    
     const btn = document.createElement('button');
     btn.className = 'pill';
-    if (selectedExpiry === fyersExpiryStr || (!selectedExpiry && p.raw === parsedExpiries[0].raw)) {
+    
+    // Fyers Option Chain API expects the exact epoch string provided in expiryData
+    if (selectedExpiry === p.raw || (!selectedExpiry && p.raw === parsedExpiries[0].raw)) {
       btn.classList.add('active');
     }
     btn.textContent = formatted;
-    btn.dataset.val = fyersExpiryStr;
+    btn.dataset.val = p.raw;
     btn.addEventListener('click', (e) => {
       DOM.expiryPills.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
