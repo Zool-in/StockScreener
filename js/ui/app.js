@@ -809,50 +809,47 @@ function renderResults(results) {
           </div>
           <span class="score-badge ${score >= 75 ? 'score-s' : 'score-m'}">${score}/100</span>
         </div>
-        <div class="price-row">
+        
+        <div class="price-row" style="margin-bottom: 8px;">
           <span class="price">₹${r.curr.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
           <span class="chg ${chgClass}">${chgSign}${r.chgPct}%</span>
         </div>
+        <div style="margin-bottom: 12px;">${tagsHtml}</div>
+        
         <div class="score-bar"><div class="score-bar-fill" style="width:${barW}%;background:${barCol}"></div></div>
         
-        ${tagsHtml}
-        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3;">${r.reason}</div>
+        <div class="scard-reason">${r.reason}</div>
         
         ${positionHtml}
 
-        <div class="indicator-grid">
-          <div class="ind"><div class="ik">RSI 14</div><div class="iv" style="color:${rsiOk?'var(--green)':rsiWarn?'var(--red)':'var(--muted)'}">${r.rsiVal}</div></div>
-          <div class="ind"><div class="ik">ADX 14</div><div class="iv" style="color:${adxOk?'var(--green)':adxWarn?'var(--amber)':'var(--muted)'}">${r.adxVal}</div></div>
-          <div class="ind"><div class="ik">Vol ×</div><div class="iv" style="color:${vrOk?'var(--green)':vrWarn?'var(--amber)':'var(--muted)'}">${r.vr}×</div></div>
-          <div class="ind"><div class="ik">EMA 20</div><div class="iv">₹${r.ema20.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="ind"><div class="ik">EMA 50</div><div class="iv">₹${r.ema50.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${r.ema200.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="ind"><div class="ik">MACD</div><div class="iv" style="color:${r.macdHist >= 0 ? 'var(--green)' : 'var(--red)'}">${r.macdVal.toFixed(2)}</div></div>
-          <div class="ind"><div class="ik">CCI 34</div><div class="iv" style="color:${r.cciVal > 100 ? 'var(--green)' : r.cciVal < -100 ? 'var(--red)' : 'var(--muted)'}">${r.cciVal.toFixed(1)}</div></div>
-        </div>
-        <div class="signal-dots">
-          <span class="dot-row"><span class="dot ${r.curr > r.ema200?'dy':'dn'}"></span>200 EMA</span>
-          <span class="dot-row"><span class="dot ${r.curr > r.ema50?'dy':'dn'}"></span>50 EMA</span>
-          <span class="dot-row"><span class="dot ${r.curr > r.ema20?'dy':'dn'}"></span>20 EMA</span>
-          <span class="dot-row"><span class="dot ${dotClass(rsiOk,rsiWarn)}"></span>RSI</span>
-          <span class="dot-row"><span class="dot ${dotClass(adxOk,adxWarn)}"></span>ADX</span>
-        </div>
-        
-        <div class="levels" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 6px;">
+        <div class="levels" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 6px; padding-bottom: 12px;">
           <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-stop"><div class="lk">Stop</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-stop"><div class="lk">Stop Loss</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
           <div class="lv lv-target"><div class="lk">Target 1</div><div class="lv2">₹${r.t1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-target"><div class="lk">Target 2</div><div class="lv2">₹${r.t2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
         </div>
         
-        <div class="levels" style="grid-template-columns: repeat(3, 1fr);">
-          <div class="lv"><div class="lk">S1</div><div class="lv2">₹${r.s1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv"><div class="lk">S2</div><div class="lv2">₹${r.s2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv"><div class="lk">S3</div><div class="lv2">₹${r.s3.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv"><div class="lk">R1</div><div class="lv2">₹${r.r1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv"><div class="lk">R2</div><div class="lv2">₹${r.r2.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv"><div class="lk">R3</div><div class="lv2">₹${r.r3.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-        </div>
+        <details class="scard-details">
+          <summary>View Technicals ▼</summary>
+          <div style="margin-top: 12px;">
+            <div class="indicator-grid">
+              <div class="ind"><div class="ik">RSI 14</div><div class="iv" style="color:${rsiOk?'var(--green)':rsiWarn?'var(--red)':'var(--muted)'}">${r.rsiVal}</div></div>
+              <div class="ind"><div class="ik">ADX 14</div><div class="iv" style="color:${adxOk?'var(--green)':adxWarn?'var(--amber)':'var(--muted)'}">${r.adxVal}</div></div>
+              <div class="ind"><div class="ik">Vol ×</div><div class="iv" style="color:${vrOk?'var(--green)':vrWarn?'var(--amber)':'var(--muted)'}">${r.vr}×</div></div>
+              <div class="ind"><div class="ik">EMA 20</div><div class="iv">₹${r.ema20.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+              <div class="ind"><div class="ik">EMA 50</div><div class="iv">₹${r.ema50.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+              <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${r.ema200.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+              <div class="ind"><div class="ik">MACD</div><div class="iv" style="color:${r.macdHist >= 0 ? 'var(--green)' : 'var(--red)'}">${r.macdVal.toFixed(2)}</div></div>
+              <div class="ind"><div class="ik">CCI 34</div><div class="iv" style="color:${r.cciVal > 100 ? 'var(--green)' : r.cciVal < -100 ? 'var(--red)' : 'var(--muted)'}">${r.cciVal.toFixed(1)}</div></div>
+            </div>
+            <div class="signal-dots">
+              <span class="dot-row"><span class="dot ${r.curr > r.ema200?'dy':'dn'}"></span>200 EMA</span>
+              <span class="dot-row"><span class="dot ${r.curr > r.ema50?'dy':'dn'}"></span>50 EMA</span>
+              <span class="dot-row"><span class="dot ${r.curr > r.ema20?'dy':'dn'}"></span>20 EMA</span>
+              <span class="dot-row"><span class="dot ${dotClass(rsiOk,rsiWarn)}"></span>RSI</span>
+              <span class="dot-row"><span class="dot ${dotClass(adxOk,adxWarn)}"></span>ADX</span>
+            </div>
+          </div>
+        </details>
         
         <div class="backtest-bar" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; align-items: center;">
           <div style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
