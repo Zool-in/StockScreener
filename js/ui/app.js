@@ -473,7 +473,7 @@ async function runScan() {
               
               if (tempRes && tempRes.isMatch) {
                 matchedStrategies.push(s);
-                if (tempRes.reason) combinedReasons.push(`<b>${strategies[s]?.name || s}:</b> ${tempRes.reason}`);
+                if (tempRes.reason) combinedReasons.push(`<b>${s.toUpperCase()}:</b> ${tempRes.reason}`);
               }
             }
             if (matchedStrategies.length > 0) {
