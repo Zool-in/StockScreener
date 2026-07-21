@@ -84,7 +84,7 @@ async function runScan() {
       }
     } catch(e) { console.warn("Failed to fetch underlying LTP"); }
 
-    let url = `/api/options/chain?symbol=${currentIndex}&strikecount=40`;
+    let url = `/api/options/chain?symbol=${currentIndex}&strikecount=30`;
     if (selectedExpiry) url += `&expiry=${encodeURIComponent(selectedExpiry)}`;
     
     const res = await fetch(url);
@@ -150,13 +150,17 @@ function renderExpiryPills(expiryData) {
     // Format: 17 Jul (W)
     const formatted = p.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ' ' + tag;
     
+    // Format for FYERS API: 17-Jul-2024
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const fyersExpiryStr = `${p.date.getDate().toString().padStart(2, '0')}-${months[p.date.getMonth()]}-${p.date.getFullYear()}`;
+    
     const btn = document.createElement('button');
     btn.className = 'pill';
-    if (selectedExpiry === p.raw || (!selectedExpiry && p.raw === parsedExpiries[0].raw)) {
+    if (selectedExpiry === fyersExpiryStr || (!selectedExpiry && p.raw === parsedExpiries[0].raw)) {
       btn.classList.add('active');
     }
     btn.textContent = formatted;
-    btn.dataset.val = p.raw;
+    btn.dataset.val = fyersExpiryStr;
     btn.addEventListener('click', (e) => {
       DOM.expiryPills.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
@@ -221,16 +225,16 @@ function renderChain(chainData, underlyingLtp) {
     // Squeeze Logic (Trapped Writers)
     // A writer is trapped if their strike has significant OI (at least 10% of max) AND price moved against them (is ITM) AND volume is spiking
     if (ceOI > (maxCeOI * 0.10) && ceVol > (ceOI * 0.8) && isCeItm) {
-        const info = "BULLISH SIGNAL: Call Writers (Resistance) are trapped! Strike is ITM. Suggestion: BUY ATM Call (CE).";
+        const info = "ZERO TO HERO (BULLISH): Call Writers (Resistance) are trapped! Strike is ITM. Suggestion: BUY ATM Call (CE) for Gamma Squeeze.";
         alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
-            <span class="badge badge-purple" style="white-space:nowrap;">📈 BULLISH: CE Gamma Trap! ⓘ</span>
+            <span class="badge badge-purple" style="white-space:nowrap;">🚀 ZERO TO HERO: CE Blast! ⓘ</span>
             <span style="font-size:10px; color:var(--text-green); font-weight:600; text-transform:uppercase; white-space:nowrap;">Suggest: Buy CE</span>
         </div>`;
         tr.classList.add('gamma-alert');
     } else if (peOI > (maxPeOI * 0.10) && peVol > (peOI * 0.8) && isPeItm) {
-        const info = "BEARISH SIGNAL: Put Writers (Support) are trapped! Strike is ITM. Suggestion: BUY ATM Put (PE).";
+        const info = "ZERO TO HERO (BEARISH): Put Writers (Support) are trapped! Strike is ITM. Suggestion: BUY ATM Put (PE) for Gamma Squeeze.";
         alertMsg = `<div title="${info}" style="cursor:help; display:inline-flex; flex-direction:column; gap:4px; align-items:flex-end;">
-            <span class="badge badge-purple" style="white-space:nowrap;">📉 BEARISH: PE Gamma Trap! ⓘ</span>
+            <span class="badge badge-purple" style="white-space:nowrap;">💥 ZERO TO HERO: PE Blast! ⓘ</span>
             <span style="font-size:10px; color:var(--text-red); font-weight:600; text-transform:uppercase; white-space:nowrap;">Suggest: Buy PE</span>
         </div>`;
         tr.classList.add('gamma-alert');
