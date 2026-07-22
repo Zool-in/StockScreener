@@ -27,11 +27,11 @@ const DOM = {
   capitalInput: document.getElementById('capitalInput'),
   scanBtn: document.getElementById('scanBtn'),
   resultsArea: document.getElementById('resultsArea'),
-  lookbackInput: document.getElementById('lookbackInput'),
   progressArea: document.getElementById('progressArea'),
   progressText: document.getElementById('progressText'),
   progressPercent: document.getElementById('progressPercent'),
   progressBar: document.getElementById('progressBar'),
+  lookbackInput: document.getElementById('lookbackInput'),
 };
 
 function renderScripts() {
@@ -434,8 +434,6 @@ async function runScan() {
   
   if (AppState.tickers.length === 0) return;
   
-  const lookback = parseInt(DOM.lookbackInput?.value || '0') || 0;
-  
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.style.display = 'none';
   const cancelBtn = document.getElementById('cancelBtn');
@@ -541,13 +539,17 @@ async function runScan() {
             else if (strategyId.startsWith('smc_')) res = smcStrats.run(strategyId, data);
             else if (strategyId.startsWith('ha_donchian_')) res = haDonchianStrats.run(strategyId, data, AppState.timeframe);
             else if (strategyId === 'multi_tf') {
+              const lookback = parseInt(DOM.lookbackInput.value) || 0;
               const dLen = data.closes.length;
               const wLen = weeklyData.closes.length;
               const mLen = monthlyData.closes.length;
 
-              if (dLen >= 30 && wLen >= 15 && mLen >= 15) {
+              if (dLen - lookback >= 30 && wLen - lookback >= 15 && mLen - lookback >= 15) {
                 const dCloses = data.closes.slice(0, dLen - lookback);
-                
+                const dOpens = data.opens.slice(0, dLen - lookback);
+                const dHighs = data.highs.slice(0, dLen - lookback);
+                const dLows = data.lows.slice(0, dLen - lookback);
+
                 const wCloses = weeklyData.closes.slice(0, wLen - lookback);
                 const wOpens = weeklyData.opens.slice(0, wLen - lookback);
                 const wHighs = weeklyData.highs.slice(0, wLen - lookback);
