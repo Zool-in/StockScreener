@@ -450,7 +450,7 @@ async function runScan() {
   DOM.progressPercent.innerText = `0%`;
   DOM.progressBar.style.width = `0%`;
 
-  DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); padding: 64px 0;"><div class="spinner"></div><span>Scanning ${AppState.tickers.length} stocks...</span></div>`;
+  DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0; font-size: 14px;">Scan in progress...</div>`;
   document.getElementById('adStrip').style.display = 'none';
   document.getElementById('summaryBar').style.display = 'none';
   
@@ -472,11 +472,6 @@ async function runScan() {
       DOM.progressText.innerText = `Scanning (${i}/${AppState.tickers.length}) stocks...`;
       DOM.progressPercent.innerText = `${pct}%`;
       DOM.progressBar.style.width = `${pct}%`;
-
-      const resultsSpinnerSpan = DOM.resultsArea.querySelector('span');
-      if (resultsSpinnerSpan) {
-        resultsSpinnerSpan.innerText = `Scanning (${i}/${AppState.tickers.length}) stocks...`;
-      }
 
       const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
       
