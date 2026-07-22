@@ -27,6 +27,7 @@ const DOM = {
   capitalInput: document.getElementById('capitalInput'),
   scanBtn: document.getElementById('scanBtn'),
   resultsArea: document.getElementById('resultsArea'),
+  lookbackInput: document.getElementById('lookbackInput'),
   progressArea: document.getElementById('progressArea'),
   progressText: document.getElementById('progressText'),
   progressPercent: document.getElementById('progressPercent'),
@@ -433,6 +434,8 @@ async function runScan() {
   
   if (AppState.tickers.length === 0) return;
   
+  const lookback = parseInt(DOM.lookbackInput?.value || '0') || 0;
+  
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.style.display = 'none';
   const cancelBtn = document.getElementById('cancelBtn');
@@ -543,16 +546,28 @@ async function runScan() {
               const mLen = monthlyData.closes.length;
 
               if (dLen >= 30 && wLen >= 15 && mLen >= 15) {
-                const dRsi = rsi(data.closes);
-                const dMacd = macd(data.closes);
+                const dCloses = data.closes.slice(0, dLen - lookback);
+                
+                const wCloses = weeklyData.closes.slice(0, wLen - lookback);
+                const wOpens = weeklyData.opens.slice(0, wLen - lookback);
+                const wHighs = weeklyData.highs.slice(0, wLen - lookback);
+                const wLows = weeklyData.lows.slice(0, wLen - lookback);
 
-                const wRsi = rsi(weeklyData.closes);
-                const wHa = calculateHeikinAshi(weeklyData.opens, weeklyData.highs, weeklyData.lows, weeklyData.closes);
+                const mCloses = monthlyData.closes.slice(0, mLen - lookback);
+                const mOpens = monthlyData.opens.slice(0, mLen - lookback);
+                const mHighs = monthlyData.highs.slice(0, mLen - lookback);
+                const mLows = monthlyData.lows.slice(0, mLen - lookback);
+
+                const dRsi = rsi(dCloses);
+                const dMacd = macd(dCloses);
+
+                const wRsi = rsi(wCloses);
+                const wHa = calculateHeikinAshi(wOpens, wHighs, wLows, wCloses);
                 const wHaClose = wHa.haClose[wHa.haClose.length - 1];
                 const wHaOpen = wHa.haOpen[wHa.haOpen.length - 1];
 
-                const mRsi = rsi(monthlyData.closes);
-                const mHa = calculateHeikinAshi(monthlyData.opens, monthlyData.highs, monthlyData.lows, monthlyData.closes);
+                const mRsi = rsi(mCloses);
+                const mHa = calculateHeikinAshi(mOpens, mHighs, mLows, mCloses);
                 const mHaClose = mHa.haClose[mHa.haClose.length - 1];
                 const mHaOpen = mHa.haOpen[mHa.haOpen.length - 1];
 
