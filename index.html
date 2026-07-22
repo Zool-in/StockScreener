@@ -39,17 +39,23 @@
 
   <!-- Global HUD -->
   <header class="hud-bar">
-    <div class="logo">StockScan</div>
-    <div style="display: flex; gap: 20px; align-items: center; margin-left: 30px;">
-      <a href="#" id="tabScreener" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock Screener</a>
-      <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options (Gamma)</a>
-      <a href="multi-tf.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Multi-TF Scanner</a>
-      <a href="#" id="tabScripts" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
-    </div>
-    <div class="fyers-status">
-      <a href="lots.html?v=2" class="badge badge-amber" style="text-decoration:none;">F&O Lot Sizes</a>
-      <div id="mmiStatus" class="badge badge-muted" style="cursor: pointer;">Market: Loading... <span class="info-icon" style="margin-left:4px;">i</span></div>
-      <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
+    <div class="logo"><a href="index.html" class="hud-brand" style="text-decoration: none;">StockScan Pro</a></div>
+    
+    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <label for="nav-toggle" class="nav-toggle-label">&#9776;</label>
+
+    <div class="hud-nav-container">
+      <div class="hud-menu">
+        <a href="#" id="tabScreener" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock Screener</a>
+        <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options (Gamma)</a>
+        <a href="multi-tf.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Multi-TF Scanner</a>
+        <a href="#" id="tabScripts" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
+      </div>
+      <div class="hud-stats">
+        <a href="lots.html?v=2" class="badge badge-amber" style="text-decoration:none;">F&O Lot Sizes</a>
+        <div id="mmiStatus" class="badge badge-muted" style="cursor: pointer;">Market: Loading... <span class="info-icon" style="margin-left:4px;">i</span></div>
+        <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
+      </div>
     </div>
   </header>
 

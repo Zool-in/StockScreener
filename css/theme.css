@@ -97,6 +97,7 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 100;
+  flex-wrap: wrap;
 }
 
 .hud-brand {
@@ -107,13 +108,76 @@ a:hover {
   -webkit-text-fill-color: transparent;
 }
 
+.hud-nav-container {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: space-between;
+  margin-left: 30px;
+}
+
+.hud-menu {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
 .hud-stats {
   display: flex;
-  gap: 24px;
+  align-items: center;
+  gap: 16px;
   font-size: 0.875rem;
 }
 
-@media (max-width: 768px) {
-  .app-container { padding: 16px; }
-  .hud-stats { display: none; } /* Hide complex stats on small mobile header */
+/* Hamburger Styles */
+.nav-toggle-label {
+  display: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: var(--text);
+  user-select: none;
+}
+
+.nav-toggle {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  .app-container {
+    padding: 16px;
+  }
+
+  .nav-toggle-label {
+    display: block;
+  }
+
+  .hud-nav-container {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+    margin-top: 12px;
+    gap: 16px;
+  }
+
+  .nav-toggle:checked ~ .hud-nav-container {
+    display: flex;
+  }
+
+  .hud-menu {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hud-stats {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
 }
