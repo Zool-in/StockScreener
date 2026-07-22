@@ -26,9 +26,11 @@ const DOM = {
   timeframePills: document.getElementById('timeframePills'),
   capitalInput: document.getElementById('capitalInput'),
   scanBtn: document.getElementById('scanBtn'),
-  scanBtn: document.getElementById('scanBtn'),
   resultsArea: document.getElementById('resultsArea'),
-  resultsArea: document.getElementById('resultsArea'),
+  progressArea: document.getElementById('progressArea'),
+  progressText: document.getElementById('progressText'),
+  progressPercent: document.getElementById('progressPercent'),
+  progressBar: document.getElementById('progressBar'),
 };
 
 function renderScripts() {
@@ -436,6 +438,11 @@ async function runScan() {
   const cancelBtn = document.getElementById('cancelBtn');
   if (cancelBtn) cancelBtn.style.display = 'flex';
   
+  DOM.progressArea.style.display = 'block';
+  DOM.progressText.innerText = `Scanning starting...`;
+  DOM.progressPercent.innerText = `0%`;
+  DOM.progressBar.style.width = `0%`;
+
   DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); padding: 64px 0;"><div class="spinner"></div><span>Scanning ${AppState.tickers.length} stocks...</span></div>`;
   document.getElementById('adStrip').style.display = 'none';
   document.getElementById('summaryBar').style.display = 'none';
@@ -452,6 +459,12 @@ async function runScan() {
 
     for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
+
+      const pct = Math.round((i / AppState.tickers.length) * 100);
+      DOM.progressText.innerText = `Scanning (${i}/${AppState.tickers.length}) stocks...`;
+      DOM.progressPercent.innerText = `${pct}%`;
+      DOM.progressBar.style.width = `${pct}%`;
+
       const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
       
       await Promise.all(batch.map(async (ticker) => {
@@ -604,9 +617,15 @@ async function runScan() {
     }
   } finally {
     if (scanId === currentScanId) {
+      DOM.progressText.innerText = `Scan completed.`;
+      DOM.progressPercent.innerText = `100%`;
+      DOM.progressBar.style.width = `100%`;
       DOM.scanBtn.disabled = false;
       DOM.scanBtn.style.display = 'flex';
       if (cancelBtn) cancelBtn.style.display = 'none';
+      setTimeout(() => {
+        DOM.progressArea.style.display = 'none';
+      }, 1500);
     }
   }
 }

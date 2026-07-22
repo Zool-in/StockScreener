@@ -176,6 +176,17 @@
 
     </div>
 
+    <!-- Progress indicator -->
+    <div id="progressArea" style="display: none; margin-bottom: 24px;" class="card">
+      <div class="flex justify-between items-center" style="margin-bottom: 8px;">
+        <span id="progressText" style="font-weight: 500;">Scanning...</span>
+        <span id="progressPercent" style="font-family: var(--mono);">0%</span>
+      </div>
+      <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+        <div id="progressBar" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.1s ease;"></div>
+      </div>
+    </div>
+
     <div class="ad-strip" id="adStrip" style="display:none"></div>
     <div class="summary" id="summaryBar" style="display:none"></div>
 
