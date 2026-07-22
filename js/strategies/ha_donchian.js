@@ -64,8 +64,12 @@ function haDonchianBullish(data, timeframe) {
   const isExhausted = redStreak >= 3;
 
   if (isCurrentGreen && hasNoLowerTail && isExhausted) {
-    // Donchian Channel period: 5 for weekly/monthly, 3 for daily/hourly/5m
-    const dcPeriod = ['1wk', '1mo'].includes(timeframe) ? 5 : 3;
+    // Donchian Channel period: 
+    // - 5 for weekly/monthly positional setups
+    // - 2 for 5m/15m scalping setups (trails the previous candle high/low)
+    // - 3 for standard daily/hourly swing trades
+    const dcPeriod = ['1wk', '1mo'].includes(timeframe) ? 5 : 
+                     ['5m', '15m'].includes(timeframe) ? 2 : 3;
     
     // Trailing stop loss based on the lowest low of the last N completed candles
     const completedLows = lows.slice(n - 1 - dcPeriod, n - 1);
@@ -123,8 +127,12 @@ function haDonchianBearish(data, timeframe) {
   const isExhausted = greenStreak >= 3;
 
   if (isCurrentRed && hasNoUpperTail && isExhausted) {
-    // Donchian Channel period: 5 for weekly/monthly, 3 for daily/hourly/5m
-    const dcPeriod = ['1wk', '1mo'].includes(timeframe) ? 5 : 3;
+    // Donchian Channel period: 
+    // - 5 for weekly/monthly positional setups
+    // - 2 for 5m/15m scalping setups (trails the previous candle high/low)
+    // - 3 for standard daily/hourly swing trades
+    const dcPeriod = ['1wk', '1mo'].includes(timeframe) ? 5 : 
+                     ['5m', '15m'].includes(timeframe) ? 2 : 3;
     
     // Trailing stop loss based on the highest high of the last N completed candles
     const completedHighs = highs.slice(n - 1 - dcPeriod, n - 1);

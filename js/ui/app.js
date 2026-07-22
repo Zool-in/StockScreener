@@ -177,6 +177,16 @@ const STRATEGY_INFO = {
     name: 'SMC Bearish Reversal',
     desc: 'Smart Money Concepts. Price rallies into an unmitigated Bearish Order Block (Resistance) and prints a bearish reversal candle.',
     example: '<img src="/assets/smc_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short near close<br><strong>Stop:</strong> Above the Order Block<br><strong>Target:</strong> Nearest Bullish Order Block<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> Institutions sold off at this level previously, creating a Bearish OB. Price returns to retest this zone and faces heavy selling pressure, confirming the drop.</span>'
+  },
+  ha_donchian_bullish: {
+    name: 'HA Donchian Bullish',
+    desc: 'A mechanical trend-following strategy by Brijesh Bhatia. It uses smoothed Heikin-Ashi candles to filter market noise and identifies early bullish reversals when the Heikin-Ashi candle color flips green with a flat bottom (no lower shadow) after at least 3 red exhaustion candles. Trades are trailed dynamically using the Donchian Channel.',
+    example: '<img src="/assets/ha_donchian_bullish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy on close of the confirmation green HA candle.<br><strong>Stop Loss:</strong> Trailing stop at the lower Donchian Channel band (lowest low of last 3 candles for swing, 5 candles for weekly positional, or 2 candles for scalping).<br><strong>Target:</strong> Ride the trend until the trailing stop is hit (no fixed target).<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE drops for 4 days (3+ red HA candles). Today, it prints a green HA candle with no lower shadow (flat bottom). You buy and trail the lowest low of the last 3 days.</span>'
+  },
+  ha_donchian_bearish: {
+    name: 'HA Donchian Bearish',
+    desc: 'A mechanical trend-following strategy by Brijesh Bhatia. Identifies early bearish reversals when the Heikin-Ashi candle flips red with a flat top (no upper shadow) after at least 3 green exhaustion candles. Trades are trailed dynamically using the Donchian Channel.',
+    example: '<img src="/assets/ha_donchian_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short/Sell on close of the confirmation red HA candle.<br><strong>Stop Loss:</strong> Trailing stop at the upper Donchian Channel band (highest high of last 3 candles for swing, 5 candles for weekly positional, or 2 candles for scalping).<br><strong>Target:</strong> Ride the trend until the trailing stop is hit.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., SBIN rallies for 5 days (3+ green HA candles). Today, it prints a red HA candle with no upper shadow (flat top). You short and trail the highest high of the last 3 days.</span>'
   }
 };
 
