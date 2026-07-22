@@ -1051,7 +1051,7 @@ function renderResults(results) {
                 </svg>
               </a>
             </div>
-            <div class="scard-name">${r.data.meta?.shortName || r.ticker}</div>
+            <div class="scard-name">${r.data.meta?.shortName && r.data.meta.shortName.toUpperCase() !== r.ticker.toUpperCase() ? r.data.meta.shortName : ''}</div>
           </div>
           <span class="score-badge ${score >= 75 ? 'score-s' : 'score-m'}">${score}/100</span>
         </div>
