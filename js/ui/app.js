@@ -663,7 +663,7 @@ async function runScan() {
   try {
     const allSymbols = results.map(r => r.ticker);
     if (allSymbols.length > 0) {
-      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); padding: 64px 0;"><div class="spinner"></div><span>Fetching Live Prices...</span></div>`;
+      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0; font-size: 14px;">Fetching Live Prices...</div>`;
       
       const BATCH_Q = 100;
       for (let i = 0; i < allSymbols.length; i += BATCH_Q) {
