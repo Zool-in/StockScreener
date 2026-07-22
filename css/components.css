@@ -723,9 +723,18 @@ details.coll .coll-body { padding: 0 20px 18px; }
   padding: 24px;
   width: 90%;
   max-width: 500px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   z-index: 1001;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 4px;
 }
 
 @keyframes slideUp {
