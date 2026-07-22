@@ -11,7 +11,7 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   let interval = '1d', range = '1y';
   if (timeframe === '15m') { interval = '15m'; range = '60d'; }
   else if (timeframe === '1h') { interval = '60m'; range = '730d'; }
-  else if (timeframe === '1d') { interval = '1d'; range = '1y'; }
+  else if (timeframe === '1d') { interval = '1d'; range = '5y'; }
   else if (timeframe === '1wk') { interval = '1wk'; range = '5y'; }
   else if (timeframe === '1mo') { interval = '1mo'; range = '5y'; }
 
