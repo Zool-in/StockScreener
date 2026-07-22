@@ -32,6 +32,7 @@ const DOM = {
   progressPercent: document.getElementById('progressPercent'),
   progressBar: document.getElementById('progressBar'),
   lookbackInput: document.getElementById('lookbackInput'),
+  lookbackWrapper: document.getElementById('lookbackWrapper'),
 };
 
 function renderScripts() {
@@ -323,7 +324,12 @@ async function init() {
     Array.from(DOM.strategyPills.children).forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
     
-    AppState.setStrategy(pill.dataset.val);
+    const strategyVal = pill.dataset.val;
+    AppState.setStrategy(strategyVal);
+    
+    if (DOM.lookbackWrapper) {
+      DOM.lookbackWrapper.style.display = strategyVal === 'multi_tf' ? 'block' : 'none';
+    }
     
     // Auto timeframe
     const tf = pill.dataset.tf;
