@@ -473,6 +473,11 @@ async function runScan() {
       DOM.progressPercent.innerText = `${pct}%`;
       DOM.progressBar.style.width = `${pct}%`;
 
+      const resultsSpinnerSpan = DOM.resultsArea.querySelector('span');
+      if (resultsSpinnerSpan) {
+        resultsSpinnerSpan.innerText = `Scanning (${i}/${AppState.tickers.length}) stocks...`;
+      }
+
       const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
       
       await Promise.all(batch.map(async (ticker) => {
