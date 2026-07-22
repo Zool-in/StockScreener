@@ -63,7 +63,28 @@ function haDonchianBullish(data, timeframe) {
   }
   const isExhausted = redStreak >= 3;
 
-  if (isCurrentGreen && hasNoLowerTail && isExhausted) {
+  // Calculate 14-period ATR
+  let sumTr = 0;
+  for (let i = n - 14; i < n; i++) {
+    const tr = Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - (closes[i - 1] || closes[i])),
+      Math.abs(lows[i] - (closes[i - 1] || closes[i]))
+    );
+    sumTr += tr;
+  }
+  const atr = sumTr / 14 || (closes[n - 1] * 0.02);
+
+  // Consolidation filters:
+  // 1. Exhaustion Trend Magnitude must drop by at least 1.0 * ATR
+  const exhaustionDrop = opens[n - 1 - redStreak] - closes[n - 2];
+  const hasSignificantExhaustion = exhaustionDrop >= atr;
+
+  // 2. Reversal Candle Body must be at least 25% of ATR
+  const bodySize = haClose[n - 1] - haOpen[n - 1];
+  const hasSignificantReversalCandle = bodySize >= atr * 0.25;
+
+  if (isCurrentGreen && hasNoLowerTail && isExhausted && hasSignificantExhaustion && hasSignificantReversalCandle) {
     // Donchian Channel period: 
     // - 5 for weekly/monthly positional setups
     // - 2 for 5m/15m scalping setups (trails the previous candle high/low)
@@ -83,13 +104,14 @@ function haDonchianBullish(data, timeframe) {
       return {
         isMatch: true,
         isShort: false,
-        reason: `HA-Donchian: Bullish reversal confirmed. Heikin-Ashi flipped green with a flat bottom (Open = Low) after ${redStreak} consecutive red candles. Trail using the ${dcPeriod}-period Donchian Channel lower band.`,
+        reason: `HA-Donchian: Bullish reversal confirmed. Heikin-Ashi flipped green with a flat bottom (Open = Low) after a significant drop of ${exhaustionDrop.toFixed(1)} (>= 1 ATR) over ${redStreak} red candles. Trail using the ${dcPeriod}-period Donchian Channel lower band.`,
         entry: entry,
         risk: risk,
         metrics: [
           { name: 'Red Streak', value: `${redStreak} candles` },
+          { name: 'Streak Drop', value: `₹${exhaustionDrop.toFixed(1)}` },
           { name: 'DC Stop Loss', value: `₹${stopLoss.toFixed(1)} (${dcPeriod}-pd)` },
-          { name: 'ATR (14d)', value: `₹${(highs.slice(-14).reduce((a,b,idx) => a + (b - lows[n - 14 + idx]), 0) / 14).toFixed(1)}` }
+          { name: 'ATR (14d)', value: `₹${atr.toFixed(1)}` }
         ]
       };
     }
@@ -126,7 +148,28 @@ function haDonchianBearish(data, timeframe) {
   }
   const isExhausted = greenStreak >= 3;
 
-  if (isCurrentRed && hasNoUpperTail && isExhausted) {
+  // Calculate 14-period ATR
+  let sumTr = 0;
+  for (let i = n - 14; i < n; i++) {
+    const tr = Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - (closes[i - 1] || closes[i])),
+      Math.abs(lows[i] - (closes[i - 1] || closes[i]))
+    );
+    sumTr += tr;
+  }
+  const atr = sumTr / 14 || (closes[n - 1] * 0.02);
+
+  // Consolidation filters:
+  // 1. Exhaustion Trend Magnitude must rise by at least 1.0 * ATR
+  const exhaustionRise = closes[n - 2] - opens[n - 1 - greenStreak];
+  const hasSignificantExhaustion = exhaustionRise >= atr;
+
+  // 2. Reversal Candle Body must be at least 25% of ATR
+  const bodySize = haOpen[n - 1] - haClose[n - 1];
+  const hasSignificantReversalCandle = bodySize >= atr * 0.25;
+
+  if (isCurrentRed && hasNoUpperTail && isExhausted && hasSignificantExhaustion && hasSignificantReversalCandle) {
     // Donchian Channel period: 
     // - 5 for weekly/monthly positional setups
     // - 2 for 5m/15m scalping setups (trails the previous candle high/low)
@@ -146,13 +189,14 @@ function haDonchianBearish(data, timeframe) {
       return {
         isMatch: true,
         isShort: true,
-        reason: `HA-Donchian: Bearish reversal confirmed. Heikin-Ashi flipped red with a flat top (Open = High) after ${greenStreak} consecutive green candles. Trail using the ${dcPeriod}-period Donchian Channel upper band.`,
+        reason: `HA-Donchian: Bearish reversal confirmed. Heikin-Ashi flipped red with a flat top (Open = High) after a significant rise of ${exhaustionRise.toFixed(1)} (>= 1 ATR) over ${greenStreak} green candles. Trail using the ${dcPeriod}-period Donchian Channel upper band.`,
         entry: entry,
         risk: risk,
         metrics: [
           { name: 'Green Streak', value: `${greenStreak} candles` },
+          { name: 'Streak Rise', value: `₹${exhaustionRise.toFixed(1)}` },
           { name: 'DC Stop Loss', value: `₹${stopLoss.toFixed(1)} (${dcPeriod}-pd)` },
-          { name: 'ATR (14d)', value: `₹${(highs.slice(-14).reduce((a,b,idx) => a + (b - lows[n - 14 + idx]), 0) / 14).toFixed(1)}` }
+          { name: 'ATR (14d)', value: `₹${atr.toFixed(1)}` }
         ]
       };
     }
