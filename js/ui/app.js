@@ -2,7 +2,7 @@
 import { AppState } from '../core/state.js?v=6';
 import { fetchOHLCV } from '../core/api.js?v=7';
 import { ema, rsi, adx, macd, cci } from '../core/math.js?v=7';
-import { runBacktest } from '../core/backtest.js?v=3';
+import { runBacktest } from '../core/backtest.js?v=4';
 import { openStrategyTester } from './backtester_ui.js?v=1';
 
 // Strategy Modules (We will create these next)
@@ -14,6 +14,7 @@ import * as longTermStrats from '../strategies/longterm.js?v=6';
 import * as shortStrats from '../strategies/short.js?v=6';
 import * as hmStrats from '../strategies/hm.js?v=1';
 import * as smcStrats from '../strategies/smc.js?v=1';
+import * as haDonchianStrats from '../strategies/ha_donchian.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
 import { scriptLibrary } from '../data/scripts.js';
 
@@ -458,7 +459,7 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
@@ -470,6 +471,7 @@ async function runScan() {
               else if (['vcp_down', 'bear_call'].includes(s)) tempRes = shortStrats.run(s, data);
               else if (s.startsWith('hm_')) tempRes = hmStrats.run(s, data);
               else if (s.startsWith('smc_')) tempRes = smcStrats.run(s, data);
+              else if (s.startsWith('ha_donchian_')) tempRes = haDonchianStrats.run(s, data, AppState.timeframe);
               
               if (tempRes && tempRes.isMatch) {
                 matchedStrategies.push(s);
@@ -493,6 +495,8 @@ async function runScan() {
             else if (['weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
             else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
             else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
+            else if (strategyId.startsWith('smc_')) res = smcStrats.run(strategyId, data);
+            else if (strategyId.startsWith('ha_donchian_')) res = haDonchianStrats.run(strategyId, data, AppState.timeframe);
           }
 
           if (res && res.isMatch) {
@@ -923,7 +927,7 @@ window.triggerBacktest = (ticker, strategyId, btn) => {
   // Run backtest async to not block UI thread
   setTimeout(() => {
     try {
-      const results = runBacktest(strategyId, data, targetPct, slPct);
+      const results = runBacktest(strategyId, data, targetPct, slPct, AppState.timeframe);
       const isProfitable = results.totalReturn >= 0;
       resultsDiv.style.display = "block";
       resultsDiv.innerHTML = `

@@ -6,8 +6,9 @@ import * as longTermStrats from '../strategies/longterm.js?v=6';
 import * as shortStrats from '../strategies/short.js?v=6';
 import * as hmStrats from '../strategies/hm.js?v=1';
 import * as smcStrats from '../strategies/smc.js?v=1';
+import * as haDonchianStrats from '../strategies/ha_donchian.js?v=1';
 
-function runStrategy(strategyId, data) {
+function runStrategy(strategyId, data, timeframe = '1d') {
   if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(strategyId)) return intradayStrats.run(strategyId, data);
   if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) return swingStrats.run(strategyId, data);
   if (['bps', 'strangle', 'iv_crush', 'csp', 'cc', 'wheel'].includes(strategyId)) return optionStrats.run(strategyId, data);
@@ -16,10 +17,11 @@ function runStrategy(strategyId, data) {
   if (['vcp_down', 'bear_call'].includes(strategyId)) return shortStrats.run(strategyId, data);
   if (strategyId.startsWith('hm_')) return hmStrats.run(strategyId, data);
   if (strategyId.startsWith('smc_')) return smcStrats.run(strategyId, data);
+  if (strategyId.startsWith('ha_donchian_')) return haDonchianStrats.run(strategyId, data, timeframe);
   return { isMatch: false };
 }
 
-export function runBacktest(strategyId, data, targetPct, slPct) {
+export function runBacktest(strategyId, data, targetPct, slPct, timeframe = '1d') {
   const n = data.closes.length;
   // Use a minimum bar limit that supports long-term strategies, but start checking ASAP
   const minBars = 50; 
@@ -71,10 +73,10 @@ export function runBacktest(strategyId, data, targetPct, slPct) {
       cmp: currentClose
     };
 
-    const res = runStrategy(strategyId, slicedData);
+    const res = runStrategy(strategyId, slicedData, timeframe);
     if (res && res.isMatch) {
       // For short strategies, the SL is higher than entry and TP is lower than entry
-      const isShort = ['vcp_down', 'bear_call', 'hm_bearish', 'ohl_bearish', 'smc_bearish'].includes(strategyId);
+      const isShort = ['vcp_down', 'bear_call', 'hm_bearish', 'ohl_bearish', 'smc_bearish', 'ha_donchian_bearish'].includes(strategyId);
       
       let slPrice, tpPrice;
       if (isShort) {
