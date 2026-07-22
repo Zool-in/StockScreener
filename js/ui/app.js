@@ -454,8 +454,9 @@ async function runScan() {
     // Use smaller batch size for historical APIs (1W/1M) to prevent 504 Gateway Timeouts
     // as they require multiple paginated requests to the broker.
     const isEOD = AppState.timeframe === '1d';
-    const BATCH_SIZE = isEOD ? 15 : 4;
-    const BATCH_DELAY = isEOD ? 600 : 300;
+    const isMultiTF = strategyId === 'multi_tf';
+    const BATCH_SIZE = isMultiTF ? 4 : (isEOD ? 15 : 4);
+    const BATCH_DELAY = isMultiTF ? 300 : (isEOD ? 600 : 300);
 
     for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
@@ -469,9 +470,25 @@ async function runScan() {
       
       await Promise.all(batch.map(async (ticker) => {
         try {
-          const data = await fetchOHLCV(ticker, AppState.timeframe, signal);
+          let data;
+          let weeklyData = null;
+          let monthlyData = null;
+
+          if (isMultiTF) {
+            const [dData, wData, mData] = await Promise.all([
+              fetchOHLCV(ticker, '1d', signal),
+              fetchOHLCV(ticker, '1wk', signal),
+              fetchOHLCV(ticker, '1mo', signal)
+            ]);
+            data = dData;
+            weeklyData = wData;
+            monthlyData = mData;
+          } else {
+            data = await fetchOHLCV(ticker, AppState.timeframe, signal);
+          }
+
           const n = data.closes.length;
-          const minBars = ['1wk', '1mo'].includes(AppState.timeframe) ? 40 : 200;
+          const minBars = isMultiTF ? 30 : (['1wk', '1mo'].includes(AppState.timeframe) ? 40 : 200);
           if (n < minBars) return; // Need data
 
           const curr = data.closes[n - 1];
@@ -520,6 +537,51 @@ async function runScan() {
             else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
             else if (strategyId.startsWith('smc_')) res = smcStrats.run(strategyId, data);
             else if (strategyId.startsWith('ha_donchian_')) res = haDonchianStrats.run(strategyId, data, AppState.timeframe);
+            else if (strategyId === 'multi_tf') {
+              const dLen = data.closes.length;
+              const wLen = weeklyData.closes.length;
+              const mLen = monthlyData.closes.length;
+
+              if (dLen >= 30 && wLen >= 15 && mLen >= 15) {
+                const dRsi = rsi(data.closes);
+                const dMacd = macd(data.closes);
+
+                const wRsi = rsi(weeklyData.closes);
+                const wHa = calculateHeikinAshi(weeklyData.opens, weeklyData.highs, weeklyData.lows, weeklyData.closes);
+                const wHaClose = wHa.haClose[wHa.haClose.length - 1];
+                const wHaOpen = wHa.haOpen[wHa.haOpen.length - 1];
+
+                const mRsi = rsi(monthlyData.closes);
+                const mHa = calculateHeikinAshi(monthlyData.opens, monthlyData.highs, monthlyData.lows, monthlyData.closes);
+                const mHaClose = mHa.haClose[mHa.haClose.length - 1];
+                const mHaOpen = mHa.haOpen[mHa.haOpen.length - 1];
+
+                const monthlyState = (mHaClose > mHaOpen) && (mRsi > 50) ? 1 : (mHaClose < mHaOpen) && (mRsi < 50) ? -1 : 0;
+                const weeklyState = (wHaClose > wHaOpen) && (wRsi > 50) ? 1 : (wHaClose < wHaOpen) && (wRsi < 50) ? -1 : 0;
+                const dailyState = (dRsi > 50) && (dMacd.hist > 0) ? 1 : (dRsi < 50) && (dMacd.hist < 0) ? -1 : 0;
+
+                let score = 0;
+                if (monthlyState === 1) score++; else if (monthlyState === -1) score--;
+                if (weeklyState === 1) score++; else if (weeklyState === -1) score--;
+                if (dailyState === 1) score++; else if (dailyState === -1) score--;
+
+                res = {
+                  isMatch: true,
+                  multiTf: {
+                    monthly: monthlyState,
+                    weekly: weeklyState,
+                    daily: dailyState,
+                    rsi: dRsi,
+                    macdVal: dMacd.macd,
+                    macdSig: dMacd.signal,
+                    macdHist: dMacd.hist,
+                    score: score
+                  }
+                };
+              } else {
+                res = { isMatch: false };
+              }
+            }
           }
 
           if (res && res.isMatch) {
@@ -636,6 +698,102 @@ window._cachedStockData = {};
 function renderResults(results) {
   if (results.length === 0) {
     DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">No matching setups found for the selected strategy.</div>`;
+    return;
+  }
+
+  if (AppState.strategy === 'multi_tf') {
+    results.sort((a, b) => Math.abs(b.multiTf.score) - Math.abs(a.multiTf.score));
+
+    let html = `
+      <div style="grid-column: 1 / -1; width: 100%;">
+        <div class="table-container" style="margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; width: 100%;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="background: rgba(0,0,0,0.2);">
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted);">Sr No.</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted);">Scrip</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: right;">LCP (₹)</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Monthly (HA+RSI)</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Weekly (HA+RSI)</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Daily (RSI+MACD)</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: right;">Daily RSI</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: right;">Daily MACD Hist</th>
+                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Confluence</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+
+    results.forEach((r, i) => {
+      const mt = r.multiTf;
+      
+      const badgeHtml = (val) => {
+        if (val === 1) return `<span class="badge-status badge-1" style="background: var(--green-dim); color: var(--green); border: 1px solid rgba(36, 180, 126, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: 12px;">+1</span>`;
+        if (val === -1) return `<span class="badge-status badge-0" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: 12px;">-1</span>`;
+        return `<span class="badge-status badge-0" style="background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: 12px;">0</span>`;
+      };
+
+      let confText = 'Neutral';
+      let confBg = 'rgba(255, 255, 255, 0.05)';
+      let confColor = 'var(--text-muted)';
+      let confBorder = 'none';
+
+      if (mt.score === 3) {
+        confText = 'Bullish Confluence';
+        confBg = 'var(--green-dim)';
+        confColor = 'var(--green)';
+        confBorder = '1px solid rgba(36, 180, 126, 0.3)';
+      } else if (mt.score === -3) {
+        confText = 'Bearish Confluence';
+        confBg = 'var(--red-dim)';
+        confColor = 'var(--red)';
+        confBorder = '1px solid rgba(239, 68, 68, 0.3)';
+      } else if (mt.score > 0) {
+        confText = `Bullish Partial (+${mt.score})`;
+        confBg = 'var(--green-dim)';
+        confColor = 'var(--green)';
+        confBorder = '1px solid rgba(36, 180, 126, 0.1)';
+      } else if (mt.score < 0) {
+        confText = `Bearish Partial (${mt.score})`;
+        confBg = 'var(--red-dim)';
+        confColor = 'var(--red)';
+        confBorder = '1px solid rgba(239, 68, 68, 0.1)';
+      }
+
+      const macdSign = mt.macdHist > 0 ? '+' : '';
+      const macdColor = mt.macdHist > 0 ? 'var(--green)' : 'var(--red)';
+
+      html += `
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px;">${i + 1}</td>
+          <td style="padding: 12px 16px; font-weight: 600;">
+            <a href="https://in.tradingview.com/chart/?symbol=NSE%3A${r.ticker}" target="_blank" style="color: inherit; text-decoration: none; border-bottom: 1px dashed var(--border);">
+              ${r.ticker}
+            </a>
+          </td>
+          <td style="padding: 12px 16px; text-align: right; font-family: var(--mono);">${r.curr.toFixed(2)}</td>
+          <td style="padding: 12px 16px; text-align: center;">${badgeHtml(mt.monthly)}</td>
+          <td style="padding: 12px 16px; text-align: center;">${badgeHtml(mt.weekly)}</td>
+          <td style="padding: 12px 16px; text-align: center;">${badgeHtml(mt.daily)}</td>
+          <td style="padding: 12px 16px; text-align: right; font-family: var(--mono); color: ${mt.rsi > 50 ? 'var(--green)' : 'var(--red)'}">${Math.round(mt.rsi)}</td>
+          <td style="padding: 12px 16px; text-align: right; font-family: var(--mono); color: ${macdColor}">${macdSign}${mt.macdHist.toFixed(2)}</td>
+          <td style="padding: 12px 16px; text-align: center;">
+            <span style="display: inline-flex; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; background: ${confBg}; color: ${confColor}; border: ${confBorder};">
+              ${confText}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += `
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    DOM.resultsArea.innerHTML = html;
     return;
   }
 
@@ -988,3 +1146,25 @@ window.triggerBacktest = (ticker, strategyId, btn) => {
 };
 
 document.addEventListener('DOMContentLoaded', init);
+
+function calculateHeikinAshi(opens, highs, lows, closes) {
+  const n = closes.length;
+  const haClose = new Array(n);
+  const haOpen = new Array(n);
+  const haHigh = new Array(n);
+  const haLow = new Array(n);
+
+  haClose[0] = (opens[0] + highs[0] + lows[0] + closes[0]) / 4;
+  haOpen[0] = (opens[0] + closes[0]) / 2;
+  haHigh[0] = highs[0];
+  haLow[0] = lows[0];
+
+  for (let i = 1; i < n; i++) {
+    haClose[i] = (opens[i] + highs[i] + lows[i] + closes[i]) / 4;
+    haOpen[i] = (haOpen[i - 1] + haClose[i - 1]) / 2;
+    haHigh[i] = Math.max(highs[i], haOpen[i], haClose[i]);
+    haLow[i] = Math.min(lows[i], haOpen[i], haClose[i]);
+  }
+
+  return { haOpen, haHigh, haLow, haClose };
+}
