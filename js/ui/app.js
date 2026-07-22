@@ -754,13 +754,43 @@ function renderResults(results) {
     
     tagsHtml = `<div class="tags-container" style="margin-bottom:8px;">${tagsHtml}</div>`;
 
-    // Estimate holding period based on strategy
-    const estHold = (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(AppState.strategy)) ? 'Intraday'
-                  : (['btst'].includes(AppState.strategy)) ? '1-2 Days'
-                  : (['minervini', 'darvas', 'xmomentum'].includes(AppState.strategy)) ? '2-6 Weeks'
-                  : (['crsi', 'vcp_down'].includes(AppState.strategy)) ? '3-10 Days'
-                  : (['weinstein', 'wyckoff'].includes(AppState.strategy)) ? '3-6 Months'
-                  : '1-4 Weeks';
+    // Calculate 14-day ATR for dynamic holding period estimation
+    let estHold = 'Unknown';
+    if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(AppState.strategy)) {
+      estHold = 'Intraday';
+    } else if (['btst'].includes(AppState.strategy)) {
+      estHold = '1-2 Days';
+    } else {
+      // Dynamic ATR calculation
+      let sumTr = 0;
+      let validDays = 0;
+      const nData = r.data.closes.length;
+      const atrPeriod = 14;
+      for(let i = Math.max(1, nData - atrPeriod); i < nData; i++) {
+        const tr = Math.max(
+          r.data.highs[i] - r.data.lows[i],
+          Math.abs(r.data.highs[i] - r.data.closes[i-1]),
+          Math.abs(r.data.lows[i] - r.data.closes[i-1])
+        );
+        sumTr += tr;
+        validDays++;
+      }
+      const atr = validDays > 0 ? (sumTr / validDays) : (r.curr * 0.02); // fallback 2% daily move
+      
+      const targetDistance = Math.abs(r.t1 - r.entry);
+      let days = Math.ceil(targetDistance / atr);
+      if (days < 1) days = 1;
+      
+      if (days <= 5) {
+        estHold = `${days}-${days+2} Days`;
+      } else if (days <= 15) {
+        const wks = Math.ceil(days/5);
+        estHold = `${wks}-${wks+1} Weeks`;
+      } else {
+        const mos = Math.ceil(days/21);
+        estHold = `${mos}-${mos+1} Months`;
+      }
+    }
 
     // Calculate Position Sizing
     let positionHtml = '';
@@ -862,7 +892,7 @@ function renderResults(results) {
             <span style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Stop %</span>
             <input type="number" id="bt-sl-${r.ticker}" value="5" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 4px 6px; font-size: 12px; width: 100%;">
           </div>
-          <button onclick="triggerBacktest('${r.ticker}', '${AppState.strategy === 'all' ? (r.matches && r.matches.length > 0 ? r.matches[0] : 'minervini') : AppState.strategy}')" style="background: var(--accent); color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; align-self: flex-end; height: 26px; transition: opacity 0.2s;">Run Backtest</button>
+          <button onclick="triggerBacktest('${r.ticker}', '${AppState.strategy === 'all' ? (r.matches && r.matches.length > 0 ? r.matches[0] : 'minervini') : AppState.strategy}', this)" style="background: var(--accent); color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; align-self: flex-end; height: 26px; transition: opacity 0.2s;">Run Backtest</button>
         </div>
         <div id="bt-results-${r.ticker}" style="display: none; margin-top: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 11px;"></div>
       </div>
@@ -876,14 +906,13 @@ function renderResults(results) {
   DOM.resultsArea.innerHTML = html;
 }
 
-window.triggerBacktest = (ticker, strategyId) => {
+window.triggerBacktest = (ticker, strategyId, btn) => {
   const data = window._cachedStockData[ticker];
   if (!data) return alert("Data not found for backtest");
   
   const tpInput = document.getElementById(`bt-tp-${ticker}`);
   const slInput = document.getElementById(`bt-sl-${ticker}`);
   const resultsDiv = document.getElementById(`bt-results-${ticker}`);
-  const btn = event.target;
   
   const targetPct = parseFloat(tpInput.value) || 10;
   const slPct = parseFloat(slInput.value) || 5;
