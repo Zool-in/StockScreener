@@ -92,9 +92,8 @@ function haDonchianBullish(data, timeframe) {
     const dcPeriod = ['1wk', '1mo'].includes(timeframe) ? 5 : 
                      ['5m', '15m'].includes(timeframe) ? 2 : 3;
     
-    // Trailing stop loss based on the lowest low of the last N completed candles
-    const completedLows = lows.slice(n - 1 - dcPeriod, n - 1);
-    const stopLoss = Math.min(...completedLows);
+    // Initial stop loss is set at the low of the 1st green reversal candle (index n-1)
+    const stopLoss = lows[n - 1];
     
     // Ensure risk profile is valid
     const entry = cmp || closes[n - 1];
@@ -177,9 +176,8 @@ function haDonchianBearish(data, timeframe) {
     const dcPeriod = ['1wk', '1mo'].includes(timeframe) ? 5 : 
                      ['5m', '15m'].includes(timeframe) ? 2 : 3;
     
-    // Trailing stop loss based on the highest high of the last N completed candles
-    const completedHighs = highs.slice(n - 1 - dcPeriod, n - 1);
-    const stopLoss = Math.max(...completedHighs);
+    // Initial stop loss is set at the high of the 1st red reversal candle (index n-1)
+    const stopLoss = highs[n - 1];
     
     // Ensure risk profile is valid
     const entry = cmp || closes[n - 1];
