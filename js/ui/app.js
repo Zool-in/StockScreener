@@ -542,21 +542,25 @@ async function runScan() {
               const wLen = weeklyData.closes.length;
               const mLen = monthlyData.closes.length;
 
-              if (dLen - lookback >= 30 && wLen - lookback >= 15 && mLen - lookback >= 15) {
-                const dCloses = data.closes.slice(0, dLen - lookback);
-                const dOpens = data.opens.slice(0, dLen - lookback);
-                const dHighs = data.highs.slice(0, dLen - lookback);
-                const dLows = data.lows.slice(0, dLen - lookback);
+              const dOffset = lookback;
+              const wOffset = Math.floor(lookback / 5);
+              const mOffset = Math.floor(lookback / 21);
 
-                const wCloses = weeklyData.closes.slice(0, wLen - lookback);
-                const wOpens = weeklyData.opens.slice(0, wLen - lookback);
-                const wHighs = weeklyData.highs.slice(0, wLen - lookback);
-                const wLows = weeklyData.lows.slice(0, wLen - lookback);
+              if (dLen - dOffset >= 30 && wLen - wOffset >= 15 && mLen - mOffset >= 15) {
+                const dCloses = data.closes.slice(0, dLen - dOffset);
+                const dOpens = data.opens.slice(0, dLen - dOffset);
+                const dHighs = data.highs.slice(0, dLen - dOffset);
+                const dLows = data.lows.slice(0, dLen - dOffset);
 
-                const mCloses = monthlyData.closes.slice(0, mLen - lookback);
-                const mOpens = monthlyData.opens.slice(0, mLen - lookback);
-                const mHighs = monthlyData.highs.slice(0, mLen - lookback);
-                const mLows = monthlyData.lows.slice(0, mLen - lookback);
+                const wCloses = weeklyData.closes.slice(0, wLen - wOffset);
+                const wOpens = weeklyData.opens.slice(0, wLen - wOffset);
+                const wHighs = weeklyData.highs.slice(0, wLen - wOffset);
+                const wLows = weeklyData.lows.slice(0, wLen - wOffset);
+
+                const mCloses = monthlyData.closes.slice(0, mLen - mOffset);
+                const mOpens = monthlyData.opens.slice(0, mLen - mOffset);
+                const mHighs = monthlyData.highs.slice(0, mLen - mOffset);
+                const mLows = monthlyData.lows.slice(0, mLen - mOffset);
 
                 const dRsi = rsi(dCloses);
                 const dMacd = macd(dCloses);
