@@ -813,12 +813,19 @@ function renderResults(results) {
 
       const getBadgeInfo = (mtData) => {
         const { monthly, weekly, daily, score } = mtData;
+        // Bullish Setups
         if (score === 3) return { label: 'Full Confluence (+3)', bg: 'var(--green-dim)', color: 'var(--green)', border: '1px solid rgba(36, 180, 126, 0.4)', title: 'Full Bullish Confluence (+3)', desc: 'All 3 timeframes (Monthly, Weekly, Daily) are aligned in a strong green uptrend. Highest probability momentum continuation setup.', action: 'Buy Breakouts & Ride Trend' };
-        if (score === -3) return { label: 'Full Bearish (-3)', bg: 'var(--red-dim)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.4)', title: 'Full Bearish Confluence (-3)', desc: 'All 3 timeframes (Monthly, Weekly, Daily) are aligned in a downward trend. High-probability shorting / put buying setup.', action: 'Short / Buy Puts / Avoid Longs' };
         if (monthly === 1 && weekly === 1 && daily <= 0) return { label: 'Buy the Dip (+2)', bg: 'rgba(36, 180, 126, 0.15)', color: '#34d399', border: '1px dashed rgba(52, 211, 153, 0.5)', title: 'Buy the Dip Setup (+2)', desc: 'Macro (Monthly & Weekly) trends are strongly Bullish (+1), while Daily is temporarily cooling off in a pullback.', action: 'High-Reward Buy Dip at Support' };
         if (weekly === 1 && daily === 1 && monthly <= 0) return { label: 'Early Reversal (+2)', bg: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', title: 'Early Trend Reversal (+2)', desc: 'Weekly and Daily momentum turned Bullish (+1), while Monthly is still turning around from base.', action: 'Early Entry Before Crowd' };
         if (daily === 1 && monthly <= 0 && weekly <= 0) return { label: 'Fresh Daily Spark (+1)', bg: 'var(--green-dim)', color: 'var(--green)', border: '1px solid rgba(36, 180, 126, 0.2)', title: 'Fresh Daily Spark (+1)', desc: 'Daily timeframe broke out today on volume with RSI > 50 & MACD > 0, while higher timeframes remain neutral.', action: 'Intraday / Quick Momentum Swing' };
-        if (score < 0) return { label: `Bearish Breakdown (${score})`, bg: 'var(--red-dim)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', title: `Bearish Breakdown (${score})`, desc: `Negative momentum across timeframes indicating downward pressure.`, action: 'Short or Wait for Support' };
+
+        // Bearish Setups (Symmetrical)
+        if (score === -3) return { label: 'Full Bearish (-3)', bg: 'var(--red-dim)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.4)', title: 'Full Bearish Confluence (-3)', desc: 'All 3 timeframes (Monthly, Weekly, Daily) are aligned in a downward trend. High-probability shorting / put buying setup.', action: 'Short / Buy Puts / Avoid Longs' };
+        if (monthly === -1 && weekly === -1 && daily >= 0) return { label: 'Sell the Rally (-2)', bg: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px dashed rgba(248, 113, 113, 0.5)', title: 'Sell the Rally Setup (-2)', desc: 'Macro (Monthly & Weekly) trends are strongly Bearish (-1), while Daily is experiencing a temporary bounce/rally.', action: 'High-Reward Short / Bear Call Spread at Resistance' };
+        if (weekly === -1 && daily === -1 && monthly >= 0) return { label: 'Early Breakdown (-2)', bg: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.4)', title: 'Early Bearish Breakdown (-2)', desc: 'Weekly and Daily momentum turned Bearish (-1), while Monthly is starting to break down.', action: 'Early Short / Puts Before Crowd' };
+        if (daily === -1 && monthly >= 0 && weekly >= 0) return { label: 'Fresh Daily Drop (-1)', bg: 'var(--red-dim)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', title: 'Fresh Daily Drop (-1)', desc: 'Daily timeframe broke down today on volume with RSI < 50 & MACD < 0, while higher timeframes remain neutral.', action: 'Intraday / Quick Short Swing' };
+
+        // Neutral / Consolidation
         return { label: 'Consolidation (0)', bg: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', border: '1px solid rgba(255, 255, 255, 0.1)', title: 'Consolidation / Neutral (0)', desc: 'No clear trend direction. Timeframes are mixed or flat.', action: 'Wait for Breakout' };
       };
 
