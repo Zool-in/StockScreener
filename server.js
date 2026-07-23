@@ -51,7 +51,7 @@ const MIME = {
 };
 
 // ─── Tiny promise wrapper around https.get ────────────────────────────────
-function httpsGet(urlStr, headers = {}, timeoutMs = 4000) {
+function httpsGet(urlStr, headers = {}, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
     const u = new URL(urlStr);
     const req = https.request({
@@ -92,7 +92,7 @@ async function getSession(force = false) {
   // 1) Prime a cookie from a normal Yahoo page.
   const home = await httpsGet('https://finance.yahoo.com/', {
     'Accept': 'text/html,application/xhtml+xml',
-  }, 3500);
+  });
   const cookie = collectCookies(home.headers['set-cookie']);
   if (!cookie) throw new Error('Could not obtain Yahoo session cookie');
 
@@ -100,7 +100,6 @@ async function getSession(force = false) {
   const crumbRes = await httpsGet(
     'https://query1.finance.yahoo.com/v1/test/getcrumb',
     { 'Cookie': cookie, 'Accept': 'text/plain' },
-    3500
   );
   const crumb = (crumbRes.body || '').trim();
   if (crumbRes.status !== 200 || !crumb || /\s/.test(crumb) || crumb.length > 40) {
@@ -121,16 +120,20 @@ async function fetchDirect(symbol, interval, range) {
     + `&crumb=${encodeURIComponent(crumb)}`;
 
   let s = await getSession();
-  let up = await httpsGet(buildUrl(s.crumb), { 'Cookie': s.cookie }, 3500);
+  let up = await httpsGet(buildUrl(s.crumb), { 'Cookie': s.cookie });
   if (up.status === 401 || up.status === 429) {
     s = await getSession(true); // refresh once
-    up = await httpsGet(buildUrl(s.crumb), { 'Cookie': s.cookie }, 3500);
+    up = await httpsGet(buildUrl(s.crumb), { 'Cookie': s.cookie });
   }
   if (up.status !== 200) throw new Error(`Yahoo returned ${up.status}`);
   return up.body;
 }
 
 // ─── Fallback: public CORS proxies ────────────────────────────────────────
+// These fetch Yahoo from THEIR OWN server IPs, so they work even when this
+// machine's IP is rate-limited/blocked by Yahoo. They're individually flaky
+// (Yahoo throttles them too → intermittent 5xx/timeouts) and respond best to a
+// plain curl-style User-Agent, so we present that and retry patiently.
 const PROXY_UA = 'curl/8.4.0';
 
 function proxyUrls(yf) {
@@ -147,10 +150,11 @@ async function fetchViaProxy(symbol, interval, range) {
   const urls = proxyUrls(yf);
 
   let lastErr = 'unknown';
-  for (let round = 0; round < 1; round++) {
+  // Several rounds — the proxies succeed intermittently, so persistence pays.
+  for (let round = 0; round < 4; round++) {
     for (const u of urls) {
       try {
-        const r = await httpsGet(u, { 'User-Agent': PROXY_UA }, 3500);
+        const r = await httpsGet(u, { 'User-Agent': PROXY_UA }, 9000);
         if (r.status === 200 && r.body.includes('"chart"')) return r.body;
         lastErr = `${new URL(u).host} → ${r.status}`;
       } catch (e) {

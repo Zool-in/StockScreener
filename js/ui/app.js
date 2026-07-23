@@ -438,16 +438,7 @@ async function runScan() {
     if (customList.length > 0) AppState.setTickers(customList);
   }
   
-  if (AppState.tickers.length === 0) {
-    AppState.setTickers([
-      "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "BHARTIARTL", "ITC", "SBIN", "LTIM", "LT",
-      "HINDUNILVR", "AXISBANK", "KOTAKBANK", "BAJFINANCE", "M&M", "SUNPHARMA", "TATAMOTORS", "NTPC",
-      "TITAN", "POWERGRID", "ADANIENT", "ULTRACEMCO", "ASIANPAINT", "COALINDIA", "BAJAJ-AUTO", "TATASTEEL",
-      "HCLTECH", "JSWSTEEL", "ONGC", "TECHM", "GRASIM", "HEROMOTOCO", "NESTLEIND", "EICHERMOT", "DRREDDY",
-      "WIPRO", "CIPLA", "SBILIFE", "BPCL", "BRITANNIA", "HDFCLIFE", "HINDALCO", "TATACONSUM", "BAJAJFINSV",
-      "APOLLOHOSP", "SHRIRAMFIN", "BEL", "TRENT"
-    ]);
-  }
+  if (AppState.tickers.length === 0) return;
   
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.style.display = 'none';
@@ -470,10 +461,16 @@ async function runScan() {
     // as they require multiple paginated requests to the broker.
     const isEOD = AppState.timeframe === '1d';
     const isMultiTF = strategyId === 'multi_tf';
-    let completedCount = 0;
+    const BATCH_SIZE = isMultiTF ? 2 : (isEOD ? 15 : 4);
+    const BATCH_DELAY = isMultiTF ? 1000 : (isEOD ? 600 : 300);
 
     for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
+
+      const pct = Math.round((i / AppState.tickers.length) * 100);
+      DOM.progressText.innerText = `Scanning (${i}/${AppState.tickers.length}) stocks...`;
+      DOM.progressPercent.innerText = `${pct}%`;
+      DOM.progressBar.style.width = `${pct}%`;
 
       const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
       
@@ -497,7 +494,7 @@ async function runScan() {
           }
 
           const n = data.closes.length;
-          const minBars = isMultiTF ? 15 : (['15m', '1h'].includes(AppState.timeframe) ? 20 : (['1wk', '1mo'].includes(AppState.timeframe) ? 30 : 50));
+          const minBars = isMultiTF ? 30 : (['1wk', '1mo'].includes(AppState.timeframe) ? 40 : 200);
           if (n < minBars) return; // Need data
 
           const curr = data.closes[n - 1];
@@ -552,25 +549,21 @@ async function runScan() {
               const wLen = weeklyData.closes.length;
               const mLen = monthlyData.closes.length;
 
-              const dOffset = lookback;
-              const wOffset = Math.floor(lookback / 5);
-              const mOffset = Math.floor(lookback / 21);
+              if (dLen - lookback >= 30 && wLen - lookback >= 15 && mLen - lookback >= 15) {
+                const dCloses = data.closes.slice(0, dLen - lookback);
+                const dOpens = data.opens.slice(0, dLen - lookback);
+                const dHighs = data.highs.slice(0, dLen - lookback);
+                const dLows = data.lows.slice(0, dLen - lookback);
 
-              if (dLen - dOffset >= 20 && wLen - wOffset >= 5 && mLen - mOffset >= 3) {
-                const dCloses = data.closes.slice(0, dLen - dOffset);
-                const dOpens = data.opens.slice(0, dLen - dOffset);
-                const dHighs = data.highs.slice(0, dLen - dOffset);
-                const dLows = data.lows.slice(0, dLen - dOffset);
+                const wCloses = weeklyData.closes.slice(0, wLen - lookback);
+                const wOpens = weeklyData.opens.slice(0, wLen - lookback);
+                const wHighs = weeklyData.highs.slice(0, wLen - lookback);
+                const wLows = weeklyData.lows.slice(0, wLen - lookback);
 
-                const wCloses = weeklyData.closes.slice(0, wLen - wOffset);
-                const wOpens = weeklyData.opens.slice(0, wLen - wOffset);
-                const wHighs = weeklyData.highs.slice(0, wLen - wOffset);
-                const wLows = weeklyData.lows.slice(0, wLen - wOffset);
-
-                const mCloses = monthlyData.closes.slice(0, mLen - mOffset);
-                const mOpens = monthlyData.opens.slice(0, mLen - mOffset);
-                const mHighs = monthlyData.highs.slice(0, mLen - mOffset);
-                const mLows = monthlyData.lows.slice(0, mLen - mOffset);
+                const mCloses = monthlyData.closes.slice(0, mLen - lookback);
+                const mOpens = monthlyData.opens.slice(0, mLen - lookback);
+                const mHighs = monthlyData.highs.slice(0, mLen - lookback);
+                const mLows = monthlyData.lows.slice(0, mLen - lookback);
 
                 const dRsi = rsi(dCloses);
                 const dMacd = macd(dCloses);
@@ -659,12 +652,6 @@ async function runScan() {
           }
         } catch (e) {
           console.error(`Skipping ${ticker}: `, e);
-        } finally {
-          completedCount++;
-          const pct = Math.round((completedCount / AppState.tickers.length) * 100);
-          DOM.progressText.innerText = `Scanning (${completedCount}/${AppState.tickers.length}) stocks...`;
-          DOM.progressPercent.innerText = `${pct}%`;
-          DOM.progressBar.style.width = `${pct}%`;
         }
       }));
       // Throttle between batches to avoid Hostinger 50req/s DDoS limit
@@ -675,8 +662,6 @@ async function runScan() {
   try {
     const allSymbols = results.map(r => r.ticker);
     if (allSymbols.length > 0) {
-      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0; font-size: 14px;">Fetching Live Prices...</div>`;
-      
       const BATCH_Q = 100;
       for (let i = 0; i < allSymbols.length; i += BATCH_Q) {
          const batchSyms = allSymbols.slice(i, i + BATCH_Q).join(',');
@@ -1063,7 +1048,6 @@ function renderResults(results) {
                 </svg>
               </a>
             </div>
-            <div class="scard-name">${r.data.meta?.shortName && r.data.meta.shortName.toUpperCase() !== r.ticker.toUpperCase() ? r.data.meta.shortName : ''}</div>
           </div>
           <span class="score-badge ${score >= 75 ? 'score-s' : 'score-m'}">${score}/100</span>
         </div>
