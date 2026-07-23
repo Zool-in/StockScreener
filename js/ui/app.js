@@ -438,7 +438,16 @@ async function runScan() {
     if (customList.length > 0) AppState.setTickers(customList);
   }
   
-  if (AppState.tickers.length === 0) return;
+  if (AppState.tickers.length === 0) {
+    AppState.setTickers([
+      "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "BHARTIARTL", "ITC", "SBIN", "LTIM", "LT",
+      "HINDUNILVR", "AXISBANK", "KOTAKBANK", "BAJFINANCE", "M&M", "SUNPHARMA", "TATAMOTORS", "NTPC",
+      "TITAN", "POWERGRID", "ADANIENT", "ULTRACEMCO", "ASIANPAINT", "COALINDIA", "BAJAJ-AUTO", "TATASTEEL",
+      "HCLTECH", "JSWSTEEL", "ONGC", "TECHM", "GRASIM", "HEROMOTOCO", "NESTLEIND", "EICHERMOT", "DRREDDY",
+      "WIPRO", "CIPLA", "SBILIFE", "BPCL", "BRITANNIA", "HDFCLIFE", "HINDALCO", "TATACONSUM", "BAJAJFINSV",
+      "APOLLOHOSP", "SHRIRAMFIN", "BEL", "TRENT"
+    ]);
+  }
   
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.style.display = 'none';

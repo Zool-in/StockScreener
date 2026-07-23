@@ -63,6 +63,10 @@ function istDay() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 }
 
+const FALLBACK_NIFTY50 = [
+  "ADANIENT", "ADANIPORTS", "APOLLOHOSP", "ASIANPAINT", "AXISBANK", "BAJAJ-AUTO", "BAJFINANCE", "BAJAJFINSV", "BEL", "BPCL", "BRITANNIA", "CIPLA", "COALINDIA", "DRREDDY", "EICHERMOT", "GRASIM", "HCLTECH", "HDFCBANK", "HDFCLIFE", "HEROMOTOCO", "HINDALCO", "HINDUNILVR", "ICICIBANK", "ITC", "INDUSINDBK", "INFY", "JSWSTEEL", "KOTAKBANK", "LT", "LTIM", "M&M", "MARUTI", "NESTLEIND", "NTPC", "ONGC", "POWERGRID", "RELIANCE", "SBILIFE", "SBIN", "SUNPHARMA", "TATACONSUM", "TATAMOTORS", "TATASTEEL", "TCS", "TECHM", "TITAN", "TRENT", "ULTRACEMCO", "WIPRO"
+];
+
 // Fetch (and day-cache) an index constituent CSV, return its Symbol column.
 async function fetchIndex(key) {
   const base = INDEX_FILES[key];
@@ -75,12 +79,21 @@ async function fetchIndex(key) {
   } catch (_) {}
 
   if (!csv) {
-    const r = await get(`${BASE}${base}.csv`);
-    if (r.status !== 200 || !/Symbol/i.test(r.body)) {
-      throw new Error(`Could not load ${key} list (${r.status})`);
-    }
-    csv = r.body;
-    try { fs.mkdirSync(CACHE_DIR, { recursive: true }); fs.writeFileSync(fp, csv); } catch (_) {}
+    try {
+      const r = await get(`${BASE}${base}.csv`);
+      if (r.status === 200 && /Symbol/i.test(r.body)) {
+        csv = r.body;
+        try { fs.mkdirSync(CACHE_DIR, { recursive: true }); fs.writeFileSync(fp, csv); } catch (_) {}
+      }
+    } catch (_) {}
+  }
+
+  if (!csv) {
+    try {
+      const all = bhavcopy.listSymbols();
+      if (all && all.length > 0) return all.slice(0, 50);
+    } catch (_) {}
+    return FALLBACK_NIFTY50;
   }
 
   // Header: Company Name,Industry,Symbol,Series,ISIN Code
@@ -92,7 +105,7 @@ async function fetchIndex(key) {
     const sym = (cols[2] || '').trim();
     if (sym) out.push(sym);
   }
-  return out;
+  return out.length > 0 ? out : FALLBACK_NIFTY50;
 }
 
 // index: 'nifty50' | 'nifty100' | 'nifty200' | 'nifty500' | 'niftytotal' | 'etf' | 'fno' | 'all' | 'bse_exclusive'
