@@ -34,6 +34,7 @@ const bhavcopy = require('./bhavcopy');
 const symbols = require('./symbols');
 const livequote = require('./livequote');
 const lots = require('./lots');
+const db = require('./db');
 
 const PORT = process.env.PORT || 5173;
 const ROOT = __dirname;
@@ -513,9 +514,10 @@ server.on('error', err => {
   process.exit(1);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`\n  NSE Swing Screener running at  http://localhost:${PORT}\n`);
   console.log('  Press Ctrl+C to stop.\n');
+  await db.initDb();
 });
 
 // ─── API: Options Chain ──────────────────────────────────────────────────────────
