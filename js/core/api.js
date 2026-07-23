@@ -1,11 +1,19 @@
 // ─── Unified API Data Fetching ──────────────────────────────────────────────
 const API_BASE = '/api/chart';
+const memoryCache = new Map();
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 Minutes TTL
 
 export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   // Support appending .BO for BSE stocks if not NSE
   let sym = ticker.trim().toUpperCase();
   if (!sym.endsWith('.NS') && !sym.endsWith('.BO')) {
     sym += '.NS'; // Default to NSE
+  }
+
+  const cacheKey = `${sym}_${timeframe}`;
+  const cached = memoryCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return cached.data;
   }
 
   let interval = '1d', range = '1y';
@@ -67,5 +75,7 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   const cmp = closes[closes.length - 1];
   const meta = result.meta;
 
-  return { ticker, sym, closes, highs, lows, opens, volumes, ts, meta, cmp, ohlcv };
+  const parsed = { ticker, sym, closes, highs, lows, opens, volumes, ts, meta, cmp, ohlcv };
+  memoryCache.set(cacheKey, { timestamp: Date.now(), data: parsed });
+  return parsed;
 }

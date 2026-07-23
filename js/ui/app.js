@@ -469,8 +469,8 @@ async function runScan() {
     // as they require multiple paginated requests to the broker.
     const isEOD = AppState.timeframe === '1d';
     const isMultiTF = strategyId === 'multi_tf';
-    const BATCH_SIZE = isMultiTF ? 2 : (isEOD ? 15 : 4);
-    const BATCH_DELAY = isMultiTF ? 1000 : (isEOD ? 600 : 300);
+    const BATCH_SIZE = isMultiTF ? 3 : (isEOD ? 25 : 6);
+    const BATCH_DELAY = isMultiTF ? 600 : (isEOD ? 150 : 200);
 
     for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
