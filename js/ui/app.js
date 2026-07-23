@@ -496,7 +496,7 @@ async function runScan() {
           }
 
           const n = data.closes.length;
-          const minBars = isMultiTF ? 30 : (['1wk', '1mo'].includes(AppState.timeframe) ? 40 : 200);
+          const minBars = isMultiTF ? 15 : (['15m', '1h'].includes(AppState.timeframe) ? 20 : (['1wk', '1mo'].includes(AppState.timeframe) ? 30 : 50));
           if (n < minBars) return; // Need data
 
           const curr = data.closes[n - 1];
@@ -555,7 +555,7 @@ async function runScan() {
               const wOffset = Math.floor(lookback / 5);
               const mOffset = Math.floor(lookback / 21);
 
-              if (dLen - dOffset >= 30 && wLen - wOffset >= 15 && mLen - mOffset >= 15) {
+              if (dLen - dOffset >= 20 && wLen - wOffset >= 5 && mLen - mOffset >= 3) {
                 const dCloses = data.closes.slice(0, dLen - dOffset);
                 const dOpens = data.opens.slice(0, dLen - dOffset);
                 const dHighs = data.highs.slice(0, dLen - dOffset);
