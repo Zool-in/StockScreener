@@ -528,8 +528,8 @@ server.on('error', err => {
   process.exit(1);
 });
 
-server.listen(PORT, () => {
-  console.log(`\n  NSE Swing Screener running at  http://localhost:${PORT}\n`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n  NSE Swing Screener running at  http://0.0.0.0:${PORT}\n`);
   console.log('  Press Ctrl+C to stop.\n');
   db.initDb().catch(err => console.error('[MySQL] Non-critical init error:', err.message));
 });
