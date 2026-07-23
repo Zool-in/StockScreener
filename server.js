@@ -528,10 +528,10 @@ server.on('error', err => {
   process.exit(1);
 });
 
-server.listen(PORT, async () => {
+server.listen(PORT, () => {
   console.log(`\n  NSE Swing Screener running at  http://localhost:${PORT}\n`);
   console.log('  Press Ctrl+C to stop.\n');
-  await db.initDb();
+  db.initDb().catch(err => console.error('[MySQL] Non-critical init error:', err.message));
 });
 
 // ─── API: Options Chain ──────────────────────────────────────────────────────────

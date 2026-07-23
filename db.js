@@ -37,64 +37,89 @@ function initPool() {
   }
 }
 
+async function createSchema(conn) {
+  await conn.query(`
+    CREATE TABLE IF NOT EXISTS stock_screeners (
+      ticker VARCHAR(30) PRIMARY KEY,
+      timeframe VARCHAR(10) DEFAULT '1d',
+      cmp DECIMAL(10,2),
+      chg_pct DECIMAL(5,2),
+      rsi14 DECIMAL(5,2),
+      adx14 DECIMAL(5,2),
+      vr DECIMAL(5,2),
+      ema20 DECIMAL(10,2),
+      ema50 DECIMAL(10,2),
+      ema200 DECIMAL(10,2),
+      macd_val DECIMAL(10,2),
+      macd_hist DECIMAL(10,2),
+      cci_val DECIMAL(10,2),
+      
+      -- Strategy match flags
+      ohl_bullish TINYINT DEFAULT 0,
+      ohl_bearish TINYINT DEFAULT 0,
+      minervini TINYINT DEFAULT 0,
+      darvas TINYINT DEFAULT 0,
+      xmomentum TINYINT DEFAULT 0,
+      rs TINYINT DEFAULT 0,
+      vcp_down TINYINT DEFAULT 0,
+      smc_bullish TINYINT DEFAULT 0,
+      smc_bearish TINYINT DEFAULT 0,
+      ha_donchian_bullish TINYINT DEFAULT 0,
+      ha_donchian_bearish TINYINT DEFAULT 0,
+      hm_bullish TINYINT DEFAULT 0,
+      hm_bearish TINYINT DEFAULT 0,
+      hm_bottom TINYINT DEFAULT 0,
+      hm_top TINYINT DEFAULT 0,
+      btst TINYINT DEFAULT 0,
+      
+      meta_json JSON,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+      INDEX idx_ohl_bullish (ohl_bullish),
+      INDEX idx_ohl_bearish (ohl_bearish),
+      INDEX idx_minervini (minervini),
+      INDEX idx_smc_bullish (smc_bullish),
+      INDEX idx_smc_bearish (smc_bearish)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+}
+
 async function initDb() {
   if (!pool) initPool();
   if (!pool) return false;
 
+  const host = process.env.DB_HOST || process.env.MYSQL_HOST || 'localhost';
+  const user = process.env.DB_USER || process.env.MYSQL_USER;
+  const password = process.env.DB_PASS || process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD;
+  const database = process.env.DB_NAME || process.env.MYSQL_DATABASE;
+  const port = parseInt(process.env.DB_PORT || process.env.MYSQL_PORT || '3306');
+
   try {
     const conn = await pool.getConnection();
     console.log('[MySQL] Connected successfully to Hostinger MySQL Database!');
-
-    await conn.query(`
-      CREATE TABLE IF NOT EXISTS stock_screeners (
-        ticker VARCHAR(30) PRIMARY KEY,
-        timeframe VARCHAR(10) DEFAULT '1d',
-        cmp DECIMAL(10,2),
-        chg_pct DECIMAL(5,2),
-        rsi14 DECIMAL(5,2),
-        adx14 DECIMAL(5,2),
-        vr DECIMAL(5,2),
-        ema20 DECIMAL(10,2),
-        ema50 DECIMAL(10,2),
-        ema200 DECIMAL(10,2),
-        macd_val DECIMAL(10,2),
-        macd_hist DECIMAL(10,2),
-        cci_val DECIMAL(10,2),
-        
-        -- Strategy match flags
-        ohl_bullish TINYINT DEFAULT 0,
-        ohl_bearish TINYINT DEFAULT 0,
-        minervini TINYINT DEFAULT 0,
-        darvas TINYINT DEFAULT 0,
-        xmomentum TINYINT DEFAULT 0,
-        rs TINYINT DEFAULT 0,
-        vcp_down TINYINT DEFAULT 0,
-        smc_bullish TINYINT DEFAULT 0,
-        smc_bearish TINYINT DEFAULT 0,
-        ha_donchian_bullish TINYINT DEFAULT 0,
-        ha_donchian_bearish TINYINT DEFAULT 0,
-        hm_bullish TINYINT DEFAULT 0,
-        hm_bearish TINYINT DEFAULT 0,
-        hm_bottom TINYINT DEFAULT 0,
-        hm_top TINYINT DEFAULT 0,
-        btst TINYINT DEFAULT 0,
-        
-        meta_json JSON,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-        INDEX idx_ohl_bullish (ohl_bullish),
-        INDEX idx_ohl_bearish (ohl_bearish),
-        INDEX idx_minervini (minervini),
-        INDEX idx_smc_bullish (smc_bullish),
-        INDEX idx_smc_bearish (smc_bearish)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    `);
-
+    await createSchema(conn);
     conn.release();
-    console.log('[MySQL] Schema verified & ready.');
     return true;
   } catch (err) {
-    console.error('[MySQL] Connection or Schema creation error:', err.message);
+    console.warn(`[MySQL] Connection to ${host} failed: ${err.message}. Trying localhost fallback...`);
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      try {
+        pool = mysql.createPool({
+          host: 'localhost',
+          user, password, database, port,
+          waitForConnections: true, connectionLimit: 10, queueLimit: 0, connectTimeout: 5000
+        });
+        const conn = await pool.getConnection();
+        console.log('[MySQL] Connected successfully via localhost fallback!');
+        await createSchema(conn);
+        conn.release();
+        return true;
+      } catch (err2) {
+        console.error('[MySQL] Localhost fallback also failed:', err2.message);
+      }
+    }
+    console.log('[MySQL] Continuing in Memory/Live API mode (server will not crash).');
+    pool = null;
     return false;
   }
 }
