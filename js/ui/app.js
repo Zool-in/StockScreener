@@ -502,8 +502,8 @@ async function runScan() {
           }
 
           const n = data.closes.length;
-          const minBars = isMultiTF ? 30 : (['1wk', '1mo'].includes(AppState.timeframe) ? 40 : 200);
-          if (n < minBars) return; // Need data
+          const minBars = 30;
+          if (n < minBars) return; // Need minimum data
 
           const curr = data.closes[n - 1];
           const prev = data.closes[n - 2];
@@ -532,12 +532,9 @@ async function runScan() {
                 if (tempRes.reason) combinedReasons.push(`<b>${s.toUpperCase()}:</b> ${tempRes.reason}`);
               }
             }
-            if (matchedStrategies.length > 0) {
-              const finalReason = combinedReasons.length > 0 ? combinedReasons.join('<br>') : 'Strategy Match';
-              res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
-            } else {
-              res = { isMatch: false };
-            }
+            
+            const finalReason = combinedReasons.length > 0 ? combinedReasons.join('<br>') : 'Raw Technical Scan (Score Rank)';
+            res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
             if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
             else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
