@@ -1,10 +1,17 @@
 // ─── Hostinger MySQL Database Module ──────────────────────────────────────────
-const mysql = require('mysql2/promise');
+let mysql = null;
+try {
+  mysql = require('mysql2/promise');
+} catch (e) {
+  console.log('[MySQL] mysql2 package not available. Running in Live Memory/API mode.');
+}
 
 let pool = null;
 let isConfigured = false;
 
 function initPool() {
+  if (!mysql) return null;
+
   const host = process.env.DB_HOST || process.env.MYSQL_HOST;
   const user = process.env.DB_USER || process.env.MYSQL_USER;
   const password = process.env.DB_PASS || process.env.DB_PASSWORD || process.env.MYSQL_PASSWORD;
