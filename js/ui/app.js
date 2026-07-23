@@ -196,7 +196,7 @@ const STRATEGY_INFO = {
   multi_tf: {
     name: 'Multi-Timeframe Heikin-Ashi Confluence',
     desc: 'Analyzes Higher Timeframe alignment across Monthly, Weekly, and Daily charts using Heikin-Ashi candles and RSI + MACD momentum. When all three timeframes agree (+1 +1 +1 or -1 -1 -1), it indicates an extremely high-probability institutional trend confluence.',
-    example: '<strong>Bullish Confluence (+3):</strong> Monthly Green HA + Weekly Green HA + Daily RSI > 50 & MACD > 0.<br><strong>Bearish Confluence (-3):</strong> Monthly Red HA + Weekly Red HA + Daily RSI < 50 & MACD < 0.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., BAJAJ-AUTO has a green Monthly HA candle (+1), green Weekly HA candle (+1), and Daily RSI > 70 with positive MACD (+1). This 3-tier confluence filters out false counter-trend signals.</span>'
+    example: '<img src="/assets/multi_tf_diagram.png?v=1" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Bullish Confluence (+3):</strong> Monthly Green HA + Weekly Green HA + Daily RSI > 50 & MACD > 0.<br><strong>Bearish Confluence (-3):</strong> Monthly Red HA + Weekly Red HA + Daily RSI < 50 & MACD < 0.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., BAJAJ-AUTO has a green Monthly HA candle (+1), green Weekly HA candle (+1), and Daily RSI > 70 with positive MACD (+1). This 3-tier confluence filters out false counter-trend signals.</span>'
   }
 };
 
