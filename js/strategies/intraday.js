@@ -114,80 +114,68 @@ function smcIntradayRetest(data) {
 function ohlBullish(data) {
   const { closes, highs, lows, opens, volumes, cmp } = data;
   const n = closes.length;
-  if (n < 20) return { isMatch: false };
+  if (n < 5) return { isMatch: false };
   
   const currentOpen = opens[n-1];
   const currentLow = lows[n-1];
   const currentHigh = highs[n-1];
   const currentClose = closes[n-1];
   
-  // Strict Open = Low (Allowing 0.1% buffer for data noise)
+  // Open = Low (Allowing 0.15% buffer for data noise)
   const diff = (currentOpen - currentLow) / currentOpen;
-  const isOpenLow = diff <= 0.001; // 0.1% max deviation
+  const isOpenLow = diff <= 0.0015; // 0.15% max deviation
   if (!isOpenLow) return { isMatch: false };
   
-  // VSA Filter: Volume must be surging
   const currentVol = volumes[n-1];
-  const avgVol = volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20;
-  const isVolSurge = currentVol > avgVol * 1.2;
+  const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
+  const volSurgeRatio = (currentVol / avgVol).toFixed(1);
   
-  // Candle Anatomy: Strong close (top 40%)
-  const { closePercent, isGreen } = getCandleAnatomy(currentHigh, currentLow, currentClose, currentOpen);
-  const isStrongClose = isGreen && closePercent >= 0.6;
+  const { closePercent } = getCandleAnatomy(currentHigh, currentLow, currentClose, currentOpen);
   
-  if (isVolSurge && isStrongClose) {
-    return {
-      isMatch: true,
-      reason: 'Open = Low Setup: The stock opened at its lowest point and surged on high volume with a strong bullish close. Smart money accumulation from the open.',
-      entry: currentHigh,
-      risk: cmp * 0.01,
-      metrics: [
-        { name: 'O=L Diff', value: `${(diff*100).toFixed(2)}%` },
-        { name: 'Vol Surge', value: `${(currentVol/avgVol).toFixed(1)}x` },
-        { name: 'Candle Close', value: `Top ${(100 - closePercent*100).toFixed(0)}%` }
-      ]
-    };
-  }
-  return { isMatch: false };
+  return {
+    isMatch: true,
+    reason: `Open = Low Setup: Stock opened at low (diff ${(diff * 100).toFixed(2)}%). Buyers defended open level.`,
+    entry: currentHigh,
+    risk: cmp * 0.01,
+    metrics: [
+      { name: 'O=L Diff', value: `${(diff*100).toFixed(2)}%` },
+      { name: 'Vol Surge', value: `${volSurgeRatio}x` },
+      { name: 'Candle Close', value: `Top ${(closePercent*100).toFixed(0)}%` }
+    ]
+  };
 }
 
 function ohlBearish(data) {
   const { closes, highs, lows, opens, volumes, cmp } = data;
   const n = closes.length;
-  if (n < 20) return { isMatch: false };
+  if (n < 5) return { isMatch: false };
   
   const currentOpen = opens[n-1];
   const currentLow = lows[n-1];
   const currentHigh = highs[n-1];
   const currentClose = closes[n-1];
   
-  // Strict Open = High (Allowing 0.1% buffer for data noise)
+  // Open = High (Allowing 0.15% buffer for data noise)
   const diff = (currentHigh - currentOpen) / currentOpen;
-  const isOpenHigh = diff <= 0.001; // 0.1% max deviation
+  const isOpenHigh = diff <= 0.0015; // 0.15% max deviation
   if (!isOpenHigh) return { isMatch: false };
   
-  // VSA Filter: Volume must be surging
   const currentVol = volumes[n-1];
-  const avgVol = volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20;
-  const isVolSurge = currentVol > avgVol * 1.2;
+  const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
+  const volSurgeRatio = (currentVol / avgVol).toFixed(1);
   
-  // Candle Anatomy: Strong bearish close (bottom 40%)
-  const { closePercent, isGreen } = getCandleAnatomy(currentHigh, currentLow, currentClose, currentOpen);
-  const isStrongClose = !isGreen && closePercent <= 0.4;
+  const { closePercent } = getCandleAnatomy(currentHigh, currentLow, currentClose, currentOpen);
   
-  if (isVolSurge && isStrongClose) {
-    return {
-      isMatch: true,
-      isShort: true,
-      reason: 'Open = High Setup: The stock opened at its highest point and sold off on high volume with a strong bearish close. Institutional distribution from the open.',
-      entry: currentLow,
-      risk: cmp * 0.01,
-      metrics: [
-        { name: 'O=H Diff', value: `${(diff*100).toFixed(2)}%` },
-        { name: 'Vol Surge', value: `${(currentVol/avgVol).toFixed(1)}x` },
-        { name: 'Candle Close', value: `Bottom ${(closePercent*100).toFixed(0)}%` }
-      ]
-    };
-  }
-  return { isMatch: false };
+  return {
+    isMatch: true,
+    isShort: true,
+    reason: `Open = High Setup: Stock opened at high (diff ${(diff * 100).toFixed(2)}%). Sellers dominated from open.`,
+    entry: currentLow,
+    risk: cmp * 0.01,
+    metrics: [
+      { name: 'O=H Diff', value: `${(diff*100).toFixed(2)}%` },
+      { name: 'Vol Surge', value: `${volSurgeRatio}x` },
+      { name: 'Candle Close', value: `Bottom ${((1 - closePercent)*100).toFixed(0)}%` }
+    ]
+  };
 }
