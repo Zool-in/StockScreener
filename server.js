@@ -458,7 +458,7 @@ async function handleFyersCallback(res, reqUrl) {
 }
 
 // ─── Router ───────────────────────────────────────────────────────────────
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const reqUrl = new URL(req.url, `http://localhost:${PORT}`);
   const p = reqUrl.pathname;
 

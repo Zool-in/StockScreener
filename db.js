@@ -131,6 +131,10 @@ async function initDb() {
   }
 }
 
+function isAvailable() {
+  return isConfigured && pool !== null;
+}
+
 async function upsertStock(record) {
   if (!pool) return false;
   try {
