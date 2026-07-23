@@ -20,6 +20,14 @@ const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 
+// ─── Global Error Handlers ───────────────────────────────────────────────────
+process.on('uncaughtException', err => {
+  console.error('[Server Uncaught Exception]:', err.message || err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Server Unhandled Rejection]:', reason);
+});
+
 // ─── Load .env (Zero dependency) ──────────────────────────────────────────
 try {
   fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split('\n').forEach(line => {
@@ -528,8 +536,8 @@ server.on('error', err => {
   process.exit(1);
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n  NSE Swing Screener running at  http://0.0.0.0:${PORT}\n`);
+server.listen(PORT, () => {
+  console.log(`\n  NSE Swing Screener running on ${PORT}\n`);
   console.log('  Press Ctrl+C to stop.\n');
   db.initDb().catch(err => console.error('[MySQL] Non-critical init error:', err.message));
 });
