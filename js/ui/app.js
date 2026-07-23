@@ -645,12 +645,20 @@ async function runScan() {
             // Entry, Stop, Targets
             const prevClose = data.closes[n - 2] || curr;
             const entry = res.entry || prevClose;
-            const stop = res.isShort 
-                         ? (res.risk ? entry + res.risk : entry * 1.05)
-                         : (res.risk ? entry - res.risk : entry * 0.95);
+            
+            const SHORT_STRATEGIES = ['ohl_bearish', 'vcp_down', 'bear_call', 'hm_top', 'hm_bearish', 'smc_bearish', 'ha_donchian_bearish'];
+            const isShort = Boolean(res.isShort) || SHORT_STRATEGIES.includes(strategyId) || SHORT_STRATEGIES.includes(AppState.strategy);
+
+            let stop = res.stop;
+            if (!stop) {
+              stop = isShort 
+                     ? (res.risk ? entry + res.risk : entry * 1.05)
+                     : (res.risk ? entry - res.risk : entry * 0.95);
+            }
             const riskAmount = Math.abs(entry - stop);
-            const t1 = res.isShort ? entry - (riskAmount * 1.5) : entry + (riskAmount * 1.5);
-            const t2 = res.isShort ? entry - (riskAmount * 3) : entry + (riskAmount * 3);
+
+            const t1 = res.t1 || (isShort ? entry - (riskAmount * 1.5) : entry + (riskAmount * 1.5));
+            const t2 = res.t2 || (isShort ? entry - (riskAmount * 3) : entry + (riskAmount * 3));
 
             results.push({
               ticker, data, ...res, 

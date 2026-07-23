@@ -151,6 +151,7 @@ function smcBearish(data) {
 
   return {
     isMatch: true,
+    isShort: true,
     score: 95,
     metrics: [
       { label: 'Zone', value: `₹${closestOB.bottom.toFixed(1)} - ₹${closestOB.top.toFixed(1)}`, color: 'text-red-400' },
