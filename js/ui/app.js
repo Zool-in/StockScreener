@@ -738,6 +738,10 @@ async function runScan() {
 // ─── UI Renderer ────────────────────────────────────────────────────────────
 window._cachedStockData = {};
 
+let tableSortKey = 'confluence';
+let tableSortDir = 'desc';
+let lastMultiTfResults = null;
+
 function renderResults(results) {
   if (results.length === 0) {
     DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">No matching setups found for the selected strategy.</div>`;
@@ -745,23 +749,54 @@ function renderResults(results) {
   }
 
   if (AppState.strategy === 'multi_tf') {
-    results.sort((a, b) => Math.abs(b.multiTf.score) - Math.abs(a.multiTf.score));
+    lastMultiTfResults = results;
+
+    // Apply sorting
+    results.sort((a, b) => {
+      let valA, valB;
+      if (tableSortKey === 'scrip') {
+        return tableSortDir === 'asc' ? a.ticker.localeCompare(b.ticker) : b.ticker.localeCompare(a.ticker);
+      } else if (tableSortKey === 'lcp') {
+        valA = a.curr; valB = b.curr;
+      } else if (tableSortKey === 'monthly') {
+        valA = a.multiTf.monthly; valB = b.multiTf.monthly;
+      } else if (tableSortKey === 'weekly') {
+        valA = a.multiTf.weekly; valB = b.multiTf.weekly;
+      } else if (tableSortKey === 'daily') {
+        valA = a.multiTf.daily; valB = b.multiTf.daily;
+      } else if (tableSortKey === 'rsi') {
+        valA = a.multiTf.rsi; valB = b.multiTf.rsi;
+      } else if (tableSortKey === 'macd') {
+        valA = a.multiTf.macdHist; valB = b.multiTf.macdHist;
+      } else {
+        // Confluence score
+        valA = a.multiTf.score; valB = b.multiTf.score;
+      }
+
+      if (tableSortDir === 'asc') return valA - valB;
+      return valB - valA;
+    });
+
+    const getIcon = (key) => {
+      if (tableSortKey !== key) return `<span style="opacity:0.3; margin-left:4px;">↕</span>`;
+      return tableSortDir === 'asc' ? `<span style="color:var(--v-accent); margin-left:4px;">▲</span>` : `<span style="color:var(--v-accent); margin-left:4px;">▼</span>`;
+    };
 
     let html = `
       <div style="grid-column: 1 / -1; width: 100%;">
         <div class="table-container" style="margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; width: 100%;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+          <table id="multiTfTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
             <thead>
-              <tr style="background: rgba(0,0,0,0.2);">
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted);">Sr No.</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted);">Scrip</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: right;">LCP (₹)</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Monthly (HA+RSI)</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Weekly (HA+RSI)</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Daily (RSI+MACD)</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: right;">Daily RSI</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: right;">Daily MACD Hist</th>
-                <th style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text-muted); text-align: center;">Confluence</th>
+              <tr style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border);">
+                <th style="padding: 12px 16px; font-weight: 600; color: var(--text-muted);">Sr No.</th>
+                <th data-sort="scrip" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none;">Scrip ${getIcon('scrip')}</th>
+                <th data-sort="lcp" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right; cursor: pointer; user-select: none;">LCP (₹) ${getIcon('lcp')}</th>
+                <th data-sort="monthly" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: center; cursor: pointer; user-select: none;">Monthly (HA+RSI) ${getIcon('monthly')}</th>
+                <th data-sort="weekly" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: center; cursor: pointer; user-select: none;">Weekly (HA+RSI) ${getIcon('weekly')}</th>
+                <th data-sort="daily" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: center; cursor: pointer; user-select: none;">Daily (RSI+MACD) ${getIcon('daily')}</th>
+                <th data-sort="rsi" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right; cursor: pointer; user-select: none;">Daily RSI ${getIcon('rsi')}</th>
+                <th data-sort="macd" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: right; cursor: pointer; user-select: none;">Daily MACD Hist ${getIcon('macd')}</th>
+                <th data-sort="confluence" style="padding: 12px 16px; font-weight: 600; color: var(--text-muted); text-align: center; cursor: pointer; user-select: none;">Confluence ${getIcon('confluence')}</th>
               </tr>
             </thead>
             <tbody>
@@ -837,6 +872,23 @@ function renderResults(results) {
     `;
 
     DOM.resultsArea.innerHTML = html;
+
+    // Attach click handlers to headers
+    const tbl = document.getElementById('multiTfTable');
+    if (tbl) {
+      tbl.querySelector('thead').addEventListener('click', (e) => {
+        const th = e.target.closest('th[data-sort]');
+        if (!th) return;
+        const key = th.dataset.sort;
+        if (tableSortKey === key) {
+          tableSortDir = tableSortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          tableSortKey = key;
+          tableSortDir = key === 'scrip' ? 'asc' : 'desc';
+        }
+        renderResults(lastMultiTfResults);
+      });
+    }
     return;
   }
 
