@@ -33,6 +33,7 @@ const DOM = {
   progressBar: document.getElementById('progressBar'),
   lookbackInput: document.getElementById('lookbackInput'),
   lookbackWrapper: document.getElementById('lookbackWrapper'),
+  progressTimer: document.getElementById('progressTimer'),
 };
 
 function renderScripts() {
@@ -449,6 +450,13 @@ async function runScan() {
   DOM.progressText.innerText = `Scanning starting...`;
   DOM.progressPercent.innerText = `0%`;
   DOM.progressBar.style.width = `0%`;
+  if (DOM.progressTimer) DOM.progressTimer.innerText = '0.0s';
+
+  const startTime = performance.now();
+  const timerInterval = setInterval(() => {
+    const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+    if (DOM.progressTimer) DOM.progressTimer.innerText = `${elapsed}s`;
+  }, 100);
 
   document.getElementById('adStrip').style.display = 'none';
   document.getElementById('summaryBar').style.display = 'none';
@@ -698,8 +706,13 @@ async function runScan() {
       console.error(err);
     }
   } finally {
+    if (typeof timerInterval !== 'undefined') clearInterval(timerInterval);
+    const totalElapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+    window._lastScanDuration = totalElapsed;
+    if (DOM.progressTimer) DOM.progressTimer.innerText = `${totalElapsed}s`;
+
     if (scanId === currentScanId) {
-      DOM.progressText.innerText = `Scan completed.`;
+      DOM.progressText.innerText = `Scan completed in ${totalElapsed}s.`;
       DOM.progressPercent.innerText = `100%`;
       DOM.progressBar.style.width = `100%`;
       DOM.scanBtn.disabled = false;
@@ -838,6 +851,7 @@ function renderResults(results) {
       <div class="sum-chip"><div class="sk">Scanned / Matched</div><div class="sv">${AppState.tickers.length} / ${results.length}</div></div>
       <div class="sum-chip"><div class="sk">Advance / Decline</div><div class="sv"><span style="color:var(--green)">${advances}</span> : <span style="color:var(--red)">${declines}</span></div></div>
       <div class="sum-chip"><div class="sk">Avg RSI</div><div class="sv">${Math.round(results.reduce((a,b)=>a+b.rsiVal,0)/results.length)}</div></div>
+      <div class="sum-chip"><div class="sk">Scan Time</div><div class="sv">${window._lastScanDuration || '0.0'}s</div></div>
     `;
   }
 
