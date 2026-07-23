@@ -811,33 +811,18 @@ function renderResults(results) {
         return `<span class="badge-status badge-0" style="background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: 12px;">0</span>`;
       };
 
-      let confText = 'Neutral';
-      let confBg = 'rgba(255, 255, 255, 0.05)';
-      let confColor = 'var(--text-muted)';
-      let confBorder = 'none';
+      const getBadgeInfo = (mtData) => {
+        const { monthly, weekly, daily, score } = mtData;
+        if (score === 3) return { label: 'Full Confluence (+3)', bg: 'var(--green-dim)', color: 'var(--green)', border: '1px solid rgba(36, 180, 126, 0.4)', title: 'Full Bullish Confluence (+3)', desc: 'All 3 timeframes (Monthly, Weekly, Daily) are aligned in a strong green uptrend. Highest probability momentum continuation setup.', action: 'Buy Breakouts & Ride Trend' };
+        if (score === -3) return { label: 'Full Bearish (-3)', bg: 'var(--red-dim)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.4)', title: 'Full Bearish Confluence (-3)', desc: 'All 3 timeframes (Monthly, Weekly, Daily) are aligned in a downward trend. High-probability shorting / put buying setup.', action: 'Short / Buy Puts / Avoid Longs' };
+        if (monthly === 1 && weekly === 1 && daily <= 0) return { label: 'Buy the Dip (+2)', bg: 'rgba(36, 180, 126, 0.15)', color: '#34d399', border: '1px dashed rgba(52, 211, 153, 0.5)', title: 'Buy the Dip Setup (+2)', desc: 'Macro (Monthly & Weekly) trends are strongly Bullish (+1), while Daily is temporarily cooling off in a pullback.', action: 'High-Reward Buy Dip at Support' };
+        if (weekly === 1 && daily === 1 && monthly <= 0) return { label: 'Early Reversal (+2)', bg: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', title: 'Early Trend Reversal (+2)', desc: 'Weekly and Daily momentum turned Bullish (+1), while Monthly is still turning around from base.', action: 'Early Entry Before Crowd' };
+        if (daily === 1 && monthly <= 0 && weekly <= 0) return { label: 'Fresh Daily Spark (+1)', bg: 'var(--green-dim)', color: 'var(--green)', border: '1px solid rgba(36, 180, 126, 0.2)', title: 'Fresh Daily Spark (+1)', desc: 'Daily timeframe broke out today on volume with RSI > 50 & MACD > 0, while higher timeframes remain neutral.', action: 'Intraday / Quick Momentum Swing' };
+        if (score < 0) return { label: `Bearish Breakdown (${score})`, bg: 'var(--red-dim)', color: 'var(--red)', border: '1px solid rgba(239, 68, 68, 0.2)', title: `Bearish Breakdown (${score})`, desc: `Negative momentum across timeframes indicating downward pressure.`, action: 'Short or Wait for Support' };
+        return { label: 'Consolidation (0)', bg: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', border: '1px solid rgba(255, 255, 255, 0.1)', title: 'Consolidation / Neutral (0)', desc: 'No clear trend direction. Timeframes are mixed or flat.', action: 'Wait for Breakout' };
+      };
 
-      if (mt.score === 3) {
-        confText = 'Bullish Confluence';
-        confBg = 'var(--green-dim)';
-        confColor = 'var(--green)';
-        confBorder = '1px solid rgba(36, 180, 126, 0.3)';
-      } else if (mt.score === -3) {
-        confText = 'Bearish Confluence';
-        confBg = 'var(--red-dim)';
-        confColor = 'var(--red)';
-        confBorder = '1px solid rgba(239, 68, 68, 0.3)';
-      } else if (mt.score > 0) {
-        confText = `Bullish Partial (+${mt.score})`;
-        confBg = 'var(--green-dim)';
-        confColor = 'var(--green)';
-        confBorder = '1px solid rgba(36, 180, 126, 0.1)';
-      } else if (mt.score < 0) {
-        confText = `Bearish Partial (${mt.score})`;
-        confBg = 'var(--red-dim)';
-        confColor = 'var(--red)';
-        confBorder = '1px solid rgba(239, 68, 68, 0.1)';
-      }
-
+      const cBadge = getBadgeInfo(mt);
       const macdSign = mt.macdHist > 0 ? '+' : '';
       const macdColor = mt.macdHist > 0 ? 'var(--green)' : 'var(--red)';
 
@@ -856,8 +841,8 @@ function renderResults(results) {
           <td style="padding: 12px 16px; text-align: right; font-family: var(--mono); color: ${mt.rsi > 50 ? 'var(--green)' : 'var(--red)'}">${Math.round(mt.rsi)}</td>
           <td style="padding: 12px 16px; text-align: right; font-family: var(--mono); color: ${macdColor}">${macdSign}${mt.macdHist.toFixed(2)}</td>
           <td style="padding: 12px 16px; text-align: center;">
-            <span style="display: inline-flex; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; background: ${confBg}; color: ${confColor}; border: ${confBorder};">
-              ${confText}
+            <span class="conf-badge-click" data-ticker="${r.ticker}" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 11px; background: ${cBadge.bg}; color: ${cBadge.color}; border: ${cBadge.border}; cursor: pointer;">
+              ${cBadge.label} <span style="opacity: 0.6; font-size: 10px;">ℹ</span>
             </span>
           </td>
         </tr>
@@ -887,6 +872,30 @@ function renderResults(results) {
           tableSortDir = key === 'scrip' ? 'asc' : 'desc';
         }
         renderResults(lastMultiTfResults);
+      });
+      tbl.querySelectorAll('.conf-badge-click').forEach(badgeEl => {
+        badgeEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const ticker = badgeEl.dataset.ticker;
+          const match = lastMultiTfResults.find(r => r.ticker === ticker);
+          if (match && match.multiTf) {
+            const mt = match.multiTf;
+            const info = getBadgeInfo(mt);
+            document.getElementById('modalTitle').innerHTML = `${ticker} — ${info.title}`;
+            document.getElementById('modalDescription').innerHTML = info.desc;
+            document.getElementById('modalExample').innerHTML = `
+              <div style="background:rgba(0,0,0,0.2); padding:12px; border-radius:6px; border:1px solid var(--border); margin-top:8px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px;">
+                  <span>Monthly (HA+RSI): <b style="color:${mt.monthly > 0 ? 'var(--green)' : (mt.monthly < 0 ? 'var(--red)' : 'var(--text-muted)')}">${mt.monthly > 0 ? '+1 (Bullish)' : (mt.monthly < 0 ? '-1 (Bearish)' : '0 (Neutral)')}</b></span>
+                  <span>Weekly (HA+RSI): <b style="color:${mt.weekly > 0 ? 'var(--green)' : (mt.weekly < 0 ? 'var(--red)' : 'var(--text-muted)')}">${mt.weekly > 0 ? '+1 (Bullish)' : (mt.weekly < 0 ? '-1 (Bearish)' : '0 (Neutral)')}</b></span>
+                </div>
+                <div style="margin-bottom:12px; font-size:12px;">Daily (RSI+MACD): <b style="color:${mt.daily > 0 ? 'var(--green)' : (mt.daily < 0 ? 'var(--red)' : 'var(--text-muted)')}">${mt.daily > 0 ? '+1 (Bullish)' : (mt.daily < 0 ? '-1 (Bearish)' : '0 (Neutral)')}</b> (RSI: ${Math.round(mt.rsi)}, MACD: ${mt.macdHist.toFixed(2)})</div>
+                <div style="color:var(--v-accent); font-weight:600; font-size:12px;">💡 Execution Guide: ${info.action}</div>
+              </div>
+            `;
+            document.getElementById('strategyModal').classList.remove('hidden');
+          }
+        });
       });
     }
     return;
