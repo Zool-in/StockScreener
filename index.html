@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,208 +12,376 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     /* Backtester Modal Specific Styles - Premium Glassmorphism Bottom Panel */
-    #backtesterModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; overflow: hidden; }
-    #backtesterModal .modal-overlay { background: rgba(0,0,0,0.4); width: 100%; height: 100%; position: absolute; transition: opacity 0.3s ease; }
-    #backtesterModal .bt-panel { position: absolute; bottom: 0; left: 0; width: 100vw; height: 70vh; background: var(--bg-panel, rgba(22, 27, 34, 0.7)); backdrop-filter: var(--glass-blur, blur(12px)); -webkit-backdrop-filter: var(--glass-blur, blur(12px)); border-radius: 24px 24px 0 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--box-shadow-premium, 0 -8px 32px rgba(0,0,0,0.5)); border-top: 1px solid var(--border-color, #30363D); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-    #backtesterModal.show { display: block; }
-    #backtesterModal.show .bt-panel { transform: translateY(0); }
-    #backtesterModal .bt-header { padding: 12px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); }
-    #backtesterModal .bt-body { display: flex; flex-direction: column; flex: 1; height: 0; } /* height 0 forces flex child to scroll */
-    #backtesterModal .bt-chart-container { flex: 2; border-bottom: 1px solid var(--border-color); position: relative; }
-    #backtesterModal .bt-tabs { display: flex; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); }
-    #backtesterModal .bt-tab { padding: 8px 16px; cursor: pointer; color: var(--text-muted); font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; }
-    #backtesterModal .bt-tab.active { color: var(--text-main); border-bottom: 2px solid var(--v-accent); }
-    #backtesterModal .bt-content { flex: 1; overflow-y: auto; padding: 12px; background: var(--bg-body); }
-    
-    .bt-trade-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .bt-trade-table th, .bt-trade-table td { padding: 8px; text-align: right; border-bottom: 1px solid var(--border-color); }
-    .bt-trade-table th { text-align: right; color: var(--text-muted); font-weight: 500; }
-    .bt-trade-table td { font-variant-numeric: tabular-nums; }
-    .bt-trade-table th:first-child, .bt-trade-table td:first-child { text-align: left; }
-    
-    .bt-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 16px; }
-    .bt-summary-card { background: var(--bg-surface); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
-    .bt-summary-val { font-size: 24px; font-weight: 700; margin-top: 8px; }
+    #backtesterModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    #backtesterModal .modal-overlay {
+      background: rgba(0, 0, 0, 0.4);
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transition: opacity 0.3s ease;
+    }
+
+    #backtesterModal .bt-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      height: 70vh;
+      background: var(--bg-panel, rgba(22, 27, 34, 0.7));
+      backdrop-filter: var(--glass-blur, blur(12px));
+      -webkit-backdrop-filter: var(--glass-blur, blur(12px));
+      border-radius: 24px 24px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--box-shadow-premium, 0 -8px 32px rgba(0, 0, 0, 0.5));
+      border-top: 1px solid var(--border-color, #30363D);
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #backtesterModal.show {
+      display: block;
+    }
+
+    #backtesterModal.show .bt-panel {
+      transform: translateY(0);
+    }
+
+    #backtesterModal .bt-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-surface);
+    }
+
+    #backtesterModal .bt-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 0;
+    }
+
+    /* height 0 forces flex child to scroll */
+    #backtesterModal .bt-chart-container {
+      flex: 2;
+      border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    #backtesterModal .bt-tabs {
+      display: flex;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    #backtesterModal .bt-tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+    }
+
+    #backtesterModal .bt-tab.active {
+      color: var(--text-main);
+      border-bottom: 2px solid var(--v-accent);
+    }
+
+    #backtesterModal .bt-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      background: var(--bg-body);
+    }
+
+    .bt-trade-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .bt-trade-table th,
+    .bt-trade-table td {
+      padding: 8px;
+      text-align: right;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .bt-trade-table th {
+      text-align: right;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .bt-trade-table td {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bt-trade-table th:first-child,
+    .bt-trade-table td:first-child {
+      text-align: left;
+    }
+
+    .bt-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .bt-summary-card {
+      background: var(--bg-surface);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .bt-summary-val {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
   </style>
 </head>
+
 <body>
 
   <!-- Global HUD -->
   <header class="hud-bar">
     <div class="logo"><a href="index.html" class="hud-brand" style="text-decoration: none;">StockScan Pro</a></div>
-    
+
     <input type="checkbox" id="nav-toggle" class="nav-toggle" style="display: none;">
     <label for="nav-toggle" class="nav-toggle-label">&#9776;</label>
 
     <div class="hud-nav-container">
       <div class="hud-menu">
-        <a href="#" id="tabScreener" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock Screener</a>
-        <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options (Gamma)</a>
-        <a href="#" id="tabScripts" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
+        <a href="#" id="tabScreener" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock
+          Screener</a>
+        <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options
+          (Gamma)</a>
+        <a href="#" id="tabScripts"
+          style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
       </div>
       <div class="hud-stats">
         <a href="lots.html?v=2" class="badge badge-amber" style="text-decoration:none;">F&O Lot Sizes</a>
-        <div id="mmiStatus" class="badge badge-muted" style="cursor: pointer;">Market: Loading... <span class="info-icon" style="margin-left:4px;">i</span></div>
+        <div id="mmiStatus" class="badge badge-muted" style="cursor: pointer;">Market: Loading... <span
+            class="info-icon" style="margin-left:4px;">i</span></div>
         <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
       </div>
     </div>
   </header>
 
   <main class="app-container">
-    
+
     <!-- Screener View -->
     <div id="screener-view">
       <!-- Command Bar -->
       <div class="card" style="margin-bottom: 32px;">
-      
-      <!-- Universe Section -->
-      <div style="margin-bottom: 24px;">
-        <label class="input-label">Stock Universe</label>
-        <div class="pill-container" id="universePills">
-          <button class="pill active" data-val="nifty50">Nifty 50</button>
-        <button class="pill" data-val="niftynext50">Nifty Next 50</button>
-        <button class="pill" data-val="niftymidcap150">Midcap 150</button>
-        <button class="pill" data-val="niftysmallcap250">Smallcap 250</button>
-        <button class="pill" data-val="nifty500">Nifty 500</button>
-        <button class="pill" data-val="niftytotal">Nifty Total</button>
-        <button class="pill" data-val="all">All NSE</button>
-        <button class="pill" data-val="fno">F&O Stocks</button>
-        <button class="pill" data-val="etf">ETFs</button>
-        <button class="pill" data-val="indices">Indices</button>
-        <button class="pill" data-val="bse_exclusive">BSE Exclusives</button>
-        <button class="pill" data-val="custom">Custom List</button>
-        </div>
-        
-        <div id="customTickerWrapper" class="hidden" style="margin-top: 12px;">
-          <input type="text" id="tickerInput" class="input" placeholder="RELIANCE, INFY.BO, TCS" value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK">
-        </div>
-      </div>
 
-      <!-- Strategy Section -->
-      <div style="margin-bottom: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label class="input-label" style="margin-bottom: 0;">Algorithmic Strategy</label>
-          <div class="pill-container" id="assetToggle" style="gap: 4px; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-            <div class="pill active" data-asset="stocks" style="padding: 4px 12px; font-size: 12px; min-height: unset; margin: 0;">Stocks</div>
-            <div class="pill" data-asset="options" style="padding: 4px 12px; font-size: 12px; min-height: unset; margin: 0;">Options</div>
+        <!-- Universe Section -->
+        <div style="margin-bottom: 24px;">
+          <label class="input-label">Stock Universe</label>
+          <div class="pill-container" id="universePills">
+            <button class="pill active" data-val="nifty50">Nifty 50</button>
+            <button class="pill" data-val="niftynext50">Nifty Next 50</button>
+            <button class="pill" data-val="niftymidcap150">Midcap 150</button>
+            <button class="pill" data-val="niftysmallcap250">Smallcap 250</button>
+            <button class="pill" data-val="nifty500">Nifty 500</button>
+            <button class="pill" data-val="niftytotal">Nifty Total</button>
+            <button class="pill" data-val="all">All NSE</button>
+            <button class="pill" data-val="fno">F&O Stocks</button>
+            <button class="pill" data-val="etf">ETFs</button>
+            <button class="pill" data-val="indices">Indices</button>
+            <button class="pill" data-val="bse_exclusive">BSE Exclusives</button>
+            <button class="pill" data-val="custom">Custom List</button>
           </div>
-        </div>
-        <div class="pill-container" id="strategyPills">
-          <!-- Default -->
-          <div class="pill active" data-val="all" data-tf="1d" data-type="stocks">All Stocks <span class="badge badge-muted">RAW</span></div>
-          
-          <!-- Intraday / Short Term -->
-          <div class="pill" data-val="ttm_orb" data-tf="15m" data-type="stocks">TTM Squeeze + ORB <span class="badge badge-muted">15m</span></div>
-          <div class="pill" data-val="ohl_bullish" data-tf="15m" data-type="stocks">Open = Low <span class="badge badge-green">15m</span></div>
-          <div class="pill" data-val="ohl_bearish" data-tf="15m" data-type="stocks">Open = High <span class="badge badge-red">15m</span></div>
-          <div class="pill" data-val="intraday_retest" data-tf="15m" data-type="stocks">SMC Sweep & Retest <span class="badge badge-purple">15m</span></div>
-          <div class="pill" data-val="btst" data-tf="1d" data-type="stocks">BTST Momentum <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="crsi" data-tf="1d" data-type="stocks">Connors RSI <span class="badge badge-muted">1d</span></div>
-          
-          <!-- Swing -->
-          <div class="pill" data-val="minervini" data-tf="1d" data-type="stocks">Minervini VCP <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="darvas" data-tf="1d" data-type="stocks">Darvas Box <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="xmomentum" data-tf="1d" data-type="stocks">X-Momentum <span class="badge badge-muted">1d</span></div>
-          <div class="pill" data-val="rs" data-tf="1d" data-type="stocks">Relative Strength <span class="badge badge-muted">1d</span></div>
-          
-          <!-- Short -->
-          <div class="pill" data-val="vcp_down" data-tf="1d" data-type="stocks">VCP Breakdown <span class="badge badge-red">Short</span></div>
-          <div class="pill" data-val="bear_call" data-tf="1d" data-type="options" style="display: none;">Bear Call Spread <span class="badge badge-red">Short</span></div>
-          
-          <!-- Options -->
-          <div class="pill" data-val="bps" data-tf="1d" data-type="options" style="display: none;">Bull Put Spread <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="strangle" data-tf="1d" data-type="options" style="display: none;">Short Strangle <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="iv_crush" data-tf="1d" data-type="options" style="display: none;">Earnings IV Crush <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="csp" data-tf="1d" data-type="options" style="display: none;">Cash Secured Put <span class="badge badge-amber">OPTS</span></div>
-          <div class="pill" data-val="cc" data-tf="1d" data-type="options" style="display: none;">Covered Call <span class="badge badge-amber">OPTS</span></div>
-          <!-- Hilega Milega -->
-          <div class="pill" data-val="hm_bottom" data-tf="1d" data-type="stocks">HM: Bottom Catch <span class="badge badge-amber">HM</span></div>
-          <div class="pill" data-val="hm_top" data-tf="1d" data-type="stocks">HM: Top Catch <span class="badge badge-amber">HM</span></div>
-          <div class="pill" data-val="hm_bullish" data-tf="1d" data-type="stocks">HM: Bullish Trend <span class="badge badge-amber">HM</span></div>
-          <div class="pill" data-val="hm_bearish" data-tf="1d" data-type="stocks">HM: Bearish Down <span class="badge badge-amber">HM</span></div>
-          <div class="pill" data-val="hm_chop" data-tf="1d" data-type="stocks">HM: Consolidation <span class="badge badge-amber">HM</span></div>
-          
-          <!-- SMC -->
-          <div class="pill" data-val="smc_bullish" data-tf="1d" data-type="stocks">SMC: Bullish Bounce <span class="badge badge-purple">SMC</span></div>
-          <div class="pill" data-val="smc_bearish" data-tf="1d" data-type="stocks">SMC: Bearish Reversal <span class="badge badge-purple">SMC</span></div>
- 
-          <!-- Heikin Ashi Donchian -->
-          <div class="pill" data-val="ha_donchian_bullish" data-tf="1d" data-type="stocks">HA Donchian Bullish <span class="badge badge-green">HA</span></div>
-          <div class="pill" data-val="ha_donchian_bearish" data-tf="1d" data-type="stocks">HA Donchian Bearish <span class="badge badge-red">HA</span></div>
-          <div class="pill" data-val="multi_tf" data-tf="1d" data-type="stocks">Multi-TF Confluence <span class="badge badge-purple">M-TF</span></div>
 
-          <!-- Long Term -->
-          <div class="pill" data-val="weinstein" data-tf="1wk" data-type="stocks">Stan Weinstein Stage 2 <span class="badge badge-green">1wk</span></div>
-          <div class="pill" data-val="wyckoff" data-tf="1wk" data-type="stocks">Wyckoff Stopping Vol <span class="badge badge-green">1wk</span></div>
-        </div>
-      </div>
-
-      <!-- Execution Row -->
-      <div class="flex items-center gap-4" style="flex-wrap: wrap; margin-top: 24px;">
-        <div class="input-group">
-          <label class="input-label">Timeframe Override</label>
-          <div class="pill-container" id="timeframePills" style="max-width:100%">
-            <div class="pill" data-val="5m">5m</div>
-            <div class="pill" data-val="15m">15m</div>
-            <div class="pill" data-val="1h">1h</div>
-            <div class="pill active" data-val="1d">1D</div>
-            <div class="pill" data-val="1wk">1W</div>
-            <div class="pill" data-val="1mo">1M</div>
+          <div id="customTickerWrapper" class="hidden" style="margin-top: 12px;">
+            <input type="text" id="tickerInput" class="input" placeholder="RELIANCE, INFY.BO, TCS"
+              value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK">
           </div>
         </div>
 
-        <div class="input-group" id="lookbackWrapper" style="max-width: 120px; margin-left: auto; display: none;">
-          <label class="input-label">Look-back Period</label>
-          <input type="number" id="lookbackInput" class="input" value="0" min="0" max="10" style="padding: 8px 12px; font-family: var(--mono)">
+        <!-- Strategy Section -->
+        <div style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="input-label" style="margin-bottom: 0;">Algorithmic Strategy</label>
+            <div class="pill-container" id="assetToggle"
+              style="gap: 4px; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+              <div class="pill active" data-asset="stocks"
+                style="padding: 4px 12px; font-size: 12px; min-height: unset; margin: 0;">Stocks</div>
+              <div class="pill" data-asset="options"
+                style="padding: 4px 12px; font-size: 12px; min-height: unset; margin: 0;">Options</div>
+            </div>
+          </div>
+          <div class="pill-container" id="strategyPills">
+            <!-- Default -->
+            <div class="pill active" data-val="all" data-tf="1d" data-type="stocks">All Stocks <span
+                class="badge badge-muted">RAW</span></div>
+
+            <!-- Intraday / Short Term -->
+            <div class="pill" data-val="ttm_orb" data-tf="15m" data-type="stocks">TTM Squeeze + ORB <span
+                class="badge badge-muted">15m</span></div>
+            <div class="pill" data-val="ohl_bullish" data-tf="15m" data-type="stocks">Open = Low <span
+                class="badge badge-green">15m</span></div>
+            <div class="pill" data-val="ohl_bearish" data-tf="15m" data-type="stocks">Open = High <span
+                class="badge badge-red">15m</span></div>
+            <div class="pill" data-val="intraday_retest" data-tf="15m" data-type="stocks">SMC Sweep & Retest <span
+                class="badge badge-purple">15m</span></div>
+            <div class="pill" data-val="btst" data-tf="1d" data-type="stocks">BTST Momentum <span
+                class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="crsi" data-tf="1d" data-type="stocks">Connors RSI <span
+                class="badge badge-muted">1d</span></div>
+
+            <!-- Swing -->
+            <div class="pill" data-val="minervini" data-tf="1d" data-type="stocks">Minervini VCP <span
+                class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="darvas" data-tf="1d" data-type="stocks">Darvas Box <span
+                class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="xmomentum" data-tf="1d" data-type="stocks">X-Momentum <span
+                class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="rs" data-tf="1d" data-type="stocks">Relative Strength <span
+                class="badge badge-muted">1d</span></div>
+
+            <!-- Short -->
+            <div class="pill" data-val="vcp_down" data-tf="1d" data-type="stocks">VCP Breakdown <span
+                class="badge badge-red">Short</span></div>
+            <div class="pill" data-val="bear_call" data-tf="1d" data-type="options" style="display: none;">Bear Call
+              Spread <span class="badge badge-red">Short</span></div>
+
+            <!-- Options -->
+            <div class="pill" data-val="bps" data-tf="1d" data-type="options" style="display: none;">Bull Put Spread
+              <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="strangle" data-tf="1d" data-type="options" style="display: none;">Short Strangle
+              <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="iv_crush" data-tf="1d" data-type="options" style="display: none;">Earnings IV
+              Crush <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="csp" data-tf="1d" data-type="options" style="display: none;">Cash Secured Put
+              <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="cc" data-tf="1d" data-type="options" style="display: none;">Covered Call <span
+                class="badge badge-amber">OPTS</span></div>
+            <!-- Hilega Milega -->
+            <div class="pill" data-val="hm_bottom" data-tf="1d" data-type="stocks">HM: Bottom Catch <span
+                class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_top" data-tf="1d" data-type="stocks">HM: Top Catch <span
+                class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_bullish" data-tf="1d" data-type="stocks">HM: Bullish Trend <span
+                class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_bearish" data-tf="1d" data-type="stocks">HM: Bearish Down <span
+                class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_chop" data-tf="1d" data-type="stocks">HM: Consolidation <span
+                class="badge badge-amber">HM</span></div>
+
+            <!-- SMC -->
+            <div class="pill" data-val="smc_bullish" data-tf="1d" data-type="stocks">SMC: Bullish Bounce <span
+                class="badge badge-purple">SMC</span></div>
+            <div class="pill" data-val="smc_bearish" data-tf="1d" data-type="stocks">SMC: Bearish Reversal <span
+                class="badge badge-purple">SMC</span></div>
+
+            <!-- Heikin Ashi Donchian -->
+            <div class="pill" data-val="ha_donchian_bullish" data-tf="1d" data-type="stocks">HA Donchian Bullish <span
+                class="badge badge-green">HA</span></div>
+            <div class="pill" data-val="ha_donchian_bearish" data-tf="1d" data-type="stocks">HA Donchian Bearish <span
+                class="badge badge-red">HA</span></div>
+            <div class="pill" data-val="multi_tf" data-tf="1d" data-type="stocks">Multi-TF Confluence <span
+                class="badge badge-purple">M-TF</span></div>
+
+            <!-- Long Term -->
+            <div class="pill" data-val="weinstein" data-tf="1wk" data-type="stocks">Stan Weinstein Stage 2 <span
+                class="badge badge-green">1wk</span></div>
+            <div class="pill" data-val="wyckoff" data-tf="1wk" data-type="stocks">Wyckoff Stopping Vol <span
+                class="badge badge-green">1wk</span></div>
+          </div>
         </div>
 
-        <div class="input-group" style="max-width: 150px;">
-          <label class="input-label">Risk Capital (₹)</label>
-          <input type="number" id="capitalInput" class="input" value="100000" step="10000" style="padding: 8px 12px; font-family: var(--mono)">
+        <!-- Execution Row -->
+        <div class="flex items-center gap-4" style="flex-wrap: wrap; margin-top: 24px;">
+          <div class="input-group">
+            <label class="input-label">Timeframe Override</label>
+            <div class="pill-container" id="timeframePills" style="max-width:100%">
+              <div class="pill" data-val="5m">5m</div>
+              <div class="pill" data-val="15m">15m</div>
+              <div class="pill" data-val="1h">1h</div>
+              <div class="pill active" data-val="1d">1D</div>
+              <div class="pill" data-val="1wk">1W</div>
+              <div class="pill" data-val="1mo">1M</div>
+            </div>
+          </div>
+
+          <div class="input-group" id="lookbackWrapper" style="max-width: 120px; margin-left: auto; display: none;">
+            <label class="input-label">Look-back Period</label>
+            <input type="number" id="lookbackInput" class="input" value="0" min="0" max="10"
+              style="padding: 8px 12px; font-family: var(--mono)">
+          </div>
+
+          <div class="input-group" style="max-width: 150px;">
+            <label class="input-label">Risk Capital (₹)</label>
+            <input type="number" id="capitalInput" class="input" value="100000" step="10000"
+              style="padding: 8px 12px; font-family: var(--mono)">
+          </div>
+
+          <button id="scanBtn" class="btn" style="margin-top: auto; padding: 10px 24px;">
+            <span>Run Scan</span>
+          </button>
+          <button id="cancelBtn" class="btn btn-outline"
+            style="margin-top: auto; padding: 10px 24px; border-color: #ef4444; color: #ef4444; display: none;">
+            <span>Cancel</span>
+          </button>
         </div>
 
-        <button id="scanBtn" class="btn" style="margin-top: auto; padding: 10px 24px;">
-          <span>Run Scan</span>
-        </button>
-        <button id="cancelBtn" class="btn btn-outline" style="margin-top: auto; padding: 10px 24px; border-color: #ef4444; color: #ef4444; display: none;">
-          <span>Cancel</span>
-        </button>
       </div>
 
-    </div>
-
-    <!-- Progress indicator -->
-    <div id="progressArea" style="display: none; margin-bottom: 24px;" class="card">
-      <div class="flex justify-between items-center" style="margin-bottom: 8px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span id="progressText" style="font-weight: 500;">Scanning...</span>
-          <span id="progressTimer" class="badge badge-muted" style="font-family: var(--mono); font-size: 11px;">0.0s</span>
+      <!-- Progress indicator -->
+      <div id="progressArea" style="display: none; margin-bottom: 24px;" class="card">
+        <div class="flex justify-between items-center" style="margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="progressText" style="font-weight: 500;">Scanning...</span>
+            <span id="progressTimer" class="badge badge-muted"
+              style="font-family: var(--mono); font-size: 11px;">0.0s</span>
+          </div>
+          <span id="progressPercent" style="font-family: var(--mono);">0%</span>
         </div>
-        <span id="progressPercent" style="font-family: var(--mono);">0%</span>
+        <div
+          style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+          <div id="progressBar"
+            style="width: 0%; height: 100%; background: var(--accent); transition: width 0.1s ease;"></div>
+        </div>
       </div>
-      <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
-        <div id="progressBar" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.1s ease;"></div>
-      </div>
-    </div>
 
-    <div class="ad-strip" id="adStrip" style="display:none"></div>
-    <div class="summary" id="summaryBar" style="display:none"></div>
+      <div class="ad-strip" id="adStrip" style="display:none"></div>
+      <div class="summary" id="summaryBar" style="display:none"></div>
 
-    <!-- Results Grid -->
-    <div id="resultsArea" class="results-grid">
-      <!-- Cards will be injected here via JS -->
-      <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">
-        Ready. Select a strategy and hit Run Scan.
+      <!-- Results Grid -->
+      <div id="resultsArea" class="results-grid">
+        <!-- Cards will be injected here via JS -->
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">
+          Ready. Select a strategy and hit Run Scan.
+        </div>
       </div>
-    </div>
     </div><!-- End Screener View -->
 
     <!-- Scripts View -->
     <div id="scripts-view" style="display: none;">
       <div class="card" style="margin-bottom: 24px;">
         <h2 style="margin-top:0; color:var(--text-main);">Script Library</h2>
-        <p style="color:var(--text-muted); font-size:14px; margin-bottom: 24px;">A collection of algorithmic trading scripts (Pine Script / Python) for use in external platforms.</p>
-        
+        <p style="color:var(--text-muted); font-size:14px; margin-bottom: 24px;">A collection of algorithmic trading
+          scripts (Pine Script / Python) for use in external platforms.</p>
+
         <div style="overflow-x: auto;">
           <table class="bt-trade-table" id="scriptsTable" style="width: 100%; text-align: left;">
             <thead>
@@ -220,7 +389,8 @@
                 <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Name</th>
                 <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Platform</th>
                 <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Type</th>
-                <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Description</th>
+                <th style="text-align: left; padding: 12px; border-bottom: 1px solid var(--border-color);">Description
+                </th>
                 <th style="text-align: right; padding: 12px; border-bottom: 1px solid var(--border-color);">Action</th>
               </tr>
             </thead>
@@ -280,12 +450,12 @@
       modal.querySelector('.bt-panel').style.transform = 'translateY(100%)';
       setTimeout(() => { modal.classList.remove('show'); modal.style.display = 'none'; }, 400);
     }
-    
+
     function openBacktester() {
       const modal = document.getElementById('backtesterModal');
       modal.style.display = 'block';
       // Force reflow for transition
-      void modal.offsetWidth; 
+      void modal.offsetWidth;
       modal.classList.add('show');
     }
 
@@ -297,6 +467,7 @@
   </script>
 
   <!-- Entry point for UI routing and execution -->
-  <script type="module" src="js/ui/app.js?v=61" defer></script>
+  <script type="module" src="js/ui/app.js?v=62" defer></script>
 </body>
+
 </html>

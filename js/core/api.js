@@ -20,11 +20,11 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   if (timeframe === '15m') { interval = '15m'; range = '60d'; }
   else if (timeframe === '1h') { interval = '60m'; range = '730d'; }
   else if (timeframe === '1d') { interval = '1d'; range = '2y'; }
-  else if (timeframe === '1wk') { interval = '1wk'; range = '2y'; }
-  else if (timeframe === '1mo') { interval = '1mo'; range = '3y'; }
+  else if (timeframe === '1wk') { interval = '1wk'; range = '5y'; }
+  else if (timeframe === '1mo') { interval = '1mo'; range = '5y'; }
 
   const url = `${API_BASE}?symbol=${encodeURIComponent(sym)}&interval=${interval}&range=${range}`;
-  
+
   let res;
   let data;
   let retries = 3;
@@ -33,7 +33,7 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
       res = await fetch(url, { signal });
       if (!res.ok) throw new Error(`Failed to fetch ${sym} (Status: ${res.status})`);
       data = await res.json();
-      
+
       if (!data || !data.chart || !data.chart.result || !data.chart.result[0].indicators.quote[0]) {
         throw new Error("Invalid data format from Yahoo Finance");
       }
@@ -48,7 +48,7 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   const result = data.chart.result[0];
   const quote = result.indicators.quote[0];
   const timestamps = result.timestamp || [];
-  
+
   // Filter out nulls
   const closes = [], highs = [], lows = [], opens = [], volumes = [], ts = [];
   const ohlcv = [];

@@ -39,7 +39,7 @@ const DOM = {
 function renderScripts() {
   const tbody = document.getElementById('scriptsTableBody');
   if (!tbody) return;
-  
+
   tbody.innerHTML = scriptLibrary.map(s => `
     <tr>
       <td style="font-weight: 500; color: var(--text-main);">${s.name}</td>
@@ -192,6 +192,11 @@ const STRATEGY_INFO = {
     name: 'HA Donchian Bearish',
     desc: 'A mechanical trend-following strategy by Brijesh Bhatia. Identifies early bearish reversals when the Heikin-Ashi candle flips red with a flat top (no upper shadow) after at least 3 green exhaustion candles. Trades are trailed dynamically using the Donchian Channel.',
     example: '<img src="/assets/ha_donchian_bearish_diagram.png?v=7" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short/Sell at the open of the next candle (once the confirmation red HA candle closes).<br><strong>Stop Loss:</strong> Trailing stop at the upper Donchian Channel band (highest high of last 3 candles for swing, 5 candles for weekly positional, or 2 candles for scalping), OR initially at the high of the 1st red HA reversal candle for a tighter risk option.<br><strong>Target:</strong> Ride the trend until the trailing stop is hit.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., SBIN rallies for 5 days (3+ green HA candles). Today, it prints a red HA candle with no upper shadow (flat top). You short at the open of the next candle and trail the highest high of the last 3 days.</span>'
+  },
+  multi_tf: {
+    name: 'Multi-Timeframe Heikin-Ashi Confluence',
+    desc: 'Analyzes Higher Timeframe alignment across Monthly, Weekly, and Daily charts using Heikin-Ashi candles and RSI + MACD momentum. When all three timeframes agree (+1 +1 +1 or -1 -1 -1), it indicates an extremely high-probability institutional trend confluence.',
+    example: '<strong>Bullish Confluence (+3):</strong> Monthly Green HA + Weekly Green HA + Daily RSI > 50 & MACD > 0.<br><strong>Bearish Confluence (-3):</strong> Monthly Red HA + Weekly Red HA + Daily RSI < 50 & MACD < 0.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., BAJAJ-AUTO has a green Monthly HA candle (+1), green Weekly HA candle (+1), and Daily RSI > 70 with positive MACD (+1). This 3-tier confluence filters out false counter-trend signals.</span>'
   }
 };
 
@@ -199,13 +204,13 @@ const STRATEGY_INFO = {
 async function init() {
   fetchStatus();
   setInterval(fetchStatus, 30000); // refresh every 30s
-  
+
   // Tab Switching
   const tabScreener = document.getElementById('tabScreener');
   const tabScripts = document.getElementById('tabScripts');
   const screenerView = document.getElementById('screener-view');
   const scriptsView = document.getElementById('scripts-view');
-  
+
   if (tabScreener && tabScripts) {
     tabScreener.addEventListener('click', (e) => {
       e.preventDefault();
@@ -223,7 +228,7 @@ async function init() {
       renderScripts();
     });
   }
-  
+
   // Setup Universe Pills
   const assetToggle = document.getElementById('assetToggle');
   if (assetToggle) {
@@ -232,7 +237,7 @@ async function init() {
       Array.from(assetToggle.children).forEach(p => p.classList.remove('active'));
       e.target.classList.add('active');
       const asset = e.target.dataset.asset;
-      
+
       // Filter Strategy Pills
       const stratPills = Array.from(DOM.strategyPills.children);
       stratPills.forEach(p => {
@@ -242,7 +247,7 @@ async function init() {
           p.style.display = 'none';
         }
       });
-      
+
       // Auto-select first visible pill
       const firstVisible = stratPills.find(p => p.style.display !== 'none');
       if (firstVisible) firstVisible.click();
@@ -251,15 +256,15 @@ async function init() {
 
   DOM.universePills.addEventListener('click', async (e) => {
     if (!e.target.classList.contains('pill')) return;
-    
+
     // UI Update
     Array.from(DOM.universePills.children).forEach(p => p.classList.remove('active'));
     e.target.classList.add('active');
-    
+
     const val = e.target.dataset.val;
     if (val === 'custom') {
       DOM.customTickerWrapper.classList.remove('hidden');
-      AppState.setTickers(DOM.tickerInput.value.split(',').map(s=>s.trim()).filter(Boolean));
+      AppState.setTickers(DOM.tickerInput.value.split(',').map(s => s.trim()).filter(Boolean));
     } else {
       DOM.customTickerWrapper.classList.add('hidden');
       DOM.scanBtn.disabled = true;
@@ -282,7 +287,7 @@ async function init() {
   const modal = document.getElementById('strategyModal');
   const modalClose = document.getElementById('modalClose');
   const modalOverlay = modal.querySelector('.modal-overlay');
-  
+
   const closeModal = () => modal.classList.add('hidden');
   modalClose.addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', closeModal);
@@ -321,17 +326,17 @@ async function init() {
   DOM.strategyPills.addEventListener('click', (e) => {
     const pill = e.target.closest('.pill');
     if (!pill) return;
-    
+
     Array.from(DOM.strategyPills.children).forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
-    
+
     const strategyVal = pill.dataset.val;
     AppState.setStrategy(strategyVal);
-    
+
     if (DOM.lookbackWrapper) {
       DOM.lookbackWrapper.style.display = strategyVal === 'multi_tf' ? 'block' : 'none';
     }
-    
+
     // Auto timeframe
     const tf = pill.dataset.tf;
     if (tf) {
@@ -346,7 +351,7 @@ async function init() {
   DOM.tickerInput.addEventListener('input', e => {
     const activeUniverse = DOM.universePills.querySelector('.active').dataset.val;
     if (activeUniverse === 'custom') {
-      AppState.setTickers(e.target.value.split(',').map(s=>s.trim()).filter(Boolean));
+      AppState.setTickers(e.target.value.split(',').map(s => s.trim()).filter(Boolean));
     }
   });
 
@@ -365,7 +370,7 @@ async function init() {
     }
   });
   DOM.scanBtn.addEventListener('click', runScan);
-  
+
   const cancelBtn = document.getElementById('cancelBtn');
   if (cancelBtn) {
     cancelBtn.addEventListener('click', () => {
@@ -378,7 +383,7 @@ async function init() {
   // Initial Data Load (Nifty 50)
   AppState.setStrategy('all');
   AppState.setTimeframe('1d');
-  
+
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.innerHTML = `<div class="spinner"></div> <span>Loading NIFTY50...</span>`;
   try {
@@ -397,7 +402,7 @@ async function fetchStatus() {
   try {
     const fyersRes = await fetch('/fyers/status');
     const fyersData = await fyersRes.json();
-    
+
     const connBadge = document.getElementById('connStatus');
     if (fyersData.connected) {
       connBadge.className = 'badge badge-green';
@@ -435,17 +440,17 @@ async function runScan() {
   const scanId = ++currentScanId;
 
   if (!DOM.customTickerWrapper.classList.contains('hidden')) {
-    const customList = DOM.tickerInput.value.split(',').map(s=>s.trim()).filter(Boolean);
+    const customList = DOM.tickerInput.value.split(',').map(s => s.trim()).filter(Boolean);
     if (customList.length > 0) AppState.setTickers(customList);
   }
-  
+
   if (AppState.tickers.length === 0) return;
-  
+
   DOM.scanBtn.disabled = true;
   DOM.scanBtn.style.display = 'none';
   const cancelBtn = document.getElementById('cancelBtn');
   if (cancelBtn) cancelBtn.style.display = 'flex';
-  
+
   DOM.progressArea.style.display = 'block';
   DOM.progressText.innerText = `Scanning starting...`;
   DOM.progressPercent.innerText = `0%`;
@@ -460,7 +465,7 @@ async function runScan() {
 
   document.getElementById('adStrip').style.display = 'none';
   document.getElementById('summaryBar').style.display = 'none';
-  
+
   const results = [];
   const strategyId = AppState.strategy;
 
@@ -469,8 +474,8 @@ async function runScan() {
     // as they require multiple paginated requests to the broker.
     const isEOD = AppState.timeframe === '1d';
     const isMultiTF = strategyId === 'multi_tf';
-    const BATCH_SIZE = isMultiTF ? 12 : (isEOD ? 25 : 6);
-    const BATCH_DELAY = isMultiTF ? 150 : (isEOD ? 150 : 200);
+    const BATCH_SIZE = isMultiTF ? 3 : (isEOD ? 25 : 6);
+    const BATCH_DELAY = isMultiTF ? 600 : (isEOD ? 150 : 200);
 
     for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
@@ -481,7 +486,7 @@ async function runScan() {
       DOM.progressBar.style.width = `${pct}%`;
 
       const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
-      
+
       await Promise.all(batch.map(async (ticker) => {
         try {
           let data;
@@ -508,7 +513,7 @@ async function runScan() {
           const curr = data.closes[n - 1];
           const prev = data.closes[n - 2];
           const chgPct = parseFloat(((curr - prev) / prev * 100).toFixed(2));
-          
+
           let res = null;
           let matchedStrategies = [];
 
@@ -526,13 +531,13 @@ async function runScan() {
               else if (s.startsWith('hm_')) tempRes = hmStrats.run(s, data);
               else if (s.startsWith('smc_')) tempRes = smcStrats.run(s, data);
               else if (s.startsWith('ha_donchian_')) tempRes = haDonchianStrats.run(s, data, AppState.timeframe);
-              
+
               if (tempRes && tempRes.isMatch) {
                 matchedStrategies.push(s);
                 if (tempRes.reason) combinedReasons.push(`<b>${s.toUpperCase()}:</b> ${tempRes.reason}`);
               }
             }
-            
+
             const finalReason = combinedReasons.length > 0 ? combinedReasons.join('<br>') : 'Raw Technical Scan (Score Rank)';
             res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
@@ -622,9 +627,9 @@ async function runScan() {
             const macdVal = macdData.macd;
             const macdHist = macdData.hist;
             const cciVal = cci(data.highs, data.lows, data.closes, 34);
-            
+
             const recentVol = data.volumes[n - 1];
-            const avgVol = data.volumes.slice(n - 21, n - 1).reduce((a,b)=>a+b,0) / 20;
+            const avgVol = data.volumes.slice(n - 21, n - 1).reduce((a, b) => a + b, 0) / 20;
             const vr = avgVol > 0 ? parseFloat((recentVol / avgVol).toFixed(2)) : 1;
 
             // Pivot Points (Classic) based on previous day High, Low, Close
@@ -642,15 +647,15 @@ async function runScan() {
             // Entry, Stop, Targets
             const prevClose = data.closes[n - 2] || curr;
             const entry = res.entry || prevClose;
-            
+
             const SHORT_STRATEGIES = ['ohl_bearish', 'vcp_down', 'bear_call', 'hm_top', 'hm_bearish', 'smc_bearish', 'ha_donchian_bearish'];
             const isShort = Boolean(res.isShort) || SHORT_STRATEGIES.includes(strategyId) || SHORT_STRATEGIES.includes(AppState.strategy);
 
             let stop = res.stop;
             if (!stop) {
-              stop = isShort 
-                     ? (res.risk ? entry + res.risk : entry * 1.05)
-                     : (res.risk ? entry - res.risk : entry * 0.95);
+              stop = isShort
+                ? (res.risk ? entry + res.risk : entry * 1.05)
+                : (res.risk ? entry - res.risk : entry * 0.95);
             }
             const riskAmount = Math.abs(entry - stop);
 
@@ -658,7 +663,7 @@ async function runScan() {
             const t2 = res.t2 || (isShort ? entry - (riskAmount * 3) : entry + (riskAmount * 3));
 
             results.push({
-              ticker, data, ...res, 
+              ticker, data, ...res,
               chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, macdVal, macdHist, cciVal,
               entry, stop, t1, t2, s1, s2, s3, r1, r2, r3
             });
@@ -671,18 +676,18 @@ async function runScan() {
       await new Promise(r => setTimeout(r, BATCH_DELAY));
     }
 
-  // Overlay Live Prices
-  try {
-    const allSymbols = results.map(r => r.ticker);
-    if (allSymbols.length > 0) {
-      const BATCH_Q = 100;
-      for (let i = 0; i < allSymbols.length; i += BATCH_Q) {
-         const batchSyms = allSymbols.slice(i, i + BATCH_Q).join(',');
-         const qRes = await fetch(`/api/quotes?symbols=${batchSyms}`);
-         if (qRes.ok) {
-           const qData = await qRes.json();
-           if (qData.quotes) {
-             results.forEach(r => {
+    // Overlay Live Prices
+    try {
+      const allSymbols = results.map(r => r.ticker);
+      if (allSymbols.length > 0) {
+        const BATCH_Q = 100;
+        for (let i = 0; i < allSymbols.length; i += BATCH_Q) {
+          const batchSyms = allSymbols.slice(i, i + BATCH_Q).join(',');
+          const qRes = await fetch(`/api/quotes?symbols=${batchSyms}`);
+          if (qRes.ok) {
+            const qData = await qRes.json();
+            if (qData.quotes) {
+              results.forEach(r => {
                 const livePrice = qData.quotes[r.ticker] || qData.quotes[r.ticker.toUpperCase()];
                 if (livePrice) {
                   const prev = r.data.closes[r.data.closes.length - 2];
@@ -691,14 +696,14 @@ async function runScan() {
                     r.chgPct = parseFloat(((livePrice - prev) / prev * 100).toFixed(2));
                   }
                 }
-             });
-           }
-         }
+              });
+            }
+          }
+        }
       }
-    }
-  } catch (e) {
+    } catch (e) {
       console.error("Failed to fetch live quotes", e);
-  }
+    }
 
     if (scanId !== currentScanId) return; // Drop stale results if a newer scan started
 
@@ -764,7 +769,7 @@ function renderResults(results) {
 
     results.forEach((r, i) => {
       const mt = r.multiTf;
-      
+
       const badgeHtml = (val) => {
         if (val === 1) return `<span class="badge-status badge-1" style="background: var(--green-dim); color: var(--green); border: 1px solid rgba(36, 180, 126, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: 12px;">+1</span>`;
         if (val === -1) return `<span class="badge-status badge-0" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-weight: 700; font-size: 12px;">-1</span>`;
@@ -841,13 +846,13 @@ function renderResults(results) {
     if (r.chgPct >= 0) advances++; else declines++;
   });
   const total = advances + declines;
-  
+
   if (total > 0) {
     const adStrip = document.getElementById('adStrip');
     adStrip.style.display = 'flex';
     adStrip.innerHTML = `
-      <div class="ad-green" style="width:${(advances/total)*100}%"></div>
-      <div class="ad-red" style="width:${(declines/total)*100}%"></div>
+      <div class="ad-green" style="width:${(advances / total) * 100}%"></div>
+      <div class="ad-red" style="width:${(declines / total) * 100}%"></div>
     `;
 
     const sumBar = document.getElementById('summaryBar');
@@ -855,7 +860,7 @@ function renderResults(results) {
     sumBar.innerHTML = `
       <div class="sum-chip"><div class="sk">Scanned / Matched</div><div class="sv">${AppState.tickers.length} / ${results.length}</div></div>
       <div class="sum-chip"><div class="sk">Advance / Decline</div><div class="sv"><span style="color:var(--green)">${advances}</span> : <span style="color:var(--red)">${declines}</span></div></div>
-      <div class="sum-chip"><div class="sk">Avg RSI</div><div class="sv">${Math.round(results.reduce((a,b)=>a+b.rsiVal,0)/results.length)}</div></div>
+      <div class="sum-chip"><div class="sk">Avg RSI</div><div class="sv">${Math.round(results.reduce((a, b) => a + b.rsiVal, 0) / results.length)}</div></div>
       <div class="sum-chip"><div class="sk">Scan Time</div><div class="sv">${window._lastScanDuration || '0.0'}s</div></div>
     `;
   }
@@ -893,7 +898,7 @@ function renderResults(results) {
       if (r.curr > r.ema200) calcScore += 10;
       if (r.curr > r.ema50) calcScore += 10;
       if (r.curr > r.ema20) calcScore += 10;
-      
+
       if (r.rsiVal > 40 && r.rsiVal < 70) calcScore += 20;
       else if (r.rsiVal >= 70) calcScore += 10;
       else if (r.rsiVal <= 30) calcScore += 5;
@@ -916,145 +921,145 @@ function renderResults(results) {
 
     // 2. Render Cards
     results.forEach(r => {
-    const chgClass = r.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
-    const chgSign = r.chgPct >= 0 ? '+' : '';
-    
-    const rsiOk = r.rsiVal > 50 && r.rsiVal < 70, rsiWarn = r.rsiVal >= 70;
-    const adxOk = r.adxVal > 25, adxWarn = r.adxVal > 20;
-    const vrOk = r.vr >= 1.5, vrWarn = r.vr >= 1.0;
-    
-    const score = r.score;
-    
-    const barW = score;
-    const barCol = score >= 75 ? '#22d08a' : score >= 55 ? '#f5a623' : '#f05a5a';
-    const dotClass = (ok, warn) => ok ? 'dy' : warn ? 'dm' : 'dn';
+      const chgClass = r.chgPct >= 0 ? 'chg-pos' : 'chg-neg';
+      const chgSign = r.chgPct >= 0 ? '+' : '';
 
-    const strategyLabels = {
-      all: 'All Stocks',
-      ttm_orb: 'TTM Squeeze + ORB',
-      intraday_retest: 'SMC Sweep & Retest',
-      ohl_bullish: 'Open = Low',
-      ohl_bearish: 'Open = High',
-      btst: 'BTST Momentum',
-      crsi: 'Connors RSI',
-      minervini: 'Minervini VCP',
-      darvas: 'Darvas Box',
-      rs: 'Relative Strength',
-      vcp_down: 'VCP Breakdown',
-      bear_call: 'Bear Call Spread',
-      bps: 'Bull Put Spread',
-      strangle: 'Short Strangle',
-      iv_crush: 'Earnings IV Crush',
-      wheel: 'The Wheel / CSP',
-      weinstein: 'Stan Weinstein Stage 2',
-      wyckoff: 'Wyckoff Stopping Vol',
-      hm_bottom: 'HM Bottom',
-      hm_top: 'HM Top',
-      hm_bullish: 'HM Bullish',
-      hm_bearish: 'HM Bearish',
-      hm_chop: 'HM Chop',
-      xmomentum: 'Fresh Momentum',
-      csp: 'Cash Secured Put',
-      cc: 'Covered Call'
-    };
-    
-    let tagsHtml = '';
-    if (AppState.strategy === 'all') {
-      if (r.matches && r.matches.length > 0) {
-        r.matches.forEach(m => {
-          tagsHtml += `<span class="setup-tag tag-breakout">${strategyLabels[m] || m.toUpperCase()}</span>`;
-        });
-      }
-    } else {
-      const setupName = strategyLabels[AppState.strategy] || AppState.strategy.toUpperCase();
-      tagsHtml = `<span class="setup-tag tag-breakout">${setupName}</span>`;
-    }
+      const rsiOk = r.rsiVal > 50 && r.rsiVal < 70, rsiWarn = r.rsiVal >= 70;
+      const adxOk = r.adxVal > 25, adxWarn = r.adxVal > 20;
+      const vrOk = r.vr >= 1.5, vrWarn = r.vr >= 1.0;
 
-    // Add Dynamic Warning / Alert Tags
-    if (r.rsiVal > 70) tagsHtml += `<span class="tag orange">RSI Overbought</span>`;
-    if (r.rsiVal < 30) tagsHtml += `<span class="tag green">RSI Oversold</span>`;
-    if (r.vr > 2.0) tagsHtml += `<span class="tag green">Vol Surge</span>`;
-    if (r.curr < r.ema200) tagsHtml += `<span class="tag red">Below 200 EMA</span>`;
-    if (r.curr > r.ema50 && r.ema50 > r.ema200) tagsHtml += `<span class="tag green">Strong Trend</span>`;
-    if (r.chgPct < -3) tagsHtml += `<span class="tag red">Heavy Drop</span>`;
-    if (r.macdHist > 0 && r.macdVal < 0) tagsHtml += `<span class="tag green">MACD Bullish Cross</span>`;
-    if (r.cciVal > 100) tagsHtml += `<span class="tag orange">CCI Extremes (Overbought)</span>`;
-    if (r.cciVal < -100) tagsHtml += `<span class="tag green">CCI Extremes (Oversold)</span>`;
-    if (r.curr > r.ema50 && r.curr < r.ema50 * 1.02) tagsHtml += `<span class="tag green">Near 50 EMA Support</span>`;
-    
-    tagsHtml = `<div class="tags-container" style="margin-bottom:8px;">${tagsHtml}</div>`;
+      const score = r.score;
 
-    // Calculate 14-day ATR for dynamic holding period estimation
-    let estHold = 'Unknown';
-    if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(AppState.strategy)) {
-      estHold = 'Intraday';
-    } else if (['btst'].includes(AppState.strategy)) {
-      estHold = '1-2 Days';
-    } else {
-      // Dynamic ATR calculation
-      let sumTr = 0;
-      let validDays = 0;
-      const nData = r.data.closes.length;
-      const atrPeriod = 14;
-      for(let i = Math.max(1, nData - atrPeriod); i < nData; i++) {
-        const tr = Math.max(
-          r.data.highs[i] - r.data.lows[i],
-          Math.abs(r.data.highs[i] - r.data.closes[i-1]),
-          Math.abs(r.data.lows[i] - r.data.closes[i-1])
-        );
-        sumTr += tr;
-        validDays++;
-      }
-      const atr = validDays > 0 ? (sumTr / validDays) : (r.curr * 0.02); // fallback 2% daily move
-      
-      const targetDistance = Math.abs(r.t1 - r.entry);
-      let days = Math.ceil(targetDistance / atr);
-      if (days < 1) days = 1;
-      
-      if (days <= 5) {
-        estHold = `${days}-${days+2} Days`;
-      } else if (days <= 15) {
-        const wks = Math.ceil(days/5);
-        estHold = `${wks}-${wks+1} Weeks`;
+      const barW = score;
+      const barCol = score >= 75 ? '#22d08a' : score >= 55 ? '#f5a623' : '#f05a5a';
+      const dotClass = (ok, warn) => ok ? 'dy' : warn ? 'dm' : 'dn';
+
+      const strategyLabels = {
+        all: 'All Stocks',
+        ttm_orb: 'TTM Squeeze + ORB',
+        intraday_retest: 'SMC Sweep & Retest',
+        ohl_bullish: 'Open = Low',
+        ohl_bearish: 'Open = High',
+        btst: 'BTST Momentum',
+        crsi: 'Connors RSI',
+        minervini: 'Minervini VCP',
+        darvas: 'Darvas Box',
+        rs: 'Relative Strength',
+        vcp_down: 'VCP Breakdown',
+        bear_call: 'Bear Call Spread',
+        bps: 'Bull Put Spread',
+        strangle: 'Short Strangle',
+        iv_crush: 'Earnings IV Crush',
+        wheel: 'The Wheel / CSP',
+        weinstein: 'Stan Weinstein Stage 2',
+        wyckoff: 'Wyckoff Stopping Vol',
+        hm_bottom: 'HM Bottom',
+        hm_top: 'HM Top',
+        hm_bullish: 'HM Bullish',
+        hm_bearish: 'HM Bearish',
+        hm_chop: 'HM Chop',
+        xmomentum: 'Fresh Momentum',
+        csp: 'Cash Secured Put',
+        cc: 'Covered Call'
+      };
+
+      let tagsHtml = '';
+      if (AppState.strategy === 'all') {
+        if (r.matches && r.matches.length > 0) {
+          r.matches.forEach(m => {
+            tagsHtml += `<span class="setup-tag tag-breakout">${strategyLabels[m] || m.toUpperCase()}</span>`;
+          });
+        }
       } else {
-        const mos = Math.ceil(days/21);
-        estHold = `${mos}-${mos+1} Months`;
+        const setupName = strategyLabels[AppState.strategy] || AppState.strategy.toUpperCase();
+        tagsHtml = `<span class="setup-tag tag-breakout">${setupName}</span>`;
       }
-    }
 
-    // Calculate Position Sizing
-    let positionHtml = '';
-    const cap = parseFloat(AppState.capital) || 0;
-    if (cap > 0 && r.entry > 0) {
-      // If options strategy (margin provided), size based on margin, else size based on cash capital
-      if (r.margin) {
-        const lots = Math.floor(cap / r.margin);
-        const investment = lots * r.margin;
-        positionHtml = `
+      // Add Dynamic Warning / Alert Tags
+      if (r.rsiVal > 70) tagsHtml += `<span class="tag orange">RSI Overbought</span>`;
+      if (r.rsiVal < 30) tagsHtml += `<span class="tag green">RSI Oversold</span>`;
+      if (r.vr > 2.0) tagsHtml += `<span class="tag green">Vol Surge</span>`;
+      if (r.curr < r.ema200) tagsHtml += `<span class="tag red">Below 200 EMA</span>`;
+      if (r.curr > r.ema50 && r.ema50 > r.ema200) tagsHtml += `<span class="tag green">Strong Trend</span>`;
+      if (r.chgPct < -3) tagsHtml += `<span class="tag red">Heavy Drop</span>`;
+      if (r.macdHist > 0 && r.macdVal < 0) tagsHtml += `<span class="tag green">MACD Bullish Cross</span>`;
+      if (r.cciVal > 100) tagsHtml += `<span class="tag orange">CCI Extremes (Overbought)</span>`;
+      if (r.cciVal < -100) tagsHtml += `<span class="tag green">CCI Extremes (Oversold)</span>`;
+      if (r.curr > r.ema50 && r.curr < r.ema50 * 1.02) tagsHtml += `<span class="tag green">Near 50 EMA Support</span>`;
+
+      tagsHtml = `<div class="tags-container" style="margin-bottom:8px;">${tagsHtml}</div>`;
+
+      // Calculate 14-day ATR for dynamic holding period estimation
+      let estHold = 'Unknown';
+      if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(AppState.strategy)) {
+        estHold = 'Intraday';
+      } else if (['btst'].includes(AppState.strategy)) {
+        estHold = '1-2 Days';
+      } else {
+        // Dynamic ATR calculation
+        let sumTr = 0;
+        let validDays = 0;
+        const nData = r.data.closes.length;
+        const atrPeriod = 14;
+        for (let i = Math.max(1, nData - atrPeriod); i < nData; i++) {
+          const tr = Math.max(
+            r.data.highs[i] - r.data.lows[i],
+            Math.abs(r.data.highs[i] - r.data.closes[i - 1]),
+            Math.abs(r.data.lows[i] - r.data.closes[i - 1])
+          );
+          sumTr += tr;
+          validDays++;
+        }
+        const atr = validDays > 0 ? (sumTr / validDays) : (r.curr * 0.02); // fallback 2% daily move
+
+        const targetDistance = Math.abs(r.t1 - r.entry);
+        let days = Math.ceil(targetDistance / atr);
+        if (days < 1) days = 1;
+
+        if (days <= 5) {
+          estHold = `${days}-${days + 2} Days`;
+        } else if (days <= 15) {
+          const wks = Math.ceil(days / 5);
+          estHold = `${wks}-${wks + 1} Weeks`;
+        } else {
+          const mos = Math.ceil(days / 21);
+          estHold = `${mos}-${mos + 1} Months`;
+        }
+      }
+
+      // Calculate Position Sizing
+      let positionHtml = '';
+      const cap = parseFloat(AppState.capital) || 0;
+      if (cap > 0 && r.entry > 0) {
+        // If options strategy (margin provided), size based on margin, else size based on cash capital
+        if (r.margin) {
+          const lots = Math.floor(cap / r.margin);
+          const investment = lots * r.margin;
+          positionHtml = `
           <div style="margin-bottom: 12px; padding: 10px 12px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3); border-radius: 6px; display: flex; flex-direction: column; gap: 6px;">
             <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Suggested Lots</span><span style="font-weight:600; color:var(--text-main)">${lots} Lots</span></div>
-            <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Est. Margin Reqd</span><span style="font-weight:600; color:var(--text-main)">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Est. Margin Reqd</span><span style="font-weight:600; color:var(--text-main)">₹${investment.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
           </div>
         `;
-      } else {
-        const qty = Math.floor(cap / r.entry);
-        const investment = qty * r.entry;
-        const riskAmt = qty * (r.entry - r.stop);
-        const projReturn = qty * (r.t1 - r.entry);
-        if (qty > 0) {
-          positionHtml = `
+        } else {
+          const qty = Math.floor(cap / r.entry);
+          const investment = qty * r.entry;
+          const riskAmt = qty * (r.entry - r.stop);
+          const projReturn = qty * (r.t1 - r.entry);
+          if (qty > 0) {
+            positionHtml = `
             <div style="margin-bottom: 12px; padding: 10px 12px; background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.3); border-radius: 6px; display: flex; flex-direction: column; gap: 6px;">
               <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Qty (Pos Size)</span><span style="font-weight:600; color:var(--text-main)">${qty}</span></div>
               <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Est. Hold Time</span><span style="font-weight:600; color:var(--text-main)">${estHold}</span></div>
-              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Investment</span><span style="font-weight:600; color:var(--text-main)">₹${investment.toLocaleString('en-IN', {maximumFractionDigits: 0})}</span></div>
-              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Risk / Reward (T1)</span><span style="font-weight:600"><span style="color:var(--red)">-₹${Math.abs(riskAmt).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span style="color:var(--text-muted)">/</span> <span style="color:var(--green)">+₹${projReturn.toLocaleString('en-IN', {maximumFractionDigits:0})}</span></span></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Investment</span><span style="font-weight:600; color:var(--text-main)">₹${investment.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;"><span style="color:var(--text-muted)">Risk / Reward (T1)</span><span style="font-weight:600"><span style="color:var(--red)">-₹${Math.abs(riskAmt).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span> <span style="color:var(--text-muted)">/</span> <span style="color:var(--green)">+₹${projReturn.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></span></div>
             </div>
           `;
+          }
         }
       }
-    }
 
-    html += `
+      html += `
       <div class="scard">
         <div class="scard-accent" style="background:var(--accent)"></div>
         <div class="scard-top">
@@ -1072,7 +1077,7 @@ function renderResults(results) {
         </div>
         
         <div class="price-row" style="margin-bottom: 8px;">
-          <span class="price">₹${r.curr.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+          <span class="price">₹${r.curr.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           <span class="chg ${chgClass}">${chgSign}${r.chgPct}%</span>
         </div>
         <div style="margin-bottom: 12px;">${tagsHtml}</div>
@@ -1084,30 +1089,30 @@ function renderResults(results) {
         ${positionHtml}
 
         <div class="levels" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 6px; padding-bottom: 12px;">
-          <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-stop"><div class="lk">Stop Loss</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-          <div class="lv lv-target"><div class="lk">Target 1</div><div class="lv2">₹${r.t1.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+          <div class="lv lv-entry"><div class="lk">Entry</div><div class="lv2">₹${r.entry.toLocaleString('en-IN', { maximumFractionDigits: 1 })}</div></div>
+          <div class="lv lv-stop"><div class="lk">Stop Loss</div><div class="lv2">₹${r.stop.toLocaleString('en-IN', { maximumFractionDigits: 1 })}</div></div>
+          <div class="lv lv-target"><div class="lk">Target 1</div><div class="lv2">₹${r.t1.toLocaleString('en-IN', { maximumFractionDigits: 1 })}</div></div>
         </div>
         
         <details class="scard-details">
           <summary>View Technicals ▼</summary>
           <div style="margin-top: 12px;">
             <div class="indicator-grid">
-              <div class="ind"><div class="ik">RSI 14</div><div class="iv" style="color:${rsiOk?'var(--green)':rsiWarn?'var(--red)':'var(--muted)'}">${r.rsiVal}</div></div>
-              <div class="ind"><div class="ik">ADX 14</div><div class="iv" style="color:${adxOk?'var(--green)':adxWarn?'var(--amber)':'var(--muted)'}">${r.adxVal}</div></div>
-              <div class="ind"><div class="ik">Vol ×</div><div class="iv" style="color:${vrOk?'var(--green)':vrWarn?'var(--amber)':'var(--muted)'}">${r.vr}×</div></div>
-              <div class="ind"><div class="ik">EMA 20</div><div class="iv">₹${r.ema20.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-              <div class="ind"><div class="ik">EMA 50</div><div class="iv">₹${r.ema50.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
-              <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${r.ema200.toLocaleString('en-IN', {maximumFractionDigits: 1})}</div></div>
+              <div class="ind"><div class="ik">RSI 14</div><div class="iv" style="color:${rsiOk ? 'var(--green)' : rsiWarn ? 'var(--red)' : 'var(--muted)'}">${r.rsiVal}</div></div>
+              <div class="ind"><div class="ik">ADX 14</div><div class="iv" style="color:${adxOk ? 'var(--green)' : adxWarn ? 'var(--amber)' : 'var(--muted)'}">${r.adxVal}</div></div>
+              <div class="ind"><div class="ik">Vol ×</div><div class="iv" style="color:${vrOk ? 'var(--green)' : vrWarn ? 'var(--amber)' : 'var(--muted)'}">${r.vr}×</div></div>
+              <div class="ind"><div class="ik">EMA 20</div><div class="iv">₹${r.ema20.toLocaleString('en-IN', { maximumFractionDigits: 1 })}</div></div>
+              <div class="ind"><div class="ik">EMA 50</div><div class="iv">₹${r.ema50.toLocaleString('en-IN', { maximumFractionDigits: 1 })}</div></div>
+              <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${r.ema200.toLocaleString('en-IN', { maximumFractionDigits: 1 })}</div></div>
               <div class="ind"><div class="ik">MACD</div><div class="iv" style="color:${r.macdHist >= 0 ? 'var(--green)' : 'var(--red)'}">${r.macdVal.toFixed(2)}</div></div>
               <div class="ind"><div class="ik">CCI 34</div><div class="iv" style="color:${r.cciVal > 100 ? 'var(--green)' : r.cciVal < -100 ? 'var(--red)' : 'var(--muted)'}">${r.cciVal.toFixed(1)}</div></div>
             </div>
             <div class="signal-dots">
-              <span class="dot-row"><span class="dot ${r.curr > r.ema200?'dy':'dn'}"></span>200 EMA</span>
-              <span class="dot-row"><span class="dot ${r.curr > r.ema50?'dy':'dn'}"></span>50 EMA</span>
-              <span class="dot-row"><span class="dot ${r.curr > r.ema20?'dy':'dn'}"></span>20 EMA</span>
-              <span class="dot-row"><span class="dot ${dotClass(rsiOk,rsiWarn)}"></span>RSI</span>
-              <span class="dot-row"><span class="dot ${dotClass(adxOk,adxWarn)}"></span>ADX</span>
+              <span class="dot-row"><span class="dot ${r.curr > r.ema200 ? 'dy' : 'dn'}"></span>200 EMA</span>
+              <span class="dot-row"><span class="dot ${r.curr > r.ema50 ? 'dy' : 'dn'}"></span>50 EMA</span>
+              <span class="dot-row"><span class="dot ${r.curr > r.ema20 ? 'dy' : 'dn'}"></span>20 EMA</span>
+              <span class="dot-row"><span class="dot ${dotClass(rsiOk, rsiWarn)}"></span>RSI</span>
+              <span class="dot-row"><span class="dot ${dotClass(adxOk, adxWarn)}"></span>ADX</span>
             </div>
           </div>
         </details>
@@ -1126,9 +1131,9 @@ function renderResults(results) {
         <div id="bt-results-${r.ticker}" style="display: none; margin-top: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 11px;"></div>
       </div>
     `;
-    
-    // Cache data for backtesting
-    window._cachedStockData[r.ticker] = r.data;
+
+      // Cache data for backtesting
+      window._cachedStockData[r.ticker] = r.data;
     });
   }
 
@@ -1138,11 +1143,11 @@ function renderResults(results) {
 window.triggerBacktest = (ticker, strategyId, btn) => {
   const data = window._cachedStockData[ticker];
   if (!data) return alert("Data not found for backtest");
-  
+
   const tpInput = document.getElementById(`bt-tp-${ticker}`);
   const slInput = document.getElementById(`bt-sl-${ticker}`);
   const resultsDiv = document.getElementById(`bt-results-${ticker}`);
-  
+
   const targetPct = parseFloat(tpInput.value) || 10;
   const slPct = parseFloat(slInput.value) || 5;
 
