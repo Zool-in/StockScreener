@@ -450,7 +450,6 @@ async function runScan() {
   DOM.progressPercent.innerText = `0%`;
   DOM.progressBar.style.width = `0%`;
 
-  DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0; font-size: 14px;">Scan in progress...</div>`;
   document.getElementById('adStrip').style.display = 'none';
   document.getElementById('summaryBar').style.display = 'none';
   
@@ -462,16 +461,9 @@ async function runScan() {
     // as they require multiple paginated requests to the broker.
     const isEOD = AppState.timeframe === '1d';
     const isMultiTF = strategyId === 'multi_tf';
-    const BATCH_SIZE = isMultiTF ? 4 : (isEOD ? 15 : 4);
-    const BATCH_DELAY = isMultiTF ? 300 : (isEOD ? 600 : 300);
-
+    let completedCount = 0;
     for (let i = 0; i < AppState.tickers.length; i += BATCH_SIZE) {
       if (signal.aborted) throw new Error('AbortError');
-
-      const pct = Math.round((i / AppState.tickers.length) * 100);
-      DOM.progressText.innerText = `Scanning (${i}/${AppState.tickers.length}) stocks...`;
-      DOM.progressPercent.innerText = `${pct}%`;
-      DOM.progressBar.style.width = `${pct}%`;
 
       const batch = AppState.tickers.slice(i, i + BATCH_SIZE);
       
@@ -653,6 +645,12 @@ async function runScan() {
           }
         } catch (e) {
           console.error(`Skipping ${ticker}: `, e);
+        } finally {
+          completedCount++;
+          const pct = Math.round((completedCount / AppState.tickers.length) * 100);
+          DOM.progressText.innerText = `Scanning (${completedCount}/${AppState.tickers.length}) stocks...`;
+          DOM.progressPercent.innerText = `${pct}%`;
+          DOM.progressBar.style.width = `${pct}%`;
         }
       }));
       // Throttle between batches to avoid Hostinger 50req/s DDoS limit
@@ -663,8 +661,6 @@ async function runScan() {
   try {
     const allSymbols = results.map(r => r.ticker);
     if (allSymbols.length > 0) {
-      DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0; font-size: 14px;">Fetching Live Prices...</div>`;
-      
       const BATCH_Q = 100;
       for (let i = 0; i < allSymbols.length; i += BATCH_Q) {
          const batchSyms = allSymbols.slice(i, i + BATCH_Q).join(',');
