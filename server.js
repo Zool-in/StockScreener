@@ -51,7 +51,7 @@ const MIME = {
 };
 
 // ─── Tiny promise wrapper around https.get ────────────────────────────────
-function httpsGet(urlStr, headers = {}, timeoutMs = 12000) {
+function httpsGet(urlStr, headers = {}, timeoutMs = 25000) {
   return new Promise((resolve, reject) => {
     const u = new URL(urlStr);
     const req = https.request({
