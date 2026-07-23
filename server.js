@@ -493,6 +493,20 @@ const server = http.createServer((req, res) => {
     
     return sendJSON(res, 200, s);
   }
+
+  if (p === '/api/db/screener') {
+    try {
+      const strategyId = reqUrl.searchParams.get('strategy') || 'all';
+      if (!db.isAvailable()) {
+        return sendJSON(res, 503, { error: 'Database not available', rows: [] });
+      }
+      const rows = await db.queryStrategy(strategyId);
+      return sendJSON(res, 200, { success: true, count: rows.length, rows });
+    } catch (e) {
+      return sendJSON(res, 500, { error: e.message });
+    }
+  }
+
   if (p === '/fyers/login') {
     if (!fyers.isConfigured()) return sendJSON(res, 400, { error: 'Fyers not configured' });
     res.writeHead(302, { Location: fyers.loginUrl() });

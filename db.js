@@ -99,13 +99,86 @@ async function initDb() {
   }
 }
 
-function isAvailable() {
-  return isConfigured && pool !== null;
+async function upsertStock(record) {
+  if (!pool) return false;
+  try {
+    const sql = `
+      INSERT INTO stock_screeners (
+        ticker, timeframe, cmp, chg_pct, rsi14, adx14, vr, ema20, ema50, ema200, macd_val, macd_hist, cci_val,
+        ohl_bullish, ohl_bearish, minervini, darvas, xmomentum, rs, vcp_down, smc_bullish, smc_bearish,
+        ha_donchian_bullish, ha_donchian_bearish, hm_bullish, hm_bearish, hm_bottom, hm_top, btst, meta_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        cmp=VALUES(cmp), chg_pct=VALUES(chg_pct), rsi14=VALUES(rsi14), adx14=VALUES(adx14), vr=VALUES(vr),
+        ema20=VALUES(ema20), ema50=VALUES(ema50), ema200=VALUES(ema200), macd_val=VALUES(macd_val),
+        macd_hist=VALUES(macd_hist), cci_val=VALUES(cci_val), ohl_bullish=VALUES(ohl_bullish),
+        ohl_bearish=VALUES(ohl_bearish), minervini=VALUES(minervini), darvas=VALUES(darvas),
+        xmomentum=VALUES(xmomentum), rs=VALUES(rs), vcp_down=VALUES(vcp_down), smc_bullish=VALUES(smc_bullish),
+        smc_bearish=VALUES(smc_bearish), ha_donchian_bullish=VALUES(ha_donchian_bullish),
+        ha_donchian_bearish=VALUES(ha_donchian_bearish), hm_bullish=VALUES(hm_bullish),
+        hm_bearish=VALUES(hm_bearish), hm_bottom=VALUES(hm_bottom), hm_top=VALUES(hm_top),
+        btst=VALUES(btst), meta_json=VALUES(meta_json), updated_at=CURRENT_TIMESTAMP;
+    `;
+    const params = [
+      record.ticker, record.timeframe || '1d', record.cmp || 0, record.chg_pct || 0,
+      record.rsi14 || 0, record.adx14 || 0, record.vr || 0, record.ema20 || 0, record.ema50 || 0, record.ema200 || 0,
+      record.macd_val || 0, record.macd_hist || 0, record.cci_val || 0,
+      record.ohl_bullish ? 1 : 0, record.ohl_bearish ? 1 : 0, record.minervini ? 1 : 0, record.darvas ? 1 : 0,
+      record.xmomentum ? 1 : 0, record.rs ? 1 : 0, record.vcp_down ? 1 : 0, record.smc_bullish ? 1 : 0,
+      record.smc_bearish ? 1 : 0, record.ha_donchian_bullish ? 1 : 0, record.ha_donchian_bearish ? 1 : 0,
+      record.hm_bullish ? 1 : 0, record.hm_bearish ? 1 : 0, record.hm_bottom ? 1 : 0, record.hm_top ? 1 : 0,
+      record.btst ? 1 : 0, JSON.stringify(record.meta_json || {})
+    ];
+    await pool.query(sql, params);
+    return true;
+  } catch (err) {
+    console.error(`[MySQL] Error upserting ${record.ticker}:`, err.message);
+    return false;
+  }
+}
+
+async function queryStrategy(strategyId) {
+  if (!pool) return [];
+  const colMap = {
+    ohl_bullish: 'ohl_bullish',
+    ohl_bearish: 'ohl_bearish',
+    minervini: 'minervini',
+    darvas: 'darvas',
+    xmomentum: 'xmomentum',
+    rs: 'rs',
+    vcp_down: 'vcp_down',
+    smc_bullish: 'smc_bullish',
+    smc_bearish: 'smc_bearish',
+    ha_donchian_bullish: 'ha_donchian_bullish',
+    ha_donchian_bearish: 'ha_donchian_bearish',
+    hm_bullish: 'hm_bullish',
+    hm_bearish: 'hm_bearish',
+    hm_bottom: 'hm_bottom',
+    hm_top: 'hm_top',
+    btst: 'btst'
+  };
+
+  const col = colMap[strategyId];
+  let sql = 'SELECT * FROM stock_screeners';
+  if (col) {
+    sql += ` WHERE ${col} = 1`;
+  }
+  sql += ' ORDER BY chg_pct DESC';
+
+  try {
+    const [rows] = await pool.query(sql);
+    return rows;
+  } catch (err) {
+    console.error('[MySQL] Query error:', err.message);
+    return [];
+  }
 }
 
 module.exports = {
   initPool,
   initDb,
   isAvailable,
+  upsertStock,
+  queryStrategy,
   getPool: () => pool
 };
