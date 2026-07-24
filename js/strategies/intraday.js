@@ -114,77 +114,114 @@ function smcIntradayRetest(data) {
   return { isMatch: false };
 }
 
-function ohlBullish(data) {
-  const { closes, highs, lows, opens, volumes, cmp } = data;
+function getTodaySessionData(data) {
+  const { closes, highs, lows, opens, volumes } = data;
   const n = closes.length;
-  if (n < 5) return { isMatch: false };
-  
-  const currentOpen = opens[n-1];
-  const currentLow = lows[n-1];
-  const currentHigh = highs[n-1];
-  const currentClose = closes[n-1];
-  
-  // Must be a green/neutral candle (buyers in control)
-  if (currentClose < currentOpen) return { isMatch: false };
+  if (n < 5) return null;
 
-  // Open = Low (Allowing 0.20% buffer for data noise across brokers)
-  const diff = Math.abs(currentOpen - currentLow) / currentOpen;
+  let dayOpen = opens[n-1];
+  let dayLow = lows[n-1];
+  let dayHigh = highs[n-1];
+  let dayClose = closes[n-1];
+  let totalVol = volumes[n-1];
+
+  // If timestamp array exists for intraday bars (15m/5m)
+  if (data.timestamps && data.timestamps.length >= n) {
+    const lastTs = data.timestamps[n-1];
+    const lastDate = new Date(lastTs * 1000).toDateString();
+    
+    let firstIdx = n - 1;
+    let minLow = lows[n-1];
+    let maxHigh = highs[n-1];
+    let sumVol = 0;
+
+    for (let i = n - 1; i >= 0; i--) {
+      const dStr = new Date(data.timestamps[i] * 1000).toDateString();
+      if (dStr === lastDate) {
+        firstIdx = i;
+        if (lows[i] < minLow) minLow = lows[i];
+        if (highs[i] > maxHigh) maxHigh = highs[i];
+        sumVol += volumes[i];
+      } else {
+        break;
+      }
+    }
+
+    dayOpen = opens[firstIdx];
+    dayLow = minLow;
+    dayHigh = maxHigh;
+    dayClose = closes[n-1];
+    totalVol = sumVol;
+  }
+
+  return { dayOpen, dayLow, dayHigh, dayClose, totalVol };
+}
+
+function ohlBullish(data) {
+  const session = getTodaySessionData(data);
+  if (!session) return { isMatch: false };
+
+  const { dayOpen, dayLow, dayHigh, dayClose, totalVol } = session;
+  const cmp = data.cmp || dayClose;
+
+  // Must be a green/neutral session (buyers in control: Close >= Open)
+  if (dayClose < dayOpen) return { isMatch: false };
+
+  // Open = Low (Allowing 0.20% buffer for 9:15 AM tick data noise across brokers)
+  const diff = Math.abs(dayOpen - dayLow) / dayOpen;
   const isOpenLow = diff <= 0.0020; // 0.20% max deviation
   if (!isOpenLow) return { isMatch: false };
-  
-  const currentVol = volumes[n-1];
+
+  const { closes, volumes } = data;
+  const n = closes.length;
   const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
-  const volSurgeRatio = (currentVol / avgVol).toFixed(1);
-  
-  const { closePercent } = getCandleAnatomy(currentHigh, currentLow, currentClose, currentOpen);
-  
+  const volSurgeRatio = (totalVol / avgVol).toFixed(1);
+  const { closePercent } = getCandleAnatomy(dayHigh, dayLow, dayClose, dayOpen);
+
   return {
     isMatch: true,
-    reason: `Open = Low Setup: Stock opened at low (diff ${(diff * 100).toFixed(2)}%). Buyers defended open level.`,
-    entry: currentHigh,
+    reason: `Open = Low Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and low was ₹${dayLow.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Zero selling pressure from open.`,
+    entry: dayHigh,
     risk: cmp * 0.01,
     metrics: [
+      { name: 'Day Open', value: `₹${dayOpen.toFixed(1)}` },
       { name: 'O=L Diff', value: `${(diff*100).toFixed(2)}%` },
-      { name: 'Vol Surge', value: `${volSurgeRatio}x` },
-      { name: 'Candle Close', value: `Top ${(closePercent*100).toFixed(0)}%` }
+      { name: 'Vol Surge', value: `${volSurgeRatio}x` }
     ]
   };
 }
 
 function ohlBearish(data) {
-  const { closes, highs, lows, opens, volumes, cmp } = data;
-  const n = closes.length;
-  if (n < 5) return { isMatch: false };
-  
-  const currentOpen = opens[n-1];
-  const currentLow = lows[n-1];
-  const currentHigh = highs[n-1];
-  const currentClose = closes[n-1];
+  const session = getTodaySessionData(data);
+  if (!session) return { isMatch: false };
 
-  // Must be a red/neutral candle (sellers in control)
-  if (currentClose > currentOpen) return { isMatch: false };
-  
-  // Open = High (Allowing 0.20% buffer for data noise across brokers)
-  const diff = Math.abs(currentHigh - currentOpen) / currentOpen;
+  const { dayOpen, dayLow, dayHigh, dayClose, totalVol } = session;
+  const cmp = data.cmp || dayClose;
+
+  // Must be a red/neutral session (sellers in control: Close <= Open)
+  if (dayClose > dayOpen) return { isMatch: false };
+
+  // Open = High (Allowing 0.20% buffer for 9:15 AM tick data noise across brokers)
+  const diff = Math.abs(dayHigh - dayOpen) / dayOpen;
   const isOpenHigh = diff <= 0.0020; // 0.20% max deviation
   if (!isOpenHigh) return { isMatch: false };
-  
-  const currentVol = volumes[n-1];
+
+  const { closes, volumes } = data;
+  const n = closes.length;
   const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
-  const volSurgeRatio = (currentVol / avgVol).toFixed(1);
-  
-  const { closePercent } = getCandleAnatomy(currentHigh, currentLow, currentClose, currentOpen);
-  
+  const volSurgeRatio = (totalVol / avgVol).toFixed(1);
+  const { closePercent } = getCandleAnatomy(dayHigh, dayLow, dayClose, dayOpen);
+
   return {
     isMatch: true,
     isShort: true,
-    reason: `Open = High Setup: Stock opened at high (diff ${(diff * 100).toFixed(2)}%). Sellers dominated from open.`,
-    entry: currentLow,
+    reason: `Open = High Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and high was ₹${dayHigh.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Sellers dominated from open.`,
+    entry: dayLow,
     risk: cmp * 0.01,
     metrics: [
+      { name: 'Day Open', value: `₹${dayOpen.toFixed(1)}` },
       { name: 'O=H Diff', value: `${(diff*100).toFixed(2)}%` },
-      { name: 'Vol Surge', value: `${volSurgeRatio}x` },
-      { name: 'Candle Close', value: `Bottom ${((1 - closePercent)*100).toFixed(0)}%` }
+      { name: 'Vol Surge', value: `${volSurgeRatio}x` }
     ]
   };
 }
