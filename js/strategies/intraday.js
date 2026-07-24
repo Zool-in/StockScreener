@@ -124,9 +124,12 @@ function ohlBullish(data) {
   const currentHigh = highs[n-1];
   const currentClose = closes[n-1];
   
-  // Open = Low (Allowing 0.15% buffer for data noise)
-  const diff = (currentOpen - currentLow) / currentOpen;
-  const isOpenLow = diff <= 0.0015; // 0.15% max deviation
+  // Must be a green/neutral candle (buyers in control)
+  if (currentClose < currentOpen) return { isMatch: false };
+
+  // Open = Low (Allowing 0.20% buffer for data noise across brokers)
+  const diff = Math.abs(currentOpen - currentLow) / currentOpen;
+  const isOpenLow = diff <= 0.0020; // 0.20% max deviation
   if (!isOpenLow) return { isMatch: false };
   
   const currentVol = volumes[n-1];
@@ -157,10 +160,13 @@ function ohlBearish(data) {
   const currentLow = lows[n-1];
   const currentHigh = highs[n-1];
   const currentClose = closes[n-1];
+
+  // Must be a red/neutral candle (sellers in control)
+  if (currentClose > currentOpen) return { isMatch: false };
   
-  // Open = High (Allowing 0.15% buffer for data noise)
-  const diff = (currentHigh - currentOpen) / currentOpen;
-  const isOpenHigh = diff <= 0.0015; // 0.15% max deviation
+  // Open = High (Allowing 0.20% buffer for data noise across brokers)
+  const diff = Math.abs(currentHigh - currentOpen) / currentOpen;
+  const isOpenHigh = diff <= 0.0020; // 0.20% max deviation
   if (!isOpenHigh) return { isMatch: false };
   
   const currentVol = volumes[n-1];
