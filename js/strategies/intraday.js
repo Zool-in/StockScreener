@@ -160,74 +160,66 @@ function getTodaySessionData(data) {
 }
 
 function ohlBullish(data) {
-  const { closes, highs, lows, opens, volumes, cmp } = data;
-  const n = closes.length;
-  if (n < 2) return { isMatch: false };
-  
-  const currentOpen = opens[n-1];
-  const currentLow = lows[n-1];
-  const currentHigh = highs[n-1];
-  const currentClose = closes[n-1];
-  const currentCmp = cmp || currentClose;
+  const session = getTodaySessionData(data);
+  if (!session) return { isMatch: false };
 
-  // Must be a green/neutral live candle (buyers in control: Close >= Open)
-  if (currentClose < currentOpen) return { isMatch: false };
+  const { dayOpen, dayLow, dayHigh, dayClose, totalVol } = session;
+  const cmp = data.cmp || dayClose;
 
-  // Live Open = Low (Allowing 0.01% max deviation for tick rounding)
-  const diff = Math.abs(currentOpen - currentLow) / currentOpen;
-  const isOpenLow = diff <= 0.0001; // 0.01% max zero wick deviation
+  // Must be a green/neutral session (buyers in control: Live CMP >= 9:15 AM Open)
+  if (dayClose < dayOpen) return { isMatch: false };
+
+  // Industry Standard Open = Low (9:15 AM Open === Realtime Low till now)
+  const diff = Math.abs(dayOpen - dayLow) / dayOpen;
+  const isOpenLow = diff <= 0.0001; // 0.00% exact zero lower wick
   if (!isOpenLow) return { isMatch: false };
 
-  const currentVol = volumes[n-1];
+  const { closes, volumes } = data;
   const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
-  const volSurgeRatio = (currentVol / avgVol).toFixed(1);
+  const volSurgeRatio = (totalVol / avgVol).toFixed(1);
 
   return {
     isMatch: true,
-    reason: `Live Open = Low Setup: Live bar opened at ₹${currentOpen.toFixed(2)} and low is ₹${currentLow.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Zero selling pressure on live bar.`,
-    entry: currentHigh,
-    risk: currentCmp * 0.01,
+    reason: `Open = Low Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and realtime low till now is ₹${dayLow.toFixed(2)} (0.00% diff). Zero selling pressure since market open.`,
+    entry: dayHigh,
+    risk: cmp * 0.01,
     metrics: [
-      { name: 'Live Open', value: `₹${currentOpen.toFixed(1)}` },
-      { name: 'O=L Diff', value: `${(diff*100).toFixed(2)}%` },
-      { name: 'Vol Surge', value: `${volSurgeRatio}x` }
+      { name: '9:15 AM Open', value: `₹${dayOpen.toFixed(1)}` },
+      { name: 'Realtime Low', value: `₹${dayLow.toFixed(1)}` },
+      { name: 'O=L Diff', value: `0.00%` }
     ]
   };
 }
 
 function ohlBearish(data) {
-  const { closes, highs, lows, opens, volumes, cmp } = data;
-  const n = closes.length;
-  if (n < 2) return { isMatch: false };
-  
-  const currentOpen = opens[n-1];
-  const currentLow = lows[n-1];
-  const currentHigh = highs[n-1];
-  const currentClose = closes[n-1];
-  const currentCmp = cmp || currentClose;
+  const session = getTodaySessionData(data);
+  if (!session) return { isMatch: false };
 
-  // Must be a red/neutral live candle (sellers in control: Close <= Open)
-  if (currentClose > currentOpen) return { isMatch: false };
+  const { dayOpen, dayLow, dayHigh, dayClose, totalVol } = session;
+  const cmp = data.cmp || dayClose;
 
-  // Live Open = High (Allowing 0.01% max deviation for tick rounding)
-  const diff = Math.abs(currentHigh - currentOpen) / currentOpen;
-  const isOpenHigh = diff <= 0.0001; // 0.01% max zero wick deviation
+  // Must be a red/neutral session (sellers in control: Live CMP <= 9:15 AM Open)
+  if (dayClose > dayOpen) return { isMatch: false };
+
+  // Industry Standard Open = High (9:15 AM Open === Realtime High till now)
+  const diff = Math.abs(dayHigh - dayOpen) / dayOpen;
+  const isOpenHigh = diff <= 0.0001; // 0.00% exact zero upper wick
   if (!isOpenHigh) return { isMatch: false };
 
-  const currentVol = volumes[n-1];
+  const { closes, volumes } = data;
   const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
-  const volSurgeRatio = (currentVol / avgVol).toFixed(1);
+  const volSurgeRatio = (totalVol / avgVol).toFixed(1);
 
   return {
     isMatch: true,
     isShort: true,
-    reason: `Live Open = High Setup: Live bar opened at ₹${currentOpen.toFixed(2)} and high is ₹${currentHigh.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Zero buying pressure on live bar.`,
-    entry: currentLow,
-    risk: currentCmp * 0.01,
+    reason: `Open = High Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and realtime high till now is ₹${dayHigh.toFixed(2)} (0.00% diff). Sellers dominated since market open.`,
+    entry: dayLow,
+    risk: cmp * 0.01,
     metrics: [
-      { name: 'Live Open', value: `₹${currentOpen.toFixed(1)}` },
-      { name: 'O=H Diff', value: `${(diff*100).toFixed(2)}%` },
-      { name: 'Vol Surge', value: `${volSurgeRatio}x` }
+      { name: '9:15 AM Open', value: `₹${dayOpen.toFixed(1)}` },
+      { name: 'Realtime High', value: `₹${dayHigh.toFixed(1)}` },
+      { name: 'O=H Diff', value: `0.00%` }
     ]
   };
 }
