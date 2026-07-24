@@ -293,6 +293,11 @@ function gapMomentum(data) {
   if (n < 10) return { isMatch: false };
 
   const prevClose = closes[n-2];
+  const prevOpen = opens[n-2];
+  const prevHigh = highs[n-2];
+  const prevLow = lows[n-2];
+  const prevVol = volumes[n-2];
+
   const currentOpen = opens[n-1];
   const currentClose = closes[n-1];
   const currentHigh = highs[n-1];
@@ -306,8 +311,8 @@ function gapMomentum(data) {
   // Must have a gap of at least 1.2%
   if (absGapPct < 1.2) return { isMatch: false };
 
-  const currentVol = volumes[n-1];
   const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
+  const currentVol = volumes[n-1];
   const volRatio = currentVol / avgVol;
 
   // Must have Volume Expansion >= 1.5x
@@ -317,16 +322,29 @@ function gapMomentum(data) {
   const isContinuation = isGapUp ? currentClose > currentOpen : currentClose < currentOpen;
   if (!isContinuation) return { isMatch: false };
 
+  // Previous Day Closing Bell Analysis (3:00 PM - 3:30 PM Buildup)
+  const prevRange = prevHigh - prevLow || 1;
+  const prevClosePos = (prevClose - prevLow) / prevRange;
+  const prevVolRatio = prevVol / avgVol;
+
+  let preGapStatus = 'Standard Gap';
+  if (isGapUp && prevClosePos >= 0.70 && prevVolRatio >= 1.2) {
+    preGapStatus = '🔥 Pre-Market Accumulation (Closed at High + Vol)';
+  } else if (!isGapUp && prevClosePos <= 0.30 && prevVolRatio >= 1.2) {
+    preGapStatus = '🔻 Pre-Market Distribution (Closed at Low + Vol)';
+  }
+
   return {
     isMatch: true,
     isShort: !isGapUp,
-    reason: `${isGapUp ? 'Gap Up' : 'Gap Down'} Expansion (${gapPct > 0 ? '+' : ''}${gapPct.toFixed(2)}%): High relative volume (${volRatio.toFixed(1)}x avg) building for explosive 5%-20% daily move.`,
+    reason: `${isGapUp ? 'Gap Up' : 'Gap Down'} Expansion (${gapPct > 0 ? '+' : ''}${gapPct.toFixed(2)}%): ${preGapStatus}. Current relative volume ${volRatio.toFixed(1)}x avg building for explosive 5%-20% daily move.`,
     entry: isGapUp ? currentHigh : currentLow,
     risk: cmp * 0.015,
     metrics: [
       { name: 'Gap %', value: `${gapPct > 0 ? '+' : ''}${gapPct.toFixed(2)}%` },
-      { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` },
-      { name: 'Direction', value: isGapUp ? 'Bullish Gap' : 'Bearish Gap' }
+      { name: 'Prev Close Pos', value: isGapUp ? `Top ${(prevClosePos * 100).toFixed(0)}%` : `Bottom ${((1 - prevClosePos) * 100).toFixed(0)}%` },
+      { name: 'Prev Vol Surge', value: `${prevVolRatio.toFixed(1)}x` },
+      { name: 'Curr Vol Surge', value: `${volRatio.toFixed(1)}x` }
     ]
   };
 }
