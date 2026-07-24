@@ -169,9 +169,9 @@ function ohlBullish(data) {
   // Must be a green/neutral session (buyers in control: Close >= Open)
   if (dayClose < dayOpen) return { isMatch: false };
 
-  // Strict Open = Low (Allowing 0.05% max deviation for tick rounding)
+  // Exact Open = Low (0.00% zero wick deviation)
   const diff = Math.abs(dayOpen - dayLow) / dayOpen;
-  const isOpenLow = diff <= 0.0005; // 0.05% strict max deviation
+  const isOpenLow = diff <= 0.0001; // 0.00% exact zero wick
   if (!isOpenLow) return { isMatch: false };
 
   const { closes, volumes } = data;
@@ -181,12 +181,12 @@ function ohlBullish(data) {
 
   return {
     isMatch: true,
-    reason: `Strict Open = Low Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and low was ₹${dayLow.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Zero selling pressure from open.`,
+    reason: `Exact Open = Low Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and low was ₹${dayLow.toFixed(2)} (0.00% diff). Absolute zero selling pressure.`,
     entry: dayHigh,
     risk: cmp * 0.01,
     metrics: [
       { name: 'Day Open', value: `₹${dayOpen.toFixed(1)}` },
-      { name: 'O=L Diff', value: `${(diff*100).toFixed(2)}%` },
+      { name: 'O=L Diff', value: `0.00%` },
       { name: 'Vol Surge', value: `${volSurgeRatio}x` }
     ]
   };
@@ -202,9 +202,9 @@ function ohlBearish(data) {
   // Must be a red/neutral session (sellers in control: Close <= Open)
   if (dayClose > dayOpen) return { isMatch: false };
 
-  // Strict Open = High (Allowing 0.05% max deviation for tick rounding)
+  // Exact Open = High (0.00% zero wick deviation)
   const diff = Math.abs(dayHigh - dayOpen) / dayOpen;
-  const isOpenHigh = diff <= 0.0005; // 0.05% strict max deviation
+  const isOpenHigh = diff <= 0.0001; // 0.00% exact zero wick
   if (!isOpenHigh) return { isMatch: false };
 
   const { closes, volumes } = data;
@@ -215,12 +215,12 @@ function ohlBearish(data) {
   return {
     isMatch: true,
     isShort: true,
-    reason: `Strict Open = High Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and high was ₹${dayHigh.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Sellers dominated from open.`,
+    reason: `Exact Open = High Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and high was ₹${dayHigh.toFixed(2)} (0.00% diff). Absolute zero buying pressure.`,
     entry: dayLow,
     risk: cmp * 0.01,
     metrics: [
       { name: 'Day Open', value: `₹${dayOpen.toFixed(1)}` },
-      { name: 'O=H Diff', value: `${(diff*100).toFixed(2)}%` },
+      { name: 'O=H Diff', value: `0.00%` },
       { name: 'Vol Surge', value: `${volSurgeRatio}x` }
     ]
   };
