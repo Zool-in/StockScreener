@@ -125,9 +125,11 @@ function getTodaySessionData(data) {
   let dayClose = closes[n-1];
   let totalVol = volumes[n-1];
 
+  const timestamps = data.ts || data.timestamps || [];
+
   // If timestamp array exists for intraday bars (15m/5m)
-  if (data.timestamps && data.timestamps.length >= n) {
-    const lastTs = data.timestamps[n-1];
+  if (timestamps.length >= n) {
+    const lastTs = timestamps[n-1];
     const lastDate = new Date(lastTs * 1000).toDateString();
     
     let firstIdx = n - 1;
@@ -136,7 +138,7 @@ function getTodaySessionData(data) {
     let sumVol = 0;
 
     for (let i = n - 1; i >= 0; i--) {
-      const dStr = new Date(data.timestamps[i] * 1000).toDateString();
+      const dStr = new Date(timestamps[i] * 1000).toDateString();
       if (dStr === lastDate) {
         firstIdx = i;
         if (lows[i] < minLow) minLow = lows[i];
