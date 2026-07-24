@@ -197,6 +197,21 @@ const STRATEGY_INFO = {
     name: 'Multi-Timeframe Heikin-Ashi Confluence',
     desc: 'Analyzes Higher Timeframe alignment across Monthly, Weekly, and Daily charts using Heikin-Ashi candles and RSI + MACD momentum. When all three timeframes agree (+1 +1 +1 or -1 -1 -1), it indicates an extremely high-probability institutional trend confluence.',
     example: '<img src="/assets/multi_tf_diagram.png?v=1" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Bullish Confluence (+3):</strong> Monthly Green HA + Weekly Green HA + Daily RSI > 50 & MACD > 0.<br><strong>Bearish Confluence (-3):</strong> Monthly Red HA + Weekly Red HA + Daily RSI < 50 & MACD < 0.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., BAJAJ-AUTO has a green Monthly HA candle (+1), green Weekly HA candle (+1), and Daily RSI > 70 with positive MACD (+1). This 3-tier confluence filters out false counter-trend signals.</span>'
+  },
+  elephant_bullish: {
+    name: 'Oliver Velez Bullish Elephant Candle (🐘)',
+    desc: 'Oliver Velez (iFT Academy) Igniting Strategy. Identifies a massive solid green candle (> 70% pure body) that expands at least 1.3x larger than the 14-period ATR on surging relative volume (> 1.5x avg). It ignites an explosive 5% to 20% institutional trend out of moving average support (8 & 20 EMA).',
+    example: '<img src="/assets/smc_bullish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy breakout above Elephant Candle High<br><strong>Stop Loss:</strong> Right below Elephant Candle Low<br><strong>Target:</strong> Ride trend (1:2 to 1:4 risk/reward)<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TATA MOTORS consolidates near its 20 EMA. Suddenly, a massive 80% solid green candle explodes on 2.5x volume, breaking 1.3x ATR. Buy the igniting elephant candle!</span>'
+  },
+  elephant_bearish: {
+    name: 'Oliver Velez Bearish Elephant Candle (🐘)',
+    desc: 'Oliver Velez (iFT Academy) Igniting Strategy (Short). Identifies a massive solid red candle (> 70% pure body) that expands at least 1.3x larger than the 14-period ATR on surging relative volume (> 1.5x avg). Signals aggressive institutional dumping.',
+    example: '<img src="/assets/smc_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short breakdown below Elephant Candle Low<br><strong>Stop Loss:</strong> Right above Elephant Candle High<br><strong>Target:</strong> Heavy continuation drop<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., WIPRO fails at 20 EMA and prints an 85% solid red candle on massive volume. Short the breakdown for a 5% to 15% drop.</span>'
+  },
+  gap_momentum: {
+    name: 'Gap Expansion Momentum (⚡ 5% - 20% Move)',
+    desc: 'Captures pre-market & opening gap expansion setups. Identifies stocks opening with a significant Gap Up (+1.5%+) or Gap Down (-1.5%-) with explosive Relative Volume (> 1.5x avg) and momentum continuation.',
+    example: '<img src="/assets/ttm_orb_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> High/Low of first 15m candle<br><strong>Stop Loss:</strong> 1.5% risk<br><strong>Target:</strong> 5% to 20% intraday circuit run<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE gaps up 2.2% at 9:15 AM on 4x volume and forms a solid green candle with no lower wick. Buy the momentum for a 10%+ day move.</span>'
   }
 };
 
@@ -518,11 +533,11 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
-              if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(s)) tempRes = intradayStrats.run(s, data);
+              if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(s)) tempRes = intradayStrats.run(s, data);
               else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(s)) tempRes = swingStrats.run(s, data);
               else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
@@ -541,7 +556,7 @@ async function runScan() {
             const finalReason = combinedReasons.length > 0 ? combinedReasons.join('<br>') : 'Raw Technical Scan (Score Rank)';
             res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
-            if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
+            if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
             else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
             else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
               res = optionStrats.run(strategyId, data);

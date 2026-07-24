@@ -1,10 +1,13 @@
-import { bollingerBands, keltnerChannels } from '../core/math.js';
+import { bollingerBands, keltnerChannels, atr, ema } from '../core/math.js';
 
 export function run(strategyId, data) {
   if (strategyId === 'ttm_orb') return ttmSqueezeORB(data);
   if (strategyId === 'intraday_retest') return smcIntradayRetest(data);
   if (strategyId === 'ohl_bullish') return ohlBullish(data);
   if (strategyId === 'ohl_bearish') return ohlBearish(data);
+  if (strategyId === 'elephant_bullish') return elephantBullish(data);
+  if (strategyId === 'elephant_bearish') return elephantBearish(data);
+  if (strategyId === 'gap_momentum') return gapMomentum(data);
   return { isMatch: false };
 }
 
@@ -176,6 +179,154 @@ function ohlBearish(data) {
       { name: 'O=H Diff', value: `${(diff*100).toFixed(2)}%` },
       { name: 'Vol Surge', value: `${volSurgeRatio}x` },
       { name: 'Candle Close', value: `Bottom ${((1 - closePercent)*100).toFixed(0)}%` }
+    ]
+  };
+}
+
+// ─── Oliver Velez Elephant Candle (Vela Elefante) ───────────────────────────
+function elephantBullish(data) {
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 30) return { isMatch: false };
+
+  const c = closes[n-1], o = opens[n-1], h = highs[n-1], l = lows[n-1];
+  const body = c - o;
+  const range = h - l || 1;
+
+  if (body <= 0) return { isMatch: false }; // Must be a green candle
+
+  // 1. Pure Solid Body Ratio >= 70%
+  const bodyRatio = body / range;
+  if (bodyRatio < 0.70) return { isMatch: false };
+
+  // 2. ATR Expansion Factor >= 1.3x
+  const atrArr = atr(highs, lows, closes, 14);
+  const currentAtr = atrArr[n-2] || atrArr[n-1] || (range);
+  const atrRatio = body / currentAtr;
+  if (atrRatio < 1.30) return { isMatch: false };
+
+  // 3. Volume Surge Filter (>= 1.8x avg volume)
+  const currentVol = volumes[n-1];
+  const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
+  const volRatio = currentVol / avgVol;
+  if (volRatio < 1.50) return { isMatch: false };
+
+  // 4. Moving Average Trend Filter (8 EMA & 20 EMA)
+  const e8 = ema(closes, 8);
+  const e20 = ema(closes, 20);
+  const lastE8 = e8[n-1];
+  const lastE20 = e20[n-1];
+  const prevE20 = e20[n-2] || lastE20;
+
+  const isTrendAligned = c >= lastE20 && (lastE8 >= lastE20 || lastE20 >= prevE20);
+  if (!isTrendAligned) return { isMatch: false };
+
+  const risk = cmp - l; // Stop below elephant candle low
+  return {
+    isMatch: true,
+    reason: `Oliver Velez Bullish Elephant Candle (🐘): Solid body ${(bodyRatio * 100).toFixed(0)}%, ATR Expansion ${atrRatio.toFixed(1)}x, Volume ${volRatio.toFixed(1)}x. Igniting institutional buying move.`,
+    entry: h,
+    risk: risk > 0 ? risk : cmp * 0.015,
+    metrics: [
+      { name: 'Body Ratio', value: `${(bodyRatio * 100).toFixed(0)}%` },
+      { name: 'ATR Expand', value: `${atrRatio.toFixed(1)}x` },
+      { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
+    ]
+  };
+}
+
+function elephantBearish(data) {
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 30) return { isMatch: false };
+
+  const c = closes[n-1], o = opens[n-1], h = highs[n-1], l = lows[n-1];
+  const body = o - c;
+  const range = h - l || 1;
+
+  if (body <= 0) return { isMatch: false }; // Must be a red candle
+
+  // 1. Pure Solid Body Ratio >= 70%
+  const bodyRatio = body / range;
+  if (bodyRatio < 0.70) return { isMatch: false };
+
+  // 2. ATR Expansion Factor >= 1.3x
+  const atrArr = atr(highs, lows, closes, 14);
+  const currentAtr = atrArr[n-2] || atrArr[n-1] || (range);
+  const atrRatio = body / currentAtr;
+  if (atrRatio < 1.30) return { isMatch: false };
+
+  // 3. Volume Surge Filter (>= 1.5x avg volume)
+  const currentVol = volumes[n-1];
+  const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
+  const volRatio = currentVol / avgVol;
+  if (volRatio < 1.50) return { isMatch: false };
+
+  // 4. Moving Average Trend Filter (8 EMA & 20 EMA)
+  const e8 = ema(closes, 8);
+  const e20 = ema(closes, 20);
+  const lastE8 = e8[n-1];
+  const lastE20 = e20[n-1];
+
+  const isTrendAligned = c <= lastE20 || lastE8 <= lastE20;
+  if (!isTrendAligned) return { isMatch: false };
+
+  const risk = h - cmp; // Stop above elephant candle high
+  return {
+    isMatch: true,
+    isShort: true,
+    reason: `Oliver Velez Bearish Elephant Candle (🐘): Solid body ${(bodyRatio * 100).toFixed(0)}%, ATR Expansion ${atrRatio.toFixed(1)}x, Volume ${volRatio.toFixed(1)}x. Heavy institutional selling move.`,
+    entry: l,
+    risk: risk > 0 ? risk : cmp * 0.015,
+    metrics: [
+      { name: 'Body Ratio', value: `${(bodyRatio * 100).toFixed(0)}%` },
+      { name: 'ATR Expand', value: `${atrRatio.toFixed(1)}x` },
+      { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
+    ]
+  };
+}
+
+// ─── Gap Expansion Momentum Screener (Part 1: 5% - 20% Upper/Lower Circuit Move) ────────
+function gapMomentum(data) {
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 10) return { isMatch: false };
+
+  const prevClose = closes[n-2];
+  const currentOpen = opens[n-1];
+  const currentClose = closes[n-1];
+  const currentHigh = highs[n-1];
+  const currentLow = lows[n-1];
+
+  if (!prevClose || !currentOpen) return { isMatch: false };
+
+  const gapPct = ((currentOpen - prevClose) / prevClose) * 100;
+  const absGapPct = Math.abs(gapPct);
+
+  // Must have a gap of at least 1.2%
+  if (absGapPct < 1.2) return { isMatch: false };
+
+  const currentVol = volumes[n-1];
+  const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
+  const volRatio = currentVol / avgVol;
+
+  // Must have Volume Expansion >= 1.5x
+  if (volRatio < 1.5) return { isMatch: false };
+
+  const isGapUp = gapPct > 0;
+  const isContinuation = isGapUp ? currentClose > currentOpen : currentClose < currentOpen;
+  if (!isContinuation) return { isMatch: false };
+
+  return {
+    isMatch: true,
+    isShort: !isGapUp,
+    reason: `${isGapUp ? 'Gap Up' : 'Gap Down'} Expansion (${gapPct > 0 ? '+' : ''}${gapPct.toFixed(2)}%): High relative volume (${volRatio.toFixed(1)}x avg) building for explosive 5%-20% daily move.`,
+    entry: isGapUp ? currentHigh : currentLow,
+    risk: cmp * 0.015,
+    metrics: [
+      { name: 'Gap %', value: `${gapPct > 0 ? '+' : ''}${gapPct.toFixed(2)}%` },
+      { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` },
+      { name: 'Direction', value: isGapUp ? 'Bullish Gap' : 'Bearish Gap' }
     ]
   };
 }
