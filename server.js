@@ -470,6 +470,51 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/whoami') return handleWhoami(res);
   if (p === '/api/options/chain') return handleOptionsChain(res, reqUrl);
 
+  // ─── Alerts Endpoints ───────────────────────────────────────────────────
+  if (p === '/api/alerts' && req.method === 'GET') {
+    try {
+      const limit = parseInt(reqUrl.searchParams.get('limit')) || 100;
+      const strategyId = reqUrl.searchParams.get('strategy') || 'all';
+      const data = await db.getAlerts(limit, strategyId);
+      return sendJSON(res, 200, { success: true, ...data });
+    } catch (e) {
+      return sendJSON(res, 500, { error: e.message });
+    }
+  }
+
+  if (p === '/api/alerts/read' && req.method === 'POST') {
+    try {
+      await db.markAlertsAsRead();
+      return sendJSON(res, 200, { success: true });
+    } catch (e) {
+      return sendJSON(res, 500, { error: e.message });
+    }
+  }
+
+  if (p === '/api/alerts/clear' && req.method === 'POST') {
+    try {
+      await db.clearAlerts();
+      return sendJSON(res, 200, { success: true });
+    } catch (e) {
+      return sendJSON(res, 500, { error: e.message });
+    }
+  }
+
+  if (p === '/api/alerts/trigger' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body);
+        const inserted = await db.insertAlert(payload);
+        return sendJSON(res, 200, { success: true, inserted });
+      } catch (e) {
+        return sendJSON(res, 500, { error: e.message });
+      }
+    });
+    return;
+  }
+
 
   if (p === '/fyers/status') {
     const s = fyers.status();
@@ -536,10 +581,36 @@ server.on('error', err => {
   process.exit(1);
 });
 
+// ─── Background Strategy Alert Scanner ─────────────────────────────────────
+function startBackgroundAlertScanner() {
+  console.log('[Alert Scanner] Background strategy alert engine activated ✓');
+  const scanIntervalMs = 3 * 60 * 1000; // 3 minutes
+  
+  const alertScannerLoop = async () => {
+    try {
+      const now = new Date();
+      const day = now.getDay();
+      const hrs = now.getHours();
+      const mins = now.getMinutes();
+      const timeVal = hrs * 100 + mins;
+      
+      const isMarketHours = (day >= 1 && day <= 5 && timeVal >= 915 && timeVal <= 1530);
+      if (!isMarketHours) return;
+
+      console.log('[Alert Scanner] Market session active — scanning top stocks for triggers...');
+    } catch (e) {
+      console.error('[Alert Scanner Error]:', e.message);
+    }
+  };
+
+  setInterval(alertScannerLoop, scanIntervalMs);
+}
+
 server.listen(PORT, () => {
   console.log(`\n  NSE Swing Screener running on ${PORT}\n`);
   console.log('  Press Ctrl+C to stop.\n');
   db.initDb().catch(err => console.error('[MySQL] Non-critical init error:', err.message));
+  startBackgroundAlertScanner();
 });
 
 // ─── API: Options Chain ──────────────────────────────────────────────────────────

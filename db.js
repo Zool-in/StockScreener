@@ -89,6 +89,23 @@ async function createSchema(conn) {
       INDEX idx_smc_bearish (smc_bearish)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  await conn.query(`
+    CREATE TABLE IF NOT EXISTS strategy_alerts (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      ticker VARCHAR(30) NOT NULL,
+      strategy_id VARCHAR(50) NOT NULL,
+      timeframe VARCHAR(10) DEFAULT '1d',
+      price DECIMAL(10,2),
+      reason TEXT,
+      metrics_json JSON,
+      is_read TINYINT DEFAULT 0,
+      triggered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_strategy (strategy_id),
+      INDEX idx_ticker (ticker),
+      INDEX idx_triggered (triggered_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
 }
 
 async function initDb() {
@@ -210,11 +227,114 @@ async function queryStrategy(strategyId) {
   }
 }
 
+// In-Memory Fallback Alerts Store
+let memoryAlerts = [];
+let memoryAlertId = 1;
+
+async function insertAlert(alert) {
+  const { ticker, strategy_id, timeframe = '1d', price = 0, reason = '', metrics_json = {} } = alert;
+
+  if (pool) {
+    try {
+      // Check for duplicate alert in the last 2 hours
+      const [existing] = await pool.query(
+        `SELECT id FROM strategy_alerts WHERE ticker = ? AND strategy_id = ? AND triggered_at > DATE_SUB(NOW(), INTERVAL 2 HOUR) LIMIT 1`,
+        [ticker, strategy_id]
+      );
+      if (existing.length > 0) return false;
+
+      const sql = `INSERT INTO strategy_alerts (ticker, strategy_id, timeframe, price, reason, metrics_json) VALUES (?, ?, ?, ?, ?, ?)`;
+      await pool.query(sql, [ticker, strategy_id, timeframe, price, reason, JSON.stringify(metrics_json)]);
+      return true;
+    } catch (err) {
+      console.error('[MySQL] Error inserting alert:', err.message);
+    }
+  }
+
+  // Memory fallback logic
+  const now = Date.now();
+  const duplicate = memoryAlerts.find(a => a.ticker === ticker && a.strategy_id === strategy_id && (now - new Date(a.triggered_at).getTime()) < 2 * 3600 * 1000);
+  if (duplicate) return false;
+
+  const record = {
+    id: memoryAlertId++,
+    ticker,
+    strategy_id,
+    timeframe,
+    price,
+    reason,
+    metrics_json,
+    is_read: 0,
+    triggered_at: new Date().toISOString()
+  };
+  memoryAlerts.unshift(record);
+  if (memoryAlerts.length > 500) memoryAlerts.pop(); // Keep top 500
+  return true;
+}
+
+async function getAlerts(limit = 100, strategyId = null) {
+  if (pool) {
+    try {
+      let sql = `SELECT * FROM strategy_alerts`;
+      const params = [];
+      if (strategyId && strategyId !== 'all') {
+        sql += ` WHERE strategy_id = ?`;
+        params.push(strategyId);
+      }
+      sql += ` ORDER BY triggered_at DESC LIMIT ?`;
+      params.push(limit);
+
+      const [rows] = await pool.query(sql, params);
+      const [unreadCount] = await pool.query(`SELECT COUNT(*) as cnt FROM strategy_alerts WHERE is_read = 0`);
+      return { rows, unreadCount: unreadCount[0]?.cnt || 0 };
+    } catch (err) {
+      console.error('[MySQL] Error querying alerts:', err.message);
+    }
+  }
+
+  let filtered = memoryAlerts;
+  if (strategyId && strategyId !== 'all') {
+    filtered = memoryAlerts.filter(a => a.strategy_id === strategyId);
+  }
+  const unreadCount = memoryAlerts.filter(a => !a.is_read).length;
+  return { rows: filtered.slice(0, limit), unreadCount };
+}
+
+async function markAlertsAsRead() {
+  if (pool) {
+    try {
+      await pool.query(`UPDATE strategy_alerts SET is_read = 1 WHERE is_read = 0`);
+      return true;
+    } catch (err) {
+      console.error('[MySQL] Error marking alerts as read:', err.message);
+    }
+  }
+  memoryAlerts.forEach(a => a.is_read = 1);
+  return true;
+}
+
+async function clearAlerts() {
+  if (pool) {
+    try {
+      await pool.query(`TRUNCATE TABLE strategy_alerts`);
+      return true;
+    } catch (err) {
+      console.error('[MySQL] Error clearing alerts:', err.message);
+    }
+  }
+  memoryAlerts = [];
+  return true;
+}
+
 module.exports = {
   initPool,
   initDb,
   isAvailable,
   upsertStock,
   queryStrategy,
+  insertAlert,
+  getAlerts,
+  markAlertsAsRead,
+  clearAlerts,
   getPool: () => pool
 };

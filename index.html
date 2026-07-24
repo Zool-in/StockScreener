@@ -170,8 +170,11 @@
 
     <div class="hud-nav-container">
       <div class="hud-menu">
-        <a href="#" id="tabScreener" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock
+        <a href="#" id="tabScreener" class="nav-tab" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock
           Screener</a>
+        <a href="#" id="tabAlerts" class="nav-tab" style="color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
+          🔔 Live Alerts <span id="alertBadge" class="badge badge-red hidden" style="background: var(--red); color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700;">0</span>
+        </a>
         <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options
           (Gamma)</a>
         <a href="#" id="tabScripts"
@@ -404,10 +407,36 @@
               <!-- Scripts injected via JS -->
             </tbody>
           </table>
-        </div>
-      </div>
     </div>
     <!-- End Scripts View -->
+
+    <!-- Live Alerts Hub View -->
+    <div id="alerts-view" class="view-section" style="display: none; padding: 24px 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">🔔 Live Strategy Signals & Alert Hub</h2>
+          <div style="font-size: 13px; color: var(--text-muted);">Real-time background signals triggered across Oliver Velez Elephant, OHL, Gap Momentum, TTM, SMC, and Minervini strategies.</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <select id="alertStrategyFilter" style="background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; font-size: 13px;">
+            <option value="all">All Strategies</option>
+            <option value="elephant_bullish">Oliver Velez Elephant (Bullish)</option>
+            <option value="elephant_bearish">Oliver Velez Elephant (Bearish)</option>
+            <option value="gap_momentum">Gap Expansion Momentum</option>
+            <option value="ohl_bullish">Open = Low</option>
+            <option value="ohl_bearish">Open = High</option>
+            <option value="ttm_orb">TTM Squeeze + ORB</option>
+            <option value="minervini">Minervini VCP</option>
+            <option value="smc_bullish">SMC Sweep Bullish</option>
+          </select>
+          <button id="btnMarkReadAlerts" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">Mark All Read</button>
+          <button id="btnClearAlerts" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; color: var(--red);">Clear All</button>
+        </div>
+      </div>
+
+      <div id="alertsTableContainer" class="table-container" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; min-height: 200px;">
+      </div>
+    </div>
 
   </main>
 
@@ -473,7 +502,7 @@
   </script>
 
   <!-- Entry point for UI routing and execution -->
-  <script type="module" src="js/ui/app.js?v=75" defer></script>
+  <script type="module" src="js/ui/app.js?v=76" defer></script>
 </body>
 
 </html>

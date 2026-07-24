@@ -17,6 +17,7 @@ import * as smcStrats from '../strategies/smc.js?v=1';
 import * as haDonchianStrats from '../strategies/ha_donchian.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
 import { scriptLibrary } from '../data/scripts.js';
+import { initAlerts } from './alerts.js?v=1';
 
 const DOM = {
   tickerInput: document.getElementById('tickerInput'),
@@ -219,6 +220,7 @@ const STRATEGY_INFO = {
 async function init() {
   fetchStatus();
   setInterval(fetchStatus, 30000); // refresh every 30s
+  initAlerts();
 
   // Tab Switching
   const tabScreener = document.getElementById('tabScreener');
