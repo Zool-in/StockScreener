@@ -169,20 +169,19 @@ function ohlBullish(data) {
   // Must be a green/neutral session (buyers in control: Close >= Open)
   if (dayClose < dayOpen) return { isMatch: false };
 
-  // Open = Low (Allowing 0.20% buffer for 9:15 AM tick data noise across brokers)
+  // Strict Open = Low (Allowing 0.05% max deviation for tick rounding)
   const diff = Math.abs(dayOpen - dayLow) / dayOpen;
-  const isOpenLow = diff <= 0.0020; // 0.20% max deviation
+  const isOpenLow = diff <= 0.0005; // 0.05% strict max deviation
   if (!isOpenLow) return { isMatch: false };
 
   const { closes, volumes } = data;
   const n = closes.length;
   const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
   const volSurgeRatio = (totalVol / avgVol).toFixed(1);
-  const { closePercent } = getCandleAnatomy(dayHigh, dayLow, dayClose, dayOpen);
 
   return {
     isMatch: true,
-    reason: `Open = Low Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and low was ₹${dayLow.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Zero selling pressure from open.`,
+    reason: `Strict Open = Low Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and low was ₹${dayLow.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Zero selling pressure from open.`,
     entry: dayHigh,
     risk: cmp * 0.01,
     metrics: [
@@ -203,21 +202,20 @@ function ohlBearish(data) {
   // Must be a red/neutral session (sellers in control: Close <= Open)
   if (dayClose > dayOpen) return { isMatch: false };
 
-  // Open = High (Allowing 0.20% buffer for 9:15 AM tick data noise across brokers)
+  // Strict Open = High (Allowing 0.05% max deviation for tick rounding)
   const diff = Math.abs(dayHigh - dayOpen) / dayOpen;
-  const isOpenHigh = diff <= 0.0020; // 0.20% max deviation
+  const isOpenHigh = diff <= 0.0005; // 0.05% strict max deviation
   if (!isOpenHigh) return { isMatch: false };
 
   const { closes, volumes } = data;
   const n = closes.length;
   const avgVol = (volumes.slice(-21, -1).reduce((a,b)=>a+b,0) / 20) || 1;
   const volSurgeRatio = (totalVol / avgVol).toFixed(1);
-  const { closePercent } = getCandleAnatomy(dayHigh, dayLow, dayClose, dayOpen);
 
   return {
     isMatch: true,
     isShort: true,
-    reason: `Open = High Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and high was ₹${dayHigh.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Sellers dominated from open.`,
+    reason: `Strict Open = High Setup: Stock opened at ₹${dayOpen.toFixed(2)} (9:15 AM) and high was ₹${dayHigh.toFixed(2)} (diff ${(diff * 100).toFixed(2)}%). Sellers dominated from open.`,
     entry: dayLow,
     risk: cmp * 0.01,
     metrics: [
