@@ -260,8 +260,15 @@ function initStrategyTuner() {
   const lblVolVal = document.getElementById('lblVolVal');
   const chkUseVol = document.getElementById('chkUseVol');
 
+  const rngStBearishMult = document.getElementById('rngStBearishMult');
+  const lblStBearishVal = document.getElementById('lblStBearishVal');
+  const chkUseStBearish = document.getElementById('chkUseStBearish');
+
   const chkUseMacd = document.getElementById('chkUseMacd');
   const chkUseSma10 = document.getElementById('chkUseSma10');
+  const chkUseSma10Res = document.getElementById('chkUseSma10Res');
+  const rngRsiBearish = document.getElementById('rngRsiBearish');
+  const lblRsiBearishVal = document.getElementById('lblRsiBearishVal');
   const btnResetTuner = document.getElementById('btnResetTuner');
 
   let tunerTimeout = null;
@@ -304,6 +311,22 @@ function initStrategyTuner() {
     });
   }
 
+  if (rngStBearishMult && lblStBearishVal) {
+    rngStBearishMult.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblStBearishVal.textContent = `Mult: ${val.toFixed(1)}`;
+      AppState.setTunerParam('stBearishMult', val);
+      triggerTunerScan();
+    });
+  }
+
+  if (chkUseStBearish) {
+    chkUseStBearish.addEventListener('change', (e) => {
+      AppState.setTunerParam('useStBearish', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
   if (rngVol && lblVolVal) {
     rngVol.addEventListener('input', (e) => {
       const val = Number(e.target.value);
@@ -334,19 +357,41 @@ function initStrategyTuner() {
     });
   }
 
+  if (chkUseSma10Res) {
+    chkUseSma10Res.addEventListener('change', (e) => {
+      AppState.setTunerParam('useSma10Res', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  if (rngRsiBearish && lblRsiBearishVal) {
+    rngRsiBearish.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblRsiBearishVal.textContent = `<= ${val}`;
+      AppState.setTunerParam('rsiBearishLimit', val);
+      triggerTunerScan();
+    });
+  }
+
   if (btnResetTuner) {
     btnResetTuner.addEventListener('click', () => {
       if (rngRsi) { rngRsi.value = 70; lblRsiVal.textContent = '>= 70'; AppState.setTunerParam('rsiThreshold', 70); }
       if (chkUseRsi) { chkUseRsi.checked = true; AppState.setTunerParam('useRsi', true); }
       if (rngStMult) { rngStMult.value = 3.0; lblStVal.textContent = 'Mult: 3.0'; AppState.setTunerParam('stMult', 3.0); }
       if (chkUseSt) { chkUseSt.checked = true; AppState.setTunerParam('useSt', true); }
+      if (rngStBearishMult) { rngStBearishMult.value = 3.0; lblStBearishVal.textContent = 'Mult: 3.0'; AppState.setTunerParam('stBearishMult', 3.0); }
+      if (chkUseStBearish) { chkUseStBearish.checked = true; AppState.setTunerParam('useStBearish', true); }
       if (rngVol) { rngVol.value = 1.5; lblVolVal.textContent = '>= 1.5x'; AppState.setTunerParam('minVolRatio', 1.5); }
       if (chkUseVol) { chkUseVol.checked = true; AppState.setTunerParam('useVol', true); }
       if (chkUseMacd) { chkUseMacd.checked = false; AppState.setTunerParam('useMacd', false); }
       if (chkUseSma10) { chkUseSma10.checked = true; AppState.setTunerParam('useSma10', true); }
+      if (chkUseSma10Res) { chkUseSma10Res.checked = true; AppState.setTunerParam('useSma10Res', true); }
+      if (rngRsiBearish) { rngRsiBearish.value = 40; lblRsiBearishVal.textContent = '<= 40'; AppState.setTunerParam('rsiBearishLimit', 40); }
       triggerTunerScan();
     });
   }
+
+  updateTunerVisibility(AppState.strategy || 'all');
 }
 
 // ─── Initialize ─────────────────────────────────────────────────────────────
@@ -473,6 +518,51 @@ async function init() {
     });
   });
 
+function updateTunerVisibility(strategyId) {
+  const badge = document.getElementById('tunerStratBadge');
+  const tunerGroups = document.querySelectorAll('.tuner-group');
+
+  if (badge) {
+    badge.textContent = strategyId === 'all' ? 'All Strategies RAW' : strategyId.toUpperCase().replace(/_/g, ' ');
+  }
+
+  // Strategy-specific group visibility mapping
+  const visibleGroups = {
+    supertrend_rsi70: ['rsi', 'supertrend-bullish', 'volume', 'confluence'],
+    rsi70_monthly: ['rsi', 'volume'],
+    mast_breakout: ['supertrend-bullish', 'volume', 'confluence'],
+    mast_dip: ['supertrend-bullish', 'confluence'],
+    mast_breakdown: ['supertrend-bearish', 'volume', 'downside'],
+    mast_rally_short: ['supertrend-bearish', 'downside'],
+    ohl_bullish: ['volume', 'confluence'],
+    ohl_bearish: ['volume', 'downside'],
+    elephant_bullish: ['volume', 'confluence'],
+    elephant_bearish: ['volume', 'downside'],
+    ttm_orb: ['volume', 'confluence'],
+    minervini: ['volume', 'confluence'],
+    darvas: ['volume', 'confluence'],
+    vcp_down: ['volume', 'downside'],
+    bear_call: ['supertrend-bearish', 'downside'],
+    hm_bottom: ['confluence'],
+    hm_top: ['downside'],
+    hm_bullish: ['volume', 'confluence'],
+    hm_bearish: ['volume', 'downside'],
+    all: ['rsi', 'supertrend-bullish', 'supertrend-bearish', 'volume', 'downside', 'confluence']
+  };
+
+  const allowed = visibleGroups[strategyId] || ['rsi', 'supertrend-bullish', 'volume', 'confluence'];
+
+  tunerGroups.forEach(el => {
+    const grp = el.getAttribute('data-group');
+    if (!grp || allowed.includes(grp)) {
+      el.style.display = 'block';
+      if (grp === 'downside' || grp === 'confluence') el.style.display = 'flex';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+}
+
   // Setup Strategy Pills
   DOM.strategyPills.addEventListener('click', (e) => {
     const pill = e.target.closest('.pill');
@@ -483,6 +573,7 @@ async function init() {
 
     const strategyVal = pill.dataset.val;
     AppState.setStrategy(strategyVal);
+    updateTunerVisibility(strategyVal);
 
     if (DOM.lookbackWrapper) {
       DOM.lookbackWrapper.style.display = strategyVal === 'multi_tf' ? 'block' : 'none';
