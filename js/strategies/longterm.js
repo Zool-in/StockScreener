@@ -90,24 +90,33 @@ function rsi70Monthly(data) {
 
   const rsiVal = rsi(closes, 14);
   
-  if (rsiVal >= 70) {
+  // Match stocks with Monthly RSI >= 60 (Highlights both >70 leaders and 60-69 near-breakout candidates)
+  if (rsiVal >= 60) {
     const prevRsi = rsi(closes.slice(0, -1), 14);
+    const isAbove70 = rsiVal >= 70;
     const isFreshCross = prevRsi < 70 && rsiVal >= 70;
     
     const currentVol = volumes[n - 1];
     const avgVol = (volumes.slice(-12, -1).reduce((a, b) => a + b, 0) / 11) || 1;
     const volRatio = currentVol / avgVol;
 
+    let reasonMsg = '';
+    if (isFreshCross) {
+      reasonMsg = `Fresh Monthly RSI > 70 Crossover (🚀): Monthly RSI crossed above 70 (${rsiVal.toFixed(1)} vs prev ${prevRsi.toFixed(1)}). Structural multi-bagger momentum ignition!`;
+    } else if (isAbove70) {
+      reasonMsg = `Monthly RSI Super-Trend 🔥 (${rsiVal.toFixed(1)} >= 70): Stock is in an active power-mode monthly trend expansion regime.`;
+    } else {
+      reasonMsg = `Monthly RSI Near-Breakout ⚡ (${rsiVal.toFixed(1)} >= 60): High-momentum leader building energy near the 70 breakout zone.`;
+    }
+
     return {
       isMatch: true,
-      reason: isFreshCross 
-        ? `Fresh Monthly RSI > 70 Crossover (🚀): Monthly RSI crossed above 70 (${rsiVal.toFixed(1)} vs prev ${prevRsi.toFixed(1)}). Structural multi-bagger momentum ignition!`
-        : `Monthly RSI Super-Trend (${rsiVal.toFixed(1)} >= 70): Stock is in a power-mode monthly trend expansion regime.`,
+      reason: reasonMsg,
       entry: cmp,
       risk: cmp * 0.05,
       metrics: [
         { name: 'Monthly RSI', value: `${rsiVal.toFixed(1)}` },
-        { name: 'Fresh Cross', value: isFreshCross ? 'YES 🔥' : 'Active Regime' },
+        { name: 'Status', value: isAbove70 ? (isFreshCross ? 'Fresh >70 🚀' : 'Active >70 🔥') : 'Near 70 (60-69) ⚡' },
         { name: 'Monthly Vol', value: `${volRatio.toFixed(1)}x` }
       ]
     };
