@@ -269,6 +269,13 @@ function initStrategyTuner() {
   const chkUseSma10Res = document.getElementById('chkUseSma10Res');
   const rngRsiBearish = document.getElementById('rngRsiBearish');
   const lblRsiBearishVal = document.getElementById('lblRsiBearishVal');
+
+  const rngElephantBody = document.getElementById('rngElephantBody');
+  const lblElephantBodyVal = document.getElementById('lblElephantBodyVal');
+  const rngOhlWick = document.getElementById('rngOhlWick');
+  const lblOhlWickVal = document.getElementById('lblOhlWickVal');
+  const rngVcpRange = document.getElementById('rngVcpRange');
+  const lblVcpRangeVal = document.getElementById('lblVcpRangeVal');
   const btnResetTuner = document.getElementById('btnResetTuner');
 
   let tunerTimeout = null;
@@ -278,6 +285,33 @@ function initStrategyTuner() {
       runScreener();
     }, 250);
   };
+
+  if (rngElephantBody && lblElephantBodyVal) {
+    rngElephantBody.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblElephantBodyVal.textContent = `>= ${val}%`;
+      AppState.setTunerParam('elephantBodyPct', val);
+      triggerTunerScan();
+    });
+  }
+
+  if (rngOhlWick && lblOhlWickVal) {
+    rngOhlWick.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblOhlWickVal.textContent = val === 0 ? '0.00% (Exact)' : `<= ${val.toFixed(2)}%`;
+      AppState.setTunerParam('ohlWickTolerance', val);
+      triggerTunerScan();
+    });
+  }
+
+  if (rngVcpRange && lblVcpRangeVal) {
+    rngVcpRange.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblVcpRangeVal.textContent = `<= ${val.toFixed(1)}%`;
+      AppState.setTunerParam('vcpMaxRange', val);
+      triggerTunerScan();
+    });
+  }
 
   if (rngRsi && lblRsiVal) {
     rngRsi.addEventListener('input', (e) => {
@@ -534,20 +568,23 @@ function updateTunerVisibility(strategyId) {
     mast_dip: ['supertrend-bullish', 'confluence'],
     mast_breakdown: ['supertrend-bearish', 'volume', 'downside'],
     mast_rally_short: ['supertrend-bearish', 'downside'],
-    ohl_bullish: ['volume', 'confluence'],
-    ohl_bearish: ['volume', 'downside'],
-    elephant_bullish: ['volume', 'confluence'],
-    elephant_bearish: ['volume', 'downside'],
+    ohl_bullish: ['ohl', 'volume', 'confluence'],
+    ohl_bearish: ['ohl', 'volume', 'downside'],
+    elephant_bullish: ['elephant', 'volume', 'confluence'],
+    elephant_bearish: ['elephant', 'volume', 'downside'],
+    gap_momentum: ['volume', 'confluence'],
     ttm_orb: ['volume', 'confluence'],
-    minervini: ['volume', 'confluence'],
+    minervini: ['vcp', 'volume', 'confluence'],
     darvas: ['volume', 'confluence'],
-    vcp_down: ['volume', 'downside'],
+    vcp_down: ['vcp', 'volume', 'downside'],
     bear_call: ['supertrend-bearish', 'downside'],
     hm_bottom: ['confluence'],
     hm_top: ['downside'],
     hm_bullish: ['volume', 'confluence'],
     hm_bearish: ['volume', 'downside'],
-    all: ['rsi', 'supertrend-bullish', 'supertrend-bearish', 'volume', 'downside', 'confluence']
+    smc_bullish: ['volume', 'confluence'],
+    smc_bearish: ['volume', 'downside'],
+    all: ['rsi', 'supertrend-bullish', 'supertrend-bearish', 'volume', 'downside', 'elephant', 'ohl', 'vcp', 'confluence']
   };
 
   const allowed = visibleGroups[strategyId] || ['rsi', 'supertrend-bullish', 'volume', 'confluence'];
