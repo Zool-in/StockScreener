@@ -50,6 +50,30 @@ export function initAlerts() {
     });
   }
 
+  const btnTest = document.getElementById('btnTestAlert');
+  if (btnTest) {
+    btnTest.addEventListener('click', async () => {
+      const sampleTickers = ['RELIANCE', 'TCS', 'INFY', 'SBIN', 'TATAMOTORS', 'BHARTIARTL', 'HAL', 'MCX'];
+      const sampleStrats = ['mast_breakout', 'mast_dip', 'elephant_bullish', 'gap_momentum', 'ohl_bullish'];
+      const ticker = sampleTickers[Math.floor(Math.random() * sampleTickers.length)];
+      const strat = sampleStrats[Math.floor(Math.random() * sampleStrats.length)];
+      const price = (Math.random() * 2000 + 500).toFixed(2);
+
+      await fetch('/api/alerts/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticker,
+          strategy_id: strat,
+          timeframe: '15m',
+          price: parseFloat(price),
+          reason: `⚡ Test Live Signal: ${strat.toUpperCase()} triggered on ${ticker} @ ₹${price} with 2.8x volume expansion.`
+        })
+      });
+      fetchAlerts();
+    });
+  }
+
   const btnMarkRead = document.getElementById('btnMarkReadAlerts');
   if (btnMarkRead) {
     btnMarkRead.addEventListener('click', () => {
