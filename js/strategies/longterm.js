@@ -1,6 +1,9 @@
+import { rsi } from '../core/math.js';
+
 export function run(strategyId, data) {
   if (strategyId === 'weinstein') return stanWeinstein(data);
   if (strategyId === 'wyckoff') return wyckoffStoppingVolume(data);
+  if (strategyId === 'rsi70_monthly') return rsi70Monthly(data);
   return { isMatch: false };
 }
 
@@ -77,5 +80,38 @@ function wyckoffStoppingVolume(data) {
       ]
     };
   }
+  return { isMatch: false };
+}
+
+function rsi70Monthly(data) {
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 15) return { isMatch: false };
+
+  const rsiVal = rsi(closes, 14);
+  
+  if (rsiVal >= 70) {
+    const prevRsi = rsi(closes.slice(0, -1), 14);
+    const isFreshCross = prevRsi < 70 && rsiVal >= 70;
+    
+    const currentVol = volumes[n - 1];
+    const avgVol = (volumes.slice(-12, -1).reduce((a, b) => a + b, 0) / 11) || 1;
+    const volRatio = currentVol / avgVol;
+
+    return {
+      isMatch: true,
+      reason: isFreshCross 
+        ? `Fresh Monthly RSI > 70 Crossover (🚀): Monthly RSI crossed above 70 (${rsiVal.toFixed(1)} vs prev ${prevRsi.toFixed(1)}). Structural multi-bagger momentum ignition!`
+        : `Monthly RSI Super-Trend (${rsiVal.toFixed(1)} >= 70): Stock is in a power-mode monthly trend expansion regime.`,
+      entry: cmp,
+      risk: cmp * 0.05,
+      metrics: [
+        { name: 'Monthly RSI', value: `${rsiVal.toFixed(1)}` },
+        { name: 'Fresh Cross', value: isFreshCross ? 'YES 🔥' : 'Active Regime' },
+        { name: 'Monthly Vol', value: `${volRatio.toFixed(1)}x` }
+      ]
+    };
+  }
+
   return { isMatch: false };
 }

@@ -175,6 +175,7 @@ function renderAlertsTable(rows) {
       mast_dip: 'MAST Buy-on-Dip 🎯',
       mast_breakdown: 'MAST Breakdown 💥',
       mast_rally_short: 'MAST Sell-on-Rally 🔻',
+      rsi70_monthly: 'Monthly RSI > 70 🚀',
       ohl_bullish: 'Open = Low',
       ohl_bearish: 'Open = High',
       ttm_orb: 'TTM Squeeze + ORB',
