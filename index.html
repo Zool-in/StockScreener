@@ -233,98 +233,46 @@
             </div>
           </div>
           <div class="pill-container" id="strategyPills">
-            <!-- Default -->
-            <div class="pill active" data-val="all" data-tf="1d" data-type="stocks">All Stocks <span
-                class="badge badge-muted">RAW</span></div>
+            <!-- Alphabetical Individual Strategies -->
+            <div class="pill active" data-val="supertrend_rsi70" data-tf="1d" data-type="stocks">SuperTrend Green + RSI > 70 <span class="badge badge-green">ST+RSI ⚡</span></div>
+            <div class="pill" data-val="btst" data-tf="1d" data-type="stocks">BTST Momentum <span class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="crsi" data-tf="1d" data-type="stocks">Connors RSI <span class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="darvas" data-tf="1d" data-type="stocks">Darvas Box <span class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="gap_momentum" data-tf="15m" data-type="stocks">Gap Expansion Momentum <span class="badge badge-purple">⚡</span></div>
+            <div class="pill" data-val="ha_donchian_bearish" data-tf="1d" data-type="stocks">HA Donchian Bearish <span class="badge badge-red">HA</span></div>
+            <div class="pill" data-val="ha_donchian_bullish" data-tf="1d" data-type="stocks">HA Donchian Bullish <span class="badge badge-green">HA</span></div>
+            <div class="pill" data-val="hm_bearish" data-tf="1d" data-type="stocks">HM: Bearish Down <span class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_bottom" data-tf="1d" data-type="stocks">HM: Bottom Catch <span class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_bullish" data-tf="1d" data-type="stocks">HM: Bullish Trend <span class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_chop" data-tf="1d" data-type="stocks">HM: Consolidation <span class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="hm_top" data-tf="1d" data-type="stocks">HM: Top Catch <span class="badge badge-amber">HM</span></div>
+            <div class="pill" data-val="mast_breakdown" data-tf="1d" data-type="stocks">MAST Breakdown <span class="badge badge-red">💥</span></div>
+            <div class="pill" data-val="mast_breakout" data-tf="1d" data-type="stocks">MAST Breakout <span class="badge badge-green">🚀</span></div>
+            <div class="pill" data-val="mast_dip" data-tf="1d" data-type="stocks">MAST Buy-on-Dip <span class="badge badge-purple">🎯</span></div>
+            <div class="pill" data-val="mast_rally_short" data-tf="1d" data-type="stocks">MAST Sell-on-Rally <span class="badge badge-red">🔻</span></div>
+            <div class="pill" data-val="minervini" data-tf="1d" data-type="stocks">Minervini VCP <span class="badge badge-muted">1d</span></div>
+            <div class="pill" data-val="rsi70_monthly" data-tf="1mo" data-type="stocks">Monthly RSI > 70 <span class="badge badge-green">1MO 🚀</span></div>
+            <div class="pill" data-val="multi_tf" data-tf="1d" data-type="stocks">Multi-TF Confluence <span class="badge badge-purple">M-TF</span></div>
+            <div class="pill" data-val="elephant_bullish" data-tf="1d" data-type="stocks">Oliver Velez Elephant (Bullish) <span class="badge badge-green">🐘</span></div>
+            <div class="pill" data-val="elephant_bearish" data-tf="1d" data-type="stocks">Oliver Velez Elephant (Bearish) <span class="badge badge-red">🐘</span></div>
+            <div class="pill" data-val="ohl_bearish" data-tf="15m" data-type="stocks">Open = High <span class="badge badge-red">15m</span></div>
+            <div class="pill" data-val="ohl_bullish" data-tf="15m" data-type="stocks">Open = Low <span class="badge badge-green">15m</span></div>
+            <div class="pill" data-val="smc_bearish" data-tf="1d" data-type="stocks">SMC: Bearish Reversal <span class="badge badge-purple">SMC</span></div>
+            <div class="pill" data-val="smc_bullish" data-tf="1d" data-type="stocks">SMC: Bullish Bounce <span class="badge badge-purple">SMC</span></div>
+            <div class="pill" data-val="intraday_retest" data-tf="15m" data-type="stocks">SMC Sweep & Retest <span class="badge badge-purple">15m</span></div>
+            <div class="pill" data-val="weinstein" data-tf="1wk" data-type="stocks">Stan Weinstein Stage 2 <span class="badge badge-green">1wk</span></div>
+            <div class="pill" data-val="ttm_orb" data-tf="15m" data-type="stocks">TTM Squeeze + ORB <span class="badge badge-muted">15m</span></div>
+            <div class="pill" data-val="vcp_down" data-tf="1d" data-type="stocks">VCP Breakdown <span class="badge badge-red">Short</span></div>
+            <div class="pill" data-val="wyckoff" data-tf="1wk" data-type="stocks">Wyckoff Stopping Vol <span class="badge badge-green">1wk</span></div>
+            <div class="pill" data-val="xmomentum" data-tf="1d" data-type="stocks">X-Momentum <span class="badge badge-muted">1d</span></div>
 
-            <!-- Intraday / Short Term -->
-            <div class="pill" data-val="ttm_orb" data-tf="15m" data-type="stocks">TTM Squeeze + ORB <span
-                class="badge badge-muted">15m</span></div>
-            <div class="pill" data-val="ohl_bullish" data-tf="15m" data-type="stocks">Open = Low <span
-                class="badge badge-green">15m</span></div>
-            <div class="pill" data-val="ohl_bearish" data-tf="15m" data-type="stocks">Open = High <span
-                class="badge badge-red">15m</span></div>
-            <div class="pill" data-val="elephant_bullish" data-tf="1d" data-type="stocks">Oliver Velez Elephant <span
-                class="badge badge-green">🐘</span></div>
-            <div class="pill" data-val="elephant_bearish" data-tf="1d" data-type="stocks">Oliver Velez Elephant <span
-                class="badge badge-red">🐘</span></div>
-            <div class="pill" data-val="gap_momentum" data-tf="15m" data-type="stocks">Gap Expansion Momentum <span
-                class="badge badge-purple">⚡</span></div>
-            <div class="pill" data-val="intraday_retest" data-tf="15m" data-type="stocks">SMC Sweep & Retest <span
-                class="badge badge-purple">15m</span></div>
-            <div class="pill" data-val="btst" data-tf="1d" data-type="stocks">BTST Momentum <span
-                class="badge badge-muted">1d</span></div>
-            <div class="pill" data-val="crsi" data-tf="1d" data-type="stocks">Connors RSI <span
-                class="badge badge-muted">1d</span></div>
-
-            <!-- Swing -->
-            <div class="pill" data-val="mast_breakout" data-tf="1d" data-type="stocks">MAST Breakout <span
-                class="badge badge-green">🚀</span></div>
-            <div class="pill" data-val="mast_dip" data-tf="1d" data-type="stocks">MAST Buy-on-Dip <span
-                class="badge badge-purple">🎯</span></div>
-            <div class="pill" data-val="minervini" data-tf="1d" data-type="stocks">Minervini VCP <span
-                class="badge badge-muted">1d</span></div>
-            <div class="pill" data-val="darvas" data-tf="1d" data-type="stocks">Darvas Box <span
-                class="badge badge-muted">1d</span></div>
-            <div class="pill" data-val="xmomentum" data-tf="1d" data-type="stocks">X-Momentum <span
-                class="badge badge-muted">1d</span></div>
-            <div class="pill" data-val="supertrend_rsi70" data-tf="1d" data-type="stocks">SuperTrend Green + RSI > 70 <span
-                class="badge badge-green">ST+RSI ⚡</span></div>
-
-            <!-- Short -->
-            <div class="pill" data-val="mast_breakdown" data-tf="1d" data-type="stocks">MAST Breakdown <span
-                class="badge badge-red">💥</span></div>
-            <div class="pill" data-val="mast_rally_short" data-tf="1d" data-type="stocks">MAST Sell-on-Rally <span
-                class="badge badge-red">🔻</span></div>
-            <div class="pill" data-val="vcp_down" data-tf="1d" data-type="stocks">VCP Breakdown <span
-                class="badge badge-red">Short</span></div>
-            <div class="pill" data-val="bear_call" data-tf="1d" data-type="options" style="display: none;">Bear Call
-              Spread <span class="badge badge-red">Short</span></div>
-
-            <!-- Options -->
-            <div class="pill" data-val="bps" data-tf="1d" data-type="options" style="display: none;">Bull Put Spread
-              <span class="badge badge-amber">OPTS</span></div>
-            <div class="pill" data-val="strangle" data-tf="1d" data-type="options" style="display: none;">Short Strangle
-              <span class="badge badge-amber">OPTS</span></div>
-            <div class="pill" data-val="iv_crush" data-tf="1d" data-type="options" style="display: none;">Earnings IV
-              Crush <span class="badge badge-amber">OPTS</span></div>
-            <div class="pill" data-val="csp" data-tf="1d" data-type="options" style="display: none;">Cash Secured Put
-              <span class="badge badge-amber">OPTS</span></div>
-            <div class="pill" data-val="cc" data-tf="1d" data-type="options" style="display: none;">Covered Call <span
-                class="badge badge-amber">OPTS</span></div>
-            <!-- Hilega Milega -->
-            <div class="pill" data-val="hm_bottom" data-tf="1d" data-type="stocks">HM: Bottom Catch <span
-                class="badge badge-amber">HM</span></div>
-            <div class="pill" data-val="hm_top" data-tf="1d" data-type="stocks">HM: Top Catch <span
-                class="badge badge-amber">HM</span></div>
-            <div class="pill" data-val="hm_bullish" data-tf="1d" data-type="stocks">HM: Bullish Trend <span
-                class="badge badge-amber">HM</span></div>
-            <div class="pill" data-val="hm_bearish" data-tf="1d" data-type="stocks">HM: Bearish Down <span
-                class="badge badge-amber">HM</span></div>
-            <div class="pill" data-val="hm_chop" data-tf="1d" data-type="stocks">HM: Consolidation <span
-                class="badge badge-amber">HM</span></div>
-
-            <!-- SMC -->
-            <div class="pill" data-val="smc_bullish" data-tf="1d" data-type="stocks">SMC: Bullish Bounce <span
-                class="badge badge-purple">SMC</span></div>
-            <div class="pill" data-val="smc_bearish" data-tf="1d" data-type="stocks">SMC: Bearish Reversal <span
-                class="badge badge-purple">SMC</span></div>
-
-            <!-- Heikin Ashi Donchian -->
-            <div class="pill" data-val="ha_donchian_bullish" data-tf="1d" data-type="stocks">HA Donchian Bullish <span
-                class="badge badge-green">HA</span></div>
-            <div class="pill" data-val="ha_donchian_bearish" data-tf="1d" data-type="stocks">HA Donchian Bearish <span
-                class="badge badge-red">HA</span></div>
-            <div class="pill" data-val="multi_tf" data-tf="1d" data-type="stocks">Multi-TF Confluence <span
-                class="badge badge-purple">M-TF</span></div>
-
-            <!-- Long Term -->
-            <div class="pill" data-val="rsi70_monthly" data-tf="1mo" data-type="stocks">Monthly RSI > 70 <span
-                class="badge badge-green">1MO 🚀</span></div>
-            <div class="pill" data-val="weinstein" data-tf="1wk" data-type="stocks">Stan Weinstein Stage 2 <span
-                class="badge badge-green">1wk</span></div>
-            <div class="pill" data-val="wyckoff" data-tf="1wk" data-type="stocks">Wyckoff Stopping Vol <span
-                class="badge badge-green">1wk</span></div>
+            <!-- Options (Alphabetical) -->
+            <div class="pill" data-val="bear_call" data-tf="1d" data-type="options" style="display: none;">Bear Call Spread <span class="badge badge-red">Short</span></div>
+            <div class="pill" data-val="bps" data-tf="1d" data-type="options" style="display: none;">Bull Put Spread <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="csp" data-tf="1d" data-type="options" style="display: none;">Cash Secured Put <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="cc" data-tf="1d" data-type="options" style="display: none;">Covered Call <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="iv_crush" data-tf="1d" data-type="options" style="display: none;">Earnings IV Crush <span class="badge badge-amber">OPTS</span></div>
+            <div class="pill" data-val="strangle" data-tf="1d" data-type="options" style="display: none;">Short Strangle <span class="badge badge-amber">OPTS</span></div>
           </div>
         </div>
 
@@ -633,7 +581,7 @@
   </script>
 
   <!-- Entry point for UI routing and execution -->
-  <script type="module" src="js/ui/app.js?v=89" defer></script>
+  <script type="module" src="js/ui/app.js?v=90" defer></script>
 </body>
 
 </html>

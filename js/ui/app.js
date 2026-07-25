@@ -661,7 +661,7 @@ async function init() {
   }
 
   // Initial Data Load (Nifty 50)
-  AppState.setStrategy('all');
+  AppState.setStrategy('supertrend_rsi70');
   AppState.setTimeframe('1d');
 
   DOM.scanBtn.disabled = true;
