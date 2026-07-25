@@ -238,6 +238,11 @@ const STRATEGY_INFO = {
     name: 'Monthly RSI > 70 Crossover (🚀 Multi-Bagger Regime)',
     desc: 'Long-term institutional momentum strategy. Filters stocks whose Monthly RSI(14) crosses or holds above 70 on the monthly timeframe. In market history, stocks entering Monthly RSI > 70 regime frequently deliver 100% to 500%+ multi-bagger structural expansion.',
     example: '<img src="/assets/rsi70_monthly_diagram.png?v=1" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy on Monthly RSI > 70 confirmation / breakout<br><strong>Stop Loss:</strong> Trailing Monthly 20 EMA or 15% Risk<br><strong>Target:</strong> Multi-year structural trend (Ride 2x to 5x+ Multi-Bagger Rallies)<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., BEL or TATA MOTORS breaks out into Monthly RSI > 70. This confirms institutional accumulation and structural industry tailwinds. Buy and hold for long-term multi-bagger wealth creation.</span>'
+  },
+  supertrend_rsi70: {
+    name: 'SuperTrend Green + RSI > 70 (⚡ Explosive Trend Ignition)',
+    desc: 'High-velocity momentum strategy. Identifies stocks where SuperTrend(10,3) flips from RED to GREEN while RSI(14) crosses above 70 simultaneously. Replaces false whipsaws with ultra-high conviction trend breakouts.',
+    example: '<img src="/assets/supertrend_rsi70_diagram.png?v=1" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy on SuperTrend Green Flip + RSI > 70 candle close<br><strong>Stop Loss:</strong> Trailing SuperTrend Line<br><strong>Target:</strong> Ride explosive trend expansion (1:3+ Risk/Reward)<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., MCX or SYRMA flips SuperTrend Green while RSI surges above 70. Buy the momentum ignition and trail SuperTrend line for maximum upside!</span>'
   }
 };
 
@@ -560,12 +565,12 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'rsi70_monthly', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'rsi70_monthly', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
               if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(s)) tempRes = intradayStrats.run(s, data);
-              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short'].includes(s)) tempRes = swingStrats.run(s, data);
+              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70'].includes(s)) tempRes = swingStrats.run(s, data);
               else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
               else if (['rsi70_monthly', 'weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
@@ -584,7 +589,7 @@ async function runScan() {
             res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
             if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
-            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short'].includes(strategyId)) res = swingStrats.run(strategyId, data);
+            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70'].includes(strategyId)) res = swingStrats.run(strategyId, data);
             else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
               res = optionStrats.run(strategyId, data);
               if (res.isMatch) res.raw = data;

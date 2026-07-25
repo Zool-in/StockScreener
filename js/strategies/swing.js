@@ -10,6 +10,7 @@ export function run(strategyId, data) {
   if (strategyId === 'mast_dip') return mastDip(data);
   if (strategyId === 'mast_breakdown') return mastBreakdown(data);
   if (strategyId === 'mast_rally_short') return mastRallyShort(data);
+  if (strategyId === 'supertrend_rsi70') return supertrendRsi70(data);
   return { isMatch: false };
 }
 
@@ -424,6 +425,45 @@ function mastRallyShort(data) {
     metrics: [
       { name: '10 SMA Res', value: `₹${curSma10.toFixed(1)}` },
       { name: 'SuperTrend', value: `₹${curSt.toFixed(1)}` },
+      { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
+    ]
+  };
+}
+
+function supertrendRsi70(data) {
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 25) return { isMatch: false };
+
+  const stData = supertrend(highs, lows, closes, 10, 3);
+  if (!stData.direction || stData.direction.length < n) return { isMatch: false };
+
+  const curDir = stData.direction[n - 1]; // 1 = Green, -1 = Red
+  const prevDir1 = stData.direction[n - 2];
+  const prevDir2 = stData.direction[n - 3];
+  const prevDir3 = stData.direction[n - 4];
+
+  // SuperTrend flip from RED (-1) to GREEN (1) within recent 1 to 3 candles
+  const isRecentGreenFlip = curDir === 1 && (prevDir1 === -1 || prevDir2 === -1 || prevDir3 === -1);
+  if (!isRecentGreenFlip) return { isMatch: false };
+
+  // RSI(14) > 70 condition
+  const rsiVal = rsi(closes, 14);
+  if (rsiVal < 70) return { isMatch: false };
+
+  const curSt = stData.supertrend[n - 1];
+  const currentVol = volumes[n - 1];
+  const avgVol = (volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20) || 1;
+  const volRatio = currentVol / avgVol;
+
+  return {
+    isMatch: true,
+    reason: `SuperTrend Red ➔ Green Flip with RSI ${rsiVal.toFixed(1)} > 70! Fresh trend reversal with high institutional velocity.`,
+    entry: cmp,
+    risk: cmp - curSt > 0 ? cmp - curSt : cmp * 0.02,
+    metrics: [
+      { name: 'SuperTrend', value: 'FLIPPED GREEN 🟢' },
+      { name: 'RSI (14)', value: `${rsiVal.toFixed(1)} (>70) 🚀` },
       { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
     ]
   };
