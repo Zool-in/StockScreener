@@ -223,6 +223,16 @@ const STRATEGY_INFO = {
     name: 'MAST Buy-on-Dip (🎯 10 SMA Retest / Pyramiding)',
     desc: 'Moving Averages + SuperTrend Strategy (@Learn4profits). Identifies high-probability buy-the-dip opportunities in ongoing uptrends. When SuperTrend is Green, price pulls back to test the 10 SMA support line and prints a reversal bounce.',
     example: '<img src="/assets/ttm_orb_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy near 10 SMA bounce confirmation<br><strong>Stop Loss:</strong> Low of the dip candle or 10 SMA<br><strong>Target:</strong> Previous Swing High & Beyond (1:3 Risk/Reward)<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., HAL is in a strong SuperTrend uptrend. Price pulls back to touch the 10 SMA at ₹4,150 and prints a bullish rejection wick. Buy the dip with low risk!</span>'
+  },
+  mast_breakdown: {
+    name: 'MAST Strategy Breakdown (💥 SuperTrend Red + 10 SMA)',
+    desc: 'Moving Averages + SuperTrend Shorting Strategy. Identifies aggressive bearish breakdowns when SuperTrend(10,3) flips RED while price drops strictly below the 10 SMA on expanding volume.',
+    example: '<img src="/assets/smc_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short / Buy Put on breakdown candle close below 10 SMA<br><strong>Stop Loss:</strong> Trailing SuperTrend(10,3) Red Line<br><strong>Target:</strong> 1:3+ Risk/Reward heavy continuation drop<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., WIPRO breaks support. SuperTrend(10,3) turns Red and price closes below 10 SMA on 2x volume. Short the breakdown!</span>'
+  },
+  mast_rally_short: {
+    name: 'MAST Sell-on-Rally (🔻 10 SMA Resistance Rejection)',
+    desc: 'Moving Averages + SuperTrend Bearish Retest Strategy. Identifies high-probability sell-the-bounce / short entries in established downtrends. When SuperTrend is Red, price rallies to test the 10 SMA resistance and faces rejection.',
+    example: '<img src="/assets/smc_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short near 10 SMA rejection<br><strong>Stop Loss:</strong> Above 10 SMA / High of rejection candle<br><strong>Target:</strong> Previous Swing Low & Beyond<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., TECHM is in a strong SuperTrend downtrend. Price rallies to touch the 10 SMA and prints an upper wick rejection candle. Short the bounce!</span>'
   }
 };
 
@@ -545,12 +555,12 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
               if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(s)) tempRes = intradayStrats.run(s, data);
-              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip'].includes(s)) tempRes = swingStrats.run(s, data);
+              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short'].includes(s)) tempRes = swingStrats.run(s, data);
               else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
               else if (['weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
@@ -569,7 +579,7 @@ async function runScan() {
             res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
             if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
-            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip'].includes(strategyId)) res = swingStrats.run(strategyId, data);
+            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short'].includes(strategyId)) res = swingStrats.run(strategyId, data);
             else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
               res = optionStrats.run(strategyId, data);
               if (res.isMatch) res.raw = data;

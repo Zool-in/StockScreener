@@ -8,6 +8,8 @@ export function run(strategyId, data) {
   if (strategyId === 'xmomentum') return extremeMomentum(data);
   if (strategyId === 'mast_breakout') return mastBreakout(data);
   if (strategyId === 'mast_dip') return mastDip(data);
+  if (strategyId === 'mast_breakdown') return mastBreakdown(data);
+  if (strategyId === 'mast_rally_short') return mastRallyShort(data);
   return { isMatch: false };
 }
 
@@ -330,6 +332,97 @@ function mastDip(data) {
     risk: risk > 0 ? risk : cmp * 0.015,
     metrics: [
       { name: '10 SMA Supp', value: `₹${curSma10.toFixed(1)}` },
+      { name: 'SuperTrend', value: `₹${curSt.toFixed(1)}` },
+      { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
+    ]
+  };
+}
+
+function mastBreakdown(data) {
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 25) return { isMatch: false };
+
+  const stData = supertrend(highs, lows, closes, 10, 3);
+  const sma10 = smaSeries(closes, 10);
+  
+  if (!stData.direction || stData.direction.length < n) return { isMatch: false };
+
+  const curDir = stData.direction[n - 1];
+  const prevDir = stData.direction[n - 2] || stData.direction[n - 1];
+  const curSt = stData.supertrend[n - 1];
+  const curSma10 = sma10[n - 1];
+
+  // Condition 1: Fresh SuperTrend flip to Bearish (Red) in last 1-2 candles
+  const isFreshBearFlip = (curDir === -1 && prevDir === 1) || (curDir === -1 && stData.direction[n - 3] === 1);
+  if (!isFreshBearFlip) return { isMatch: false };
+
+  // Condition 2: Close < 10 SMA
+  const c = closes[n - 1];
+  if (c > curSma10) return { isMatch: false };
+
+  // Condition 3: Volume Surge Check (>= 1.2x avg)
+  const currentVol = volumes[n - 1];
+  const avgVol = (volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20) || 1;
+  const volRatio = currentVol / avgVol;
+
+  const risk = curSt - cmp;
+  return {
+    isMatch: true,
+    isShort: true,
+    reason: `MAST Strategy Breakdown (💥): SuperTrend (10,3) flipped RED (Bearish) on volume (${volRatio.toFixed(1)}x avg) with price (₹${cmp.toFixed(2)}) below 10 SMA (₹${curSma10.toFixed(2)}).`,
+    entry: cmp,
+    risk: risk > 0 ? risk : cmp * 0.02,
+    metrics: [
+      { name: 'SuperTrend', value: `₹${curSt.toFixed(1)} (Red)` },
+      { name: '10 SMA', value: `₹${curSma10.toFixed(1)}` },
+      { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
+    ]
+  };
+}
+
+function mastRallyShort(data) {
+  const { closes, highs, lows, opens, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 25) return { isMatch: false };
+
+  const stData = supertrend(highs, lows, closes, 10, 3);
+  const sma10 = smaSeries(closes, 10);
+  
+  if (!stData.direction || stData.direction.length < n) return { isMatch: false };
+
+  const curDir = stData.direction[n - 1];
+  const curSt = stData.supertrend[n - 1];
+  const curSma10 = sma10[n - 1];
+
+  // Condition 1: SuperTrend MUST be actively Bearish (Red Line)
+  if (curDir !== -1) return { isMatch: false };
+
+  // Condition 2: Price rallied up to test 10 SMA resistance (High touched or came within 1% of 10 SMA)
+  const h = highs[n - 1];
+  const c = closes[n - 1];
+  const o = opens[n - 1];
+  
+  const isRallyToSma = (h >= curSma10 * 0.99) && (c <= curSma10 * 1.01);
+  if (!isRallyToSma) return { isMatch: false };
+
+  // Condition 3: Reversal candle (Red close or upper wick rejection at 10 SMA)
+  const isReversal = (c <= o) || (c <= curSma10);
+  if (!isReversal) return { isMatch: false };
+
+  const currentVol = volumes[n - 1];
+  const avgVol = (volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20) || 1;
+  const volRatio = currentVol / avgVol;
+
+  const risk = Math.max(curSma10, curSt) - cmp;
+  return {
+    isMatch: true,
+    isShort: true,
+    reason: `MAST Sell-on-Rally (🔻): SuperTrend (10,3) is Bearish. Price rallied into 10 SMA resistance (₹${curSma10.toFixed(2)}) and rejected. Ideal short entry / exit long.`,
+    entry: cmp,
+    risk: risk > 0 ? risk : cmp * 0.015,
+    metrics: [
+      { name: '10 SMA Res', value: `₹${curSma10.toFixed(1)}` },
       { name: 'SuperTrend', value: `₹${curSt.toFixed(1)}` },
       { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
     ]

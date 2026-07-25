@@ -149,6 +149,8 @@ function renderAlertsTable(rows) {
       gap_momentum: 'Gap Expansion ⚡',
       mast_breakout: 'MAST Breakout 🚀',
       mast_dip: 'MAST Buy-on-Dip 🎯',
+      mast_breakdown: 'MAST Breakdown 💥',
+      mast_rally_short: 'MAST Sell-on-Rally 🔻',
       ohl_bullish: 'Open = Low',
       ohl_bearish: 'Open = High',
       ttm_orb: 'TTM Squeeze + ORB',
