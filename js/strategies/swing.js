@@ -1,16 +1,16 @@
 import { ema, emaSeries, rsi, adx, connorsRSI, macd, cci, supertrend, smaSeries } from '../core/math.js';
 
-export function run(strategyId, data) {
-  if (strategyId === 'minervini') return minerviniVCP(data);
-  if (strategyId === 'darvas') return darvasBox(data);
-  if (strategyId === 'rs') return rsLeader(data);
-  if (strategyId === 'crsi') return crsiMeanReversion(data);
-  if (strategyId === 'xmomentum') return extremeMomentum(data);
-  if (strategyId === 'mast_breakout') return mastBreakout(data);
-  if (strategyId === 'mast_dip') return mastDip(data);
-  if (strategyId === 'mast_breakdown') return mastBreakdown(data);
-  if (strategyId === 'mast_rally_short') return mastRallyShort(data);
-  if (strategyId === 'supertrend_rsi70') return supertrendRsi70(data);
+export function run(strategyId, data, tuner = null) {
+  if (strategyId === 'minervini') return minerviniVCP(data, tuner);
+  if (strategyId === 'darvas') return darvasBox(data, tuner);
+  if (strategyId === 'rs') return rsLeader(data, tuner);
+  if (strategyId === 'crsi') return crsiMeanReversion(data, tuner);
+  if (strategyId === 'xmomentum') return extremeMomentum(data, tuner);
+  if (strategyId === 'mast_breakout') return mastBreakout(data, tuner);
+  if (strategyId === 'mast_dip') return mastDip(data, tuner);
+  if (strategyId === 'mast_breakdown') return mastBreakdown(data, tuner);
+  if (strategyId === 'mast_rally_short') return mastRallyShort(data, tuner);
+  if (strategyId === 'supertrend_rsi70') return supertrendRsi70(data, tuner);
   return { isMatch: false };
 }
 
@@ -430,40 +430,60 @@ function mastRallyShort(data) {
   };
 }
 
-function supertrendRsi70(data) {
+function supertrendRsi70(data, tuner = null) {
   const { closes, highs, lows, opens, volumes, cmp } = data;
   const n = closes.length;
   if (n < 25) return { isMatch: false };
 
-  const stData = supertrend(highs, lows, closes, 10, 3);
-  if (!stData.direction || stData.direction.length < n) return { isMatch: false };
+  const stPeriod = (tuner && tuner.stPeriod != null) ? Number(tuner.stPeriod) : 10;
+  const stMult = (tuner && tuner.stMult != null) ? Number(tuner.stMult) : 3.0;
+  const rsiTarget = (tuner && tuner.rsiThreshold != null) ? Number(tuner.rsiThreshold) : 70;
+  const useSt = (tuner && tuner.useSt !== undefined) ? tuner.useSt : true;
+  const useRsi = (tuner && tuner.useRsi !== undefined) ? tuner.useRsi : true;
+  const useMacd = (tuner && tuner.useMacd !== undefined) ? tuner.useMacd : false;
+  const minVolRatio = (tuner && tuner.minVolRatio != null) ? Number(tuner.minVolRatio) : 1.0;
 
-  const curDir = stData.direction[n - 1]; // 1 = Green, -1 = Red
-  const prevDir1 = stData.direction[n - 2];
-  const prevDir2 = stData.direction[n - 3];
-  const prevDir3 = stData.direction[n - 4];
+  let curSt = cmp * 0.97;
 
-  // SuperTrend flip from RED (-1) to GREEN (1) within recent 1 to 3 candles
-  const isRecentGreenFlip = curDir === 1 && (prevDir1 === -1 || prevDir2 === -1 || prevDir3 === -1);
-  if (!isRecentGreenFlip) return { isMatch: false };
+  if (useSt) {
+    const stData = supertrend(highs, lows, closes, stPeriod, stMult);
+    if (!stData.direction || stData.direction.length < n) return { isMatch: false };
 
-  // RSI(14) > 70 condition
+    const curDir = stData.direction[n - 1]; // 1 = Green, -1 = Red
+    const prevDir1 = stData.direction[n - 2];
+    const prevDir2 = stData.direction[n - 3];
+    const prevDir3 = stData.direction[n - 4];
+
+    // SuperTrend flip from RED (-1) to GREEN (1) within recent 1 to 4 candles OR active Green
+    const isRecentGreenFlip = curDir === 1 && (prevDir1 === -1 || prevDir2 === -1 || prevDir3 === -1 || curDir === 1);
+    curSt = stData.supertrend[n - 1];
+    if (!isRecentGreenFlip) return { isMatch: false };
+  }
+
+  // RSI condition
   const rsiVal = rsi(closes, 14);
-  if (rsiVal < 70) return { isMatch: false };
+  if (useRsi && rsiVal < rsiTarget) return { isMatch: false };
 
-  const curSt = stData.supertrend[n - 1];
+  // Volume Surge check
   const currentVol = volumes[n - 1];
   const avgVol = (volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20) || 1;
   const volRatio = currentVol / avgVol;
+  if (tuner && tuner.useVol && volRatio < minVolRatio) return { isMatch: false };
+
+  // MACD Bullish Confluence
+  if (useMacd) {
+    const macdData = macd(closes);
+    if (!macdData || macdData.macd <= 0 || macdData.hist <= 0) return { isMatch: false };
+  }
 
   return {
     isMatch: true,
-    reason: `SuperTrend Red ➔ Green Flip with RSI ${rsiVal.toFixed(1)} > 70! Fresh trend reversal with high institutional velocity.`,
+    reason: `SuperTrend (${stPeriod}, ${stMult.toFixed(1)}) Green Flip with RSI ${rsiVal.toFixed(1)} >= ${rsiTarget}! Dynamic parameters applied.`,
     entry: cmp,
     risk: cmp - curSt > 0 ? cmp - curSt : cmp * 0.02,
     metrics: [
-      { name: 'SuperTrend', value: 'FLIPPED GREEN 🟢' },
-      { name: 'RSI (14)', value: `${rsiVal.toFixed(1)} (>70) 🚀` },
+      { name: 'SuperTrend', value: useSt ? `(${stPeriod}, ${stMult.toFixed(1)}) Green 🟢` : 'Off' },
+      { name: 'RSI (14)', value: `${rsiVal.toFixed(1)} (>=${rsiTarget}) 🚀` },
       { name: 'Vol Surge', value: `${volRatio.toFixed(1)}x` }
     ]
   };

@@ -246,11 +246,115 @@ const STRATEGY_INFO = {
   }
 };
 
+// ─── Initialize Strategy Parameter Tuner Event Listeners ────────────────────
+function initStrategyTuner() {
+  const rngRsi = document.getElementById('rngRsi');
+  const lblRsiVal = document.getElementById('lblRsiVal');
+  const chkUseRsi = document.getElementById('chkUseRsi');
+
+  const rngStMult = document.getElementById('rngStMult');
+  const lblStVal = document.getElementById('lblStVal');
+  const chkUseSt = document.getElementById('chkUseSt');
+
+  const rngVol = document.getElementById('rngVol');
+  const lblVolVal = document.getElementById('lblVolVal');
+  const chkUseVol = document.getElementById('chkUseVol');
+
+  const chkUseMacd = document.getElementById('chkUseMacd');
+  const chkUseSma10 = document.getElementById('chkUseSma10');
+  const btnResetTuner = document.getElementById('btnResetTuner');
+
+  let tunerTimeout = null;
+  const triggerTunerScan = () => {
+    if (tunerTimeout) clearTimeout(tunerTimeout);
+    tunerTimeout = setTimeout(() => {
+      runScreener();
+    }, 250);
+  };
+
+  if (rngRsi && lblRsiVal) {
+    rngRsi.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblRsiVal.textContent = `>= ${val}`;
+      AppState.setTunerParam('rsiThreshold', val);
+      triggerTunerScan();
+    });
+  }
+
+  if (chkUseRsi) {
+    chkUseRsi.addEventListener('change', (e) => {
+      AppState.setTunerParam('useRsi', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  if (rngStMult && lblStVal) {
+    rngStMult.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblStVal.textContent = `Mult: ${val.toFixed(1)}`;
+      AppState.setTunerParam('stMult', val);
+      triggerTunerScan();
+    });
+  }
+
+  if (chkUseSt) {
+    chkUseSt.addEventListener('change', (e) => {
+      AppState.setTunerParam('useSt', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  if (rngVol && lblVolVal) {
+    rngVol.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblVolVal.textContent = `>= ${val.toFixed(1)}x`;
+      AppState.setTunerParam('minVolRatio', val);
+      triggerTunerScan();
+    });
+  }
+
+  if (chkUseVol) {
+    chkUseVol.addEventListener('change', (e) => {
+      AppState.setTunerParam('useVol', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  if (chkUseMacd) {
+    chkUseMacd.addEventListener('change', (e) => {
+      AppState.setTunerParam('useMacd', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  if (chkUseSma10) {
+    chkUseSma10.addEventListener('change', (e) => {
+      AppState.setTunerParam('useSma10', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  if (btnResetTuner) {
+    btnResetTuner.addEventListener('click', () => {
+      if (rngRsi) { rngRsi.value = 70; lblRsiVal.textContent = '>= 70'; AppState.setTunerParam('rsiThreshold', 70); }
+      if (chkUseRsi) { chkUseRsi.checked = true; AppState.setTunerParam('useRsi', true); }
+      if (rngStMult) { rngStMult.value = 3.0; lblStVal.textContent = 'Mult: 3.0'; AppState.setTunerParam('stMult', 3.0); }
+      if (chkUseSt) { chkUseSt.checked = true; AppState.setTunerParam('useSt', true); }
+      if (rngVol) { rngVol.value = 1.5; lblVolVal.textContent = '>= 1.5x'; AppState.setTunerParam('minVolRatio', 1.5); }
+      if (chkUseVol) { chkUseVol.checked = true; AppState.setTunerParam('useVol', true); }
+      if (chkUseMacd) { chkUseMacd.checked = false; AppState.setTunerParam('useMacd', false); }
+      if (chkUseSma10) { chkUseSma10.checked = true; AppState.setTunerParam('useSma10', true); }
+      triggerTunerScan();
+    });
+  }
+}
+
 // ─── Initialize ─────────────────────────────────────────────────────────────
 async function init() {
   fetchStatus();
   setInterval(fetchStatus, 30000); // refresh every 30s
   initAlerts();
+  initStrategyTuner();
 
   // Tab Switching
   const tabScreener = document.getElementById('tabScreener');
@@ -570,10 +674,10 @@ async function runScan() {
             for (const s of allStrategies) {
               let tempRes = null;
               if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(s)) tempRes = intradayStrats.run(s, data);
-              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70'].includes(s)) tempRes = swingStrats.run(s, data);
+              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70'].includes(s)) tempRes = swingStrats.run(s, data, AppState.tunerParams);
               else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
-              else if (['rsi70_monthly', 'weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
+              else if (['rsi70_monthly', 'weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data, AppState.tunerParams);
               else if (['vcp_down', 'bear_call'].includes(s)) tempRes = shortStrats.run(s, data);
               else if (s.startsWith('hm_')) tempRes = hmStrats.run(s, data);
               else if (s.startsWith('smc_')) tempRes = smcStrats.run(s, data);
@@ -589,13 +693,13 @@ async function runScan() {
             res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
             if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
-            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70'].includes(strategyId)) res = swingStrats.run(strategyId, data);
+            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70'].includes(strategyId)) res = swingStrats.run(strategyId, data, AppState.tunerParams);
             else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
               res = optionStrats.run(strategyId, data);
               if (res.isMatch) res.raw = data;
             }
             else if (['btst'].includes(strategyId)) res = btstStrats.run(strategyId, data);
-            else if (['rsi70_monthly', 'weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data);
+            else if (['rsi70_monthly', 'weinstein', 'wyckoff'].includes(strategyId)) res = longTermStrats.run(strategyId, data, AppState.tunerParams);
             else if (['vcp_down', 'bear_call'].includes(strategyId)) res = shortStrats.run(strategyId, data);
             else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
             else if (strategyId.startsWith('smc_')) res = smcStrats.run(strategyId, data);

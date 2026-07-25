@@ -7,6 +7,23 @@ export const AppState = {
   isScanning: false,
   results: [],
 
+  tunerParams: {
+    useSt: true,
+    stPeriod: 10,
+    stMult: 3.0,
+    useRsi: true,
+    rsiThreshold: 70,
+    rsiFreshCross: false,
+    useVol: true,
+    minVolRatio: 1.5,
+    useSma10: true,
+    useMacd: false
+  },
+  setTunerParam(key, val) {
+    this.tunerParams[key] = val;
+    this.notify();
+  },
+
   setCapital(c) {
     this.capital = Number(c) || 100000;
     this.notify();
