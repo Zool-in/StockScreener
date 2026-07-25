@@ -588,7 +588,7 @@ server.on('error', err => {
   if (err.code === 'EADDRINUSE') {
     console.error(`\n  ⚠  Port ${PORT} is already in use — the app is probably already running.`);
     console.error(`     Open it at:  http://localhost:${PORT}`);
-    console.error(`     If it's stuck, restart with:  pkill -f "node server.js" && npm start\n`);
+    console.error(`     If it's stuck, restart with:  pkill -f "node (index|server).js" && npm start\n`);
     process.exit(0); // clean exit, no scary stack trace
   }
   console.error('Server error:', err.message);
