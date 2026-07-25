@@ -1,7 +1,7 @@
 // ─── Main App Entry Point ───────────────────────────────────────────────────
 import { AppState } from '../core/state.js?v=6';
 import { fetchOHLCV } from '../core/api.js?v=8';
-import { ema, rsi, adx, macd, cci } from '../core/math.js?v=7';
+import { ema, rsi, adx, macd, cci, supertrend, smaSeries } from '../core/math.js?v=7';
 import { runBacktest } from '../core/backtest.js?v=4';
 import { openStrategyTester } from './backtester_ui.js?v=1';
 
@@ -709,6 +709,101 @@ async function fetchStatus() {
 let currentScanId = 0;
 let currentAbortController = null;
 
+// ─── Evaluate Interactive Tuner Filters ──────────────────────────────────────
+function applyTunerFilters(data, tuner) {
+  if (!tuner) return true;
+  const { closes, highs, lows, volumes, cmp } = data;
+  const n = closes.length;
+  if (n < 25) return false;
+
+  // 1. Bullish RSI Filter
+  if (tuner.useRsi) {
+    const rsiVal = rsi(closes, 14);
+    const targetRsi = tuner.rsiThreshold != null ? Number(tuner.rsiThreshold) : 70;
+    if (rsiVal < targetRsi) return false;
+  }
+
+  // 2. Bearish RSI Limit
+  if (tuner.useRsiBearish) {
+    const rsiVal = rsi(closes, 14);
+    const limitRsi = tuner.rsiBearishLimit != null ? Number(tuner.rsiBearishLimit) : 40;
+    if (rsiVal > limitRsi) return false;
+  }
+
+  // 3. SuperTrend Bullish Filter
+  if (tuner.useSt) {
+    const period = tuner.stPeriod != null ? Number(tuner.stPeriod) : 10;
+    const mult = tuner.stMult != null ? Number(tuner.stMult) : 3.0;
+    const stData = supertrend(highs, lows, closes, period, mult);
+    if (!stData.direction || stData.direction[n - 1] !== 1) return false;
+  }
+
+  // 4. SuperTrend Bearish Filter
+  if (tuner.useStBearish) {
+    const period = 10;
+    const mult = tuner.stBearishMult != null ? Number(tuner.stBearishMult) : 3.0;
+    const stData = supertrend(highs, lows, closes, period, mult);
+    if (!stData.direction || stData.direction[n - 1] !== -1) return false;
+  }
+
+  // 5. Volume Surge Filter
+  if (tuner.useVol) {
+    const minRatio = tuner.minVolRatio != null ? Number(tuner.minVolRatio) : 1.5;
+    const curVol = volumes[n - 1];
+    const avgVol = (volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20) || 1;
+    if ((curVol / avgVol) < minRatio) return false;
+  }
+
+  // 6. MACD Bullish Confluence
+  if (tuner.useMacd) {
+    const mData = macd(closes);
+    if (!mData || mData.macd <= 0 || mData.hist <= 0) return false;
+  }
+
+  // 7. 10 SMA Support
+  if (tuner.useSma10) {
+    const sma10Arr = smaSeries(closes, 10);
+    const sma10 = sma10Arr[n - 1];
+    if (cmp < sma10) return false;
+  }
+
+  // 8. 10 SMA Resistance
+  if (tuner.useSma10Res) {
+    const sma10Arr = smaSeries(closes, 10);
+    const sma10 = sma10Arr[n - 1];
+    if (cmp > sma10) return false;
+  }
+
+  // 9. Elephant Candle Body %
+  if (tuner.elephantBodyPct != null && AppState.strategy && AppState.strategy.includes('elephant')) {
+    const open = data.opens[n - 1];
+    const high = highs[n - 1];
+    const low = lows[n - 1];
+    const body = Math.abs(cmp - open);
+    const range = high - low || 1;
+    const bodyPct = (body / range) * 100;
+    if (bodyPct < tuner.elephantBodyPct) return false;
+  }
+
+  // 10. OHL Wick Tolerance
+  if (tuner.ohlWickTolerance != null && AppState.strategy && AppState.strategy.includes('ohl')) {
+    const open = data.opens[n - 1];
+    const low = lows[n - 1];
+    const diffPct = Math.abs(open - low) / open * 100;
+    if (diffPct > tuner.ohlWickTolerance) return false;
+  }
+
+  // 11. VCP Max Range
+  if (tuner.vcpMaxRange != null && AppState.strategy && (AppState.strategy.includes('minervini') || AppState.strategy.includes('vcp'))) {
+    const high = highs[n - 1];
+    const low = lows[n - 1];
+    const rangePct = (high - low) / low * 100;
+    if (rangePct > tuner.vcpMaxRange) return false;
+  }
+
+  return true;
+}
+
 // ─── Scan Runner ────────────────────────────────────────────────────────────
 async function runScan() {
   if (currentAbortController) {
@@ -750,8 +845,6 @@ async function runScan() {
   const strategyId = AppState.strategy;
 
   try {
-    // Use smaller batch size for historical APIs (1W/1M) to prevent 504 Gateway Timeouts
-    // as they require multiple paginated requests to the broker.
     const isEOD = AppState.timeframe === '1d';
     const isMultiTF = strategyId === 'multi_tf';
     const BATCH_SIZE = isMultiTF ? 3 : (isEOD ? 25 : 6);
@@ -788,7 +881,7 @@ async function runScan() {
 
           const n = data.closes.length;
           const minBars = 30;
-          if (n < minBars) return; // Need minimum data
+          if (n < minBars) return;
 
           const curr = data.closes[n - 1];
           const prev = data.closes[n - 2];
@@ -797,7 +890,12 @@ async function runScan() {
           let res = null;
           let matchedStrategies = [];
 
-          if (strategyId === 'all') {
+          // Evaluate Interactive Tuner Parameters
+          const tunerPassed = applyTunerFilters(data, AppState.tunerParams);
+
+          if (!tunerPassed) {
+            res = { isMatch: false };
+          } else if (strategyId === 'all') {
             const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'rsi70_monthly', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
@@ -818,7 +916,7 @@ async function runScan() {
               }
             }
 
-            const finalReason = combinedReasons.length > 0 ? combinedReasons.join('<br>') : 'Raw Technical Scan (Score Rank)';
+            const finalReason = combinedReasons.length > 0 ? combinedReasons.join('<br>') : 'Raw Technical Scan (Score Rank & Tuner Passed)';
             res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
             if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
