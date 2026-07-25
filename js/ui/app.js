@@ -246,6 +246,55 @@ const STRATEGY_INFO = {
   }
 };
 
+// ─── Update Strategy Parameter Tuner Card Visibility ────────────────────────
+function updateTunerVisibility(strategyId) {
+  const badge = document.getElementById('tunerStratBadge');
+  const tunerGroups = document.querySelectorAll('.tuner-group');
+
+  if (badge) {
+    badge.textContent = strategyId === 'all' ? 'All Strategies RAW' : strategyId.toUpperCase().replace(/_/g, ' ');
+  }
+
+  // Strategy-specific group visibility mapping
+  const visibleGroups = {
+    supertrend_rsi70: ['rsi', 'supertrend-bullish', 'volume', 'confluence'],
+    rsi70_monthly: ['rsi', 'volume'],
+    mast_breakout: ['supertrend-bullish', 'volume', 'confluence'],
+    mast_dip: ['supertrend-bullish', 'confluence'],
+    mast_breakdown: ['supertrend-bearish', 'volume', 'downside'],
+    mast_rally_short: ['supertrend-bearish', 'downside'],
+    ohl_bullish: ['ohl', 'volume', 'confluence'],
+    ohl_bearish: ['ohl', 'volume', 'downside'],
+    elephant_bullish: ['elephant', 'volume', 'confluence'],
+    elephant_bearish: ['elephant', 'volume', 'downside'],
+    gap_momentum: ['volume', 'confluence'],
+    ttm_orb: ['volume', 'confluence'],
+    minervini: ['vcp', 'volume', 'confluence'],
+    darvas: ['volume', 'confluence'],
+    vcp_down: ['vcp', 'volume', 'downside'],
+    bear_call: ['supertrend-bearish', 'downside'],
+    hm_bottom: ['confluence'],
+    hm_top: ['downside'],
+    hm_bullish: ['volume', 'confluence'],
+    hm_bearish: ['volume', 'downside'],
+    smc_bullish: ['volume', 'confluence'],
+    smc_bearish: ['volume', 'downside'],
+    all: ['rsi', 'supertrend-bullish', 'supertrend-bearish', 'volume', 'downside', 'elephant', 'ohl', 'vcp', 'confluence']
+  };
+
+  const allowed = visibleGroups[strategyId] || ['rsi', 'supertrend-bullish', 'volume', 'confluence'];
+
+  tunerGroups.forEach(el => {
+    const grp = el.getAttribute('data-group');
+    if (!grp || allowed.includes(grp)) {
+      el.style.display = 'block';
+      if (grp === 'downside' || grp === 'confluence') el.style.display = 'flex';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+}
+
 // ─── Initialize Strategy Parameter Tuner Event Listeners ────────────────────
 function initStrategyTuner() {
   const rngRsi = document.getElementById('rngRsi');
@@ -282,7 +331,7 @@ function initStrategyTuner() {
   const triggerTunerScan = () => {
     if (tunerTimeout) clearTimeout(tunerTimeout);
     tunerTimeout = setTimeout(() => {
-      runScreener();
+      runScan();
     }, 250);
   };
 
@@ -551,54 +600,6 @@ async function init() {
       }
     });
   });
-
-function updateTunerVisibility(strategyId) {
-  const badge = document.getElementById('tunerStratBadge');
-  const tunerGroups = document.querySelectorAll('.tuner-group');
-
-  if (badge) {
-    badge.textContent = strategyId === 'all' ? 'All Strategies RAW' : strategyId.toUpperCase().replace(/_/g, ' ');
-  }
-
-  // Strategy-specific group visibility mapping
-  const visibleGroups = {
-    supertrend_rsi70: ['rsi', 'supertrend-bullish', 'volume', 'confluence'],
-    rsi70_monthly: ['rsi', 'volume'],
-    mast_breakout: ['supertrend-bullish', 'volume', 'confluence'],
-    mast_dip: ['supertrend-bullish', 'confluence'],
-    mast_breakdown: ['supertrend-bearish', 'volume', 'downside'],
-    mast_rally_short: ['supertrend-bearish', 'downside'],
-    ohl_bullish: ['ohl', 'volume', 'confluence'],
-    ohl_bearish: ['ohl', 'volume', 'downside'],
-    elephant_bullish: ['elephant', 'volume', 'confluence'],
-    elephant_bearish: ['elephant', 'volume', 'downside'],
-    gap_momentum: ['volume', 'confluence'],
-    ttm_orb: ['volume', 'confluence'],
-    minervini: ['vcp', 'volume', 'confluence'],
-    darvas: ['volume', 'confluence'],
-    vcp_down: ['vcp', 'volume', 'downside'],
-    bear_call: ['supertrend-bearish', 'downside'],
-    hm_bottom: ['confluence'],
-    hm_top: ['downside'],
-    hm_bullish: ['volume', 'confluence'],
-    hm_bearish: ['volume', 'downside'],
-    smc_bullish: ['volume', 'confluence'],
-    smc_bearish: ['volume', 'downside'],
-    all: ['rsi', 'supertrend-bullish', 'supertrend-bearish', 'volume', 'downside', 'elephant', 'ohl', 'vcp', 'confluence']
-  };
-
-  const allowed = visibleGroups[strategyId] || ['rsi', 'supertrend-bullish', 'volume', 'confluence'];
-
-  tunerGroups.forEach(el => {
-    const grp = el.getAttribute('data-group');
-    if (!grp || allowed.includes(grp)) {
-      el.style.display = 'block';
-      if (grp === 'downside' || grp === 'confluence') el.style.display = 'flex';
-    } else {
-      el.style.display = 'none';
-    }
-  });
-}
 
   // Setup Strategy Pills
   DOM.strategyPills.addEventListener('click', (e) => {
