@@ -213,6 +213,16 @@ const STRATEGY_INFO = {
     name: 'Gap Expansion Momentum (⚡ 5% - 20% Move)',
     desc: 'Captures pre-market & opening gap expansion setups. Identifies stocks opening with a significant Gap Up (+1.5%+) or Gap Down (-1.5%-) with explosive Relative Volume (> 1.5x avg) and momentum continuation.',
     example: '<img src="/assets/ttm_orb_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> High/Low of first 15m candle<br><strong>Stop Loss:</strong> 1.5% risk<br><strong>Target:</strong> 5% to 20% intraday circuit run<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., RELIANCE gaps up 2.2% at 9:15 AM on 4x volume and forms a solid green candle with no lower wick. Buy the momentum for a 10%+ day move.</span>'
+  },
+  mast_breakout: {
+    name: 'MAST Strategy Breakout (🚀 SuperTrend 10/3 + 10 SMA)',
+    desc: 'Moving Averages + SuperTrend Strategy (@Learn4profits). Identifies explosive momentum breakouts when SuperTrend(10,3) flips GREEN while price holds strictly above the 10-period Simple Moving Average (10 SMA) on surging volume.',
+    example: '<img src="/assets/smc_bullish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy breakout candle close above 10 SMA<br><strong>Stop Loss:</strong> Trailing SuperTrend(10,3) Line<br><strong>Target:</strong> Ride runaway multi-bagger momentum (1:3+ Risk/Reward)<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., MCX or BSE breaks out of a base. SuperTrend(10,3) turns Green and price closes above 10 SMA with 2.5x volume. Buy the fresh trend ignition and trail SuperTrend!</span>'
+  },
+  mast_dip: {
+    name: 'MAST Buy-on-Dip (🎯 10 SMA Retest / Pyramiding)',
+    desc: 'Moving Averages + SuperTrend Strategy (@Learn4profits). Identifies high-probability buy-the-dip opportunities in ongoing uptrends. When SuperTrend is Green, price pulls back to test the 10 SMA support line and prints a reversal bounce.',
+    example: '<img src="/assets/ttm_orb_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy near 10 SMA bounce confirmation<br><strong>Stop Loss:</strong> Low of the dip candle or 10 SMA<br><strong>Target:</strong> Previous Swing High & Beyond (1:3 Risk/Reward)<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., HAL is in a strong SuperTrend uptrend. Price pulls back to touch the 10 SMA at ₹4,150 and prints a bullish rejection wick. Buy the dip with low risk!</span>'
   }
 };
 
@@ -535,12 +545,12 @@ async function runScan() {
           let matchedStrategies = [];
 
           if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
               if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(s)) tempRes = intradayStrats.run(s, data);
-              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(s)) tempRes = swingStrats.run(s, data);
+              else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip'].includes(s)) tempRes = swingStrats.run(s, data);
               else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(s)) tempRes = optionStrats.run(s, data);
               else if (['btst'].includes(s)) tempRes = btstStrats.run(s, data);
               else if (['weinstein', 'wyckoff'].includes(s)) tempRes = longTermStrats.run(s, data);
@@ -559,7 +569,7 @@ async function runScan() {
             res = { isMatch: true, reason: finalReason, matches: matchedStrategies };
           } else {
             if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum'].includes(strategyId)) res = intradayStrats.run(strategyId, data);
-            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum'].includes(strategyId)) res = swingStrats.run(strategyId, data);
+            else if (['minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 'mast_breakout', 'mast_dip'].includes(strategyId)) res = swingStrats.run(strategyId, data);
             else if (['bps', 'strangle', 'iv_crush', 'csp', 'cc'].includes(strategyId)) {
               res = optionStrats.run(strategyId, data);
               if (res.isMatch) res.raw = data;

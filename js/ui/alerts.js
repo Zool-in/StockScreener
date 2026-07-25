@@ -147,6 +147,8 @@ function renderAlertsTable(rows) {
       elephant_bullish: 'Oliver Velez Elephant 🐘',
       elephant_bearish: 'Oliver Velez Elephant 🐘 (Short)',
       gap_momentum: 'Gap Expansion ⚡',
+      mast_breakout: 'MAST Breakout 🚀',
+      mast_dip: 'MAST Buy-on-Dip 🎯',
       ohl_bullish: 'Open = Low',
       ohl_bearish: 'Open = High',
       ttm_orb: 'TTM Squeeze + ORB',

@@ -114,6 +114,93 @@ export function atr(highs, lows, closes, period = 14) {
   return atrVal;
 }
 
+// ATR Series Output
+export function atrSeries(highs, lows, closes, period = 14) {
+  const n = closes.length;
+  if (n === 0) return [];
+  const tr = [highs[0] - lows[0]];
+  for (let i = 1; i < n; i++) {
+    tr.push(Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - closes[i - 1]),
+      Math.abs(lows[i] - closes[i - 1])
+    ));
+  }
+  const result = [];
+  let atrVal = tr.slice(0, Math.min(period, n)).reduce((a, b) => a + b, 0) / Math.max(1, period);
+  for (let i = 0; i < n; i++) {
+    if (i < period) {
+      result.push(tr[i]);
+    } else {
+      atrVal = (atrVal * (period - 1) + tr[i]) / period;
+      result.push(atrVal);
+    }
+  }
+  return result;
+}
+
+// SMA Series Output
+export function smaSeries(arr, period) {
+  const result = [];
+  let sum = 0;
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i];
+    if (i >= period) sum -= arr[i - period];
+    if (i >= period - 1) result.push(sum / period);
+    else result.push(arr[i]);
+  }
+  return result;
+}
+
+// SuperTrend Indicator (10, 3)
+export function supertrend(highs, lows, closes, period = 10, multiplier = 3) {
+  const n = closes.length;
+  if (n < period + 1) return { supertrend: [], direction: [] };
+
+  const atrVals = atrSeries(highs, lows, closes, period);
+  const finalUpper = new Array(n).fill(0);
+  const finalLower = new Array(n).fill(0);
+  const st = new Array(n).fill(0);
+  const dir = new Array(n).fill(1); // 1 = Bullish (Green), -1 = Bearish (Red)
+
+  for (let i = 0; i < n; i++) {
+    const hl2 = (highs[i] + lows[i]) / 2;
+    const basicUpper = hl2 + multiplier * atrVals[i];
+    const basicLower = hl2 - multiplier * atrVals[i];
+
+    if (i === 0) {
+      finalUpper[i] = basicUpper;
+      finalLower[i] = basicLower;
+      st[i] = basicLower;
+      dir[i] = 1;
+      continue;
+    }
+
+    if (basicUpper < finalUpper[i - 1] || closes[i - 1] > finalUpper[i - 1]) {
+      finalUpper[i] = basicUpper;
+    } else {
+      finalUpper[i] = finalUpper[i - 1];
+    }
+
+    if (basicLower > finalLower[i - 1] || closes[i - 1] < finalLower[i - 1]) {
+      finalLower[i] = basicLower;
+    } else {
+      finalLower[i] = finalLower[i - 1];
+    }
+
+    let prevDir = dir[i - 1];
+    if (prevDir === -1 && closes[i] > finalUpper[i - 1]) {
+      prevDir = 1;
+    } else if (prevDir === 1 && closes[i] < finalLower[i - 1]) {
+      prevDir = -1;
+    }
+    dir[i] = prevDir;
+    st[i] = prevDir === 1 ? finalLower[i] : finalUpper[i];
+  }
+
+  return { supertrend: st, direction: dir };
+}
+
 // Bollinger Bands
 export function bollingerBands(closes, period = 20, multiplier = 2) {
   if (closes.length < period) return { upper: null, lower: null, middle: null };
