@@ -1,7 +1,15 @@
 // ─── Unified API Data Fetching ──────────────────────────────────────────────
 const API_BASE = '/api/chart';
 const memoryCache = new Map();
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 Minutes TTL
+
+function isNSEMarketOpen() {
+  const now = new Date();
+  const day = now.getDay();
+  const hrs = now.getHours();
+  const mins = now.getMinutes();
+  const timeVal = hrs * 100 + mins;
+  return (day >= 1 && day <= 5 && timeVal >= 915 && timeVal <= 1530);
+}
 
 export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
   // Support appending .BO for BSE stocks if not NSE
@@ -12,7 +20,9 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
 
   const cacheKey = `${sym}_${timeframe}`;
   const cached = memoryCache.get(cacheKey);
-  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+  const cacheTtlMs = isNSEMarketOpen() ? 2 * 60 * 1000 : 60 * 60 * 1000; // 2 mins during market, 1 hour off-market
+
+  if (cached && (Date.now() - cached.timestamp < cacheTtlMs)) {
     return cached.data;
   }
 
@@ -68,6 +78,19 @@ export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
         volume: quote.volume[i] || 0,
         time: timestamps[i]
       });
+    }
+  }
+
+  // Sanitize trailing phantom zero-volume / unclosed bar at index n-1 when market is closed
+  if (!isNSEMarketOpen()) {
+    while (closes.length > 5 && volumes[volumes.length - 1] === 0) {
+      closes.pop();
+      highs.pop();
+      lows.pop();
+      opens.pop();
+      volumes.pop();
+      ts.pop();
+      ohlcv.pop();
     }
   }
 

@@ -210,6 +210,26 @@ async function handleChart(res, reqUrl) {
     return sendJSON(res, 400, { error: 'Invalid or missing symbol' });
   }
 
+  // Check if NSE market is currently active
+  const now = new Date();
+  const day = now.getDay();
+  const hrs = now.getHours();
+  const mins = now.getMinutes();
+  const timeVal = hrs * 100 + mins;
+  const isMarketOpen = (day >= 1 && day <= 5 && timeVal >= 915 && timeVal <= 1530);
+
+  // OFF-MARKET FAST LOCK: If market is closed and we have a cached copy, serve it immediately for 100% result stability
+  if (!isMarketOpen) {
+    const offMarketCache = readCache(symbol, interval, range);
+    if (offMarketCache) {
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'X-Data-Source': 'cache-offmarket-lock',
+      });
+      return res.end(offMarketCache);
+    }
+  }
+
   // 0) PRIMARY HIGH-FIDELITY SOURCES: Fyers or Kite
   let firstErr = '';
   
@@ -228,17 +248,11 @@ async function handleChart(res, reqUrl) {
     }
   }
 
-
-  // 1) PRIMARY (default) source: NSE official Bhavcopy — free, authoritative,
-  // end-of-day. Reliable even from IPs that Yahoo/NSE-web block. Perfect for a
-  // daily/swing screener. See bhavcopy.js.
-  // Note: Bhavcopy only provides 1d data. If requesting intraday/weekly, skip it.
+  // 1) PRIMARY (default) source: NSE official Bhavcopy
   if (interval === '1d') {
     try {
       const bbody = await bhavcopy.fetchChart(symbol, interval, range);
-      // No per-symbol cache write here: the Bhavcopy day-files are already cached
-      // on disk, so re-assembling is cheap and this avoids thousands of tiny
-      // writes during a full-market scan.
+      writeCache(symbol, interval, range, bbody);
       res.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
