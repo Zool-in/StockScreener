@@ -295,6 +295,53 @@ function updateTunerVisibility(strategyId) {
   });
 }
 
+// ─── Lock / Auto-Select Timeframe Pills for Strict Strategies ──────────────
+function updateTimeframeLock(strategyVal) {
+  const tfPills = document.getElementById('timeframePills');
+  if (!tfPills) return;
+
+  const strictTimeframes = {
+    btst: '1d',              // BTST Momentum is strictly Daily 1D
+    multi_tf: '1d',          // Multi-TF Confluence uses Daily as anchor
+    rsi70_monthly: '1mo',    // Monthly RSI > 70 is strictly Monthly 1MO
+    weinstein: '1wk',        // Stan Weinstein Stage 2 is strictly Weekly 1W
+    wyckoff: '1wk',          // Wyckoff Stopping Vol is strictly Weekly 1W
+    ttm_orb: '15m',          // TTM Squeeze + ORB is strictly Intraday 15m
+    ohl_bullish: '15m',      // Open = Low is strictly 15m
+    ohl_bearish: '15m',      // Open = High is strictly 15m
+    gap_momentum: '15m',     // Gap Expansion Momentum is strictly 15m
+    intraday_retest: '15m'   // SMC Sweep & Retest is strictly 15m
+  };
+
+  const requiredTf = strictTimeframes[strategyVal];
+  const pills = Array.from(tfPills.children);
+
+  if (requiredTf) {
+    pills.forEach(p => {
+      const pTf = p.dataset.val;
+      if (pTf === requiredTf) {
+        p.classList.add('active');
+        p.style.opacity = '1';
+        p.style.pointerEvents = 'auto';
+        p.title = `Locked to ${requiredTf.toUpperCase()} for ${strategyVal.toUpperCase()} strategy`;
+      } else {
+        p.classList.remove('active');
+        p.style.opacity = '0.25';
+        p.style.pointerEvents = 'none';
+        p.title = `Timeframe override disabled for strict ${strategyVal.toUpperCase()} strategy`;
+      }
+    });
+    AppState.setTimeframe(requiredTf);
+  } else {
+    // Flexible strategy — enable all timeframe pills
+    pills.forEach(p => {
+      p.style.opacity = '1';
+      p.style.pointerEvents = 'auto';
+      p.title = '';
+    });
+  }
+}
+
 // ─── Initialize Strategy Parameter Tuner Event Listeners ────────────────────
 function initStrategyTuner() {
   const rngRsi = document.getElementById('rngRsi');
@@ -612,6 +659,7 @@ async function init() {
     const strategyVal = pill.dataset.val;
     AppState.setStrategy(strategyVal);
     updateTunerVisibility(strategyVal);
+    updateTimeframeLock(strategyVal);
 
     if (DOM.lookbackWrapper) {
       DOM.lookbackWrapper.style.display = strategyVal === 'multi_tf' ? 'block' : 'none';
@@ -662,6 +710,8 @@ async function init() {
 
   // Initial Data Load (Nifty 50)
   AppState.setStrategy('btst');
+  updateTunerVisibility('btst');
+  updateTimeframeLock('btst');
   AppState.setTimeframe('1d');
 
   DOM.scanBtn.disabled = true;
