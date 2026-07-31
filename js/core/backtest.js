@@ -7,6 +7,7 @@ import * as shortStrats from '../strategies/short.js?v=6';
 import * as hmStrats from '../strategies/hm.js?v=1';
 import * as smcStrats from '../strategies/smc.js?v=1';
 import * as haDonchianStrats from '../strategies/ha_donchian.js?v=1';
+import * as futuresComboStrats from '../strategies/futures_combo.js?v=1';
 
 function runStrategy(strategyId, data, timeframe = '1d') {
   if (['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish'].includes(strategyId)) return intradayStrats.run(strategyId, data);
@@ -18,6 +19,7 @@ function runStrategy(strategyId, data, timeframe = '1d') {
   if (strategyId.startsWith('hm_')) return hmStrats.run(strategyId, data);
   if (strategyId.startsWith('smc_')) return smcStrats.run(strategyId, data);
   if (strategyId.startsWith('ha_donchian_')) return haDonchianStrats.run(strategyId, data, timeframe);
+  if (strategyId === 'futures_combo') return futuresComboStrats.run(strategyId, data);
   return { isMatch: false };
 }
 

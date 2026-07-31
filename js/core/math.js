@@ -610,3 +610,32 @@ export function computeIV(targetPrice, S, K, T, r, type = 'CE') {
   
   return v > 0 ? v : 0.20; // Fallback to 20% IV if computation completely fails
 }
+
+// Volume Weighted Average Price Series (Intraday with Daily Reset)
+export function vwapSeries(ts, highs, lows, closes, volumes) {
+  const n = closes.length;
+  const result = new Array(n).fill(0);
+  let sumTypicalVol = 0;
+  let sumVol = 0;
+  let lastDayStr = '';
+
+  for (let i = 0; i < n; i++) {
+    const d = new Date(ts[i] * 1000);
+    const dayStr = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    
+    if (dayStr !== lastDayStr) {
+      sumTypicalVol = 0;
+      sumVol = 0;
+      lastDayStr = dayStr;
+    }
+
+    const typicalPrice = (highs[i] + lows[i] + closes[i]) / 3;
+    const vol = volumes[i] || 0;
+    sumTypicalVol += typicalPrice * vol;
+    sumVol += vol;
+
+    result[i] = sumVol === 0 ? closes[i] : sumTypicalVol / sumVol;
+  }
+  return result;
+}
+

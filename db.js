@@ -78,6 +78,7 @@ async function createSchema(conn) {
       hm_bottom TINYINT DEFAULT 0,
       hm_top TINYINT DEFAULT 0,
       btst TINYINT DEFAULT 0,
+      futures_combo TINYINT DEFAULT 0,
       
       meta_json JSON,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -159,8 +160,8 @@ async function upsertStock(record) {
       INSERT INTO stock_screeners (
         ticker, timeframe, cmp, chg_pct, rsi14, adx14, vr, ema20, ema50, ema200, macd_val, macd_hist, cci_val,
         ohl_bullish, ohl_bearish, minervini, darvas, xmomentum, rs, vcp_down, smc_bullish, smc_bearish,
-        ha_donchian_bullish, ha_donchian_bearish, hm_bullish, hm_bearish, hm_bottom, hm_top, btst, meta_json
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ha_donchian_bullish, ha_donchian_bearish, hm_bullish, hm_bearish, hm_bottom, hm_top, btst, futures_combo, meta_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         cmp=VALUES(cmp), chg_pct=VALUES(chg_pct), rsi14=VALUES(rsi14), adx14=VALUES(adx14), vr=VALUES(vr),
         ema20=VALUES(ema20), ema50=VALUES(ema50), ema200=VALUES(ema200), macd_val=VALUES(macd_val),
@@ -170,7 +171,7 @@ async function upsertStock(record) {
         smc_bearish=VALUES(smc_bearish), ha_donchian_bullish=VALUES(ha_donchian_bullish),
         ha_donchian_bearish=VALUES(ha_donchian_bearish), hm_bullish=VALUES(hm_bullish),
         hm_bearish=VALUES(hm_bearish), hm_bottom=VALUES(hm_bottom), hm_top=VALUES(hm_top),
-        btst=VALUES(btst), meta_json=VALUES(meta_json), updated_at=CURRENT_TIMESTAMP;
+        btst=VALUES(btst), futures_combo=VALUES(futures_combo), meta_json=VALUES(meta_json), updated_at=CURRENT_TIMESTAMP;
     `;
     const params = [
       record.ticker, record.timeframe || '1d', record.cmp || 0, record.chg_pct || 0,
@@ -180,7 +181,7 @@ async function upsertStock(record) {
       record.xmomentum ? 1 : 0, record.rs ? 1 : 0, record.vcp_down ? 1 : 0, record.smc_bullish ? 1 : 0,
       record.smc_bearish ? 1 : 0, record.ha_donchian_bullish ? 1 : 0, record.ha_donchian_bearish ? 1 : 0,
       record.hm_bullish ? 1 : 0, record.hm_bearish ? 1 : 0, record.hm_bottom ? 1 : 0, record.hm_top ? 1 : 0,
-      record.btst ? 1 : 0, JSON.stringify(record.meta_json || {})
+      record.btst ? 1 : 0, record.futures_combo ? 1 : 0, JSON.stringify(record.meta_json || {})
     ];
     await pool.query(sql, params);
     return true;
@@ -208,7 +209,8 @@ async function queryStrategy(strategyId) {
     hm_bearish: 'hm_bearish',
     hm_bottom: 'hm_bottom',
     hm_top: 'hm_top',
-    btst: 'btst'
+    btst: 'btst',
+    futures_combo: 'futures_combo'
   };
 
   const col = colMap[strategyId];

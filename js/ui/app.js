@@ -15,6 +15,7 @@ import * as shortStrats from '../strategies/short.js?v=6';
 import * as hmStrats from '../strategies/hm.js?v=1';
 import * as smcStrats from '../strategies/smc.js?v=1';
 import * as haDonchianStrats from '../strategies/ha_donchian.js?v=1';
+import * as futuresComboStrats from '../strategies/futures_combo.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
 import { scriptLibrary } from '../data/scripts.js';
 import { initAlerts } from './alerts.js?v=1';
@@ -198,6 +199,11 @@ const STRATEGY_INFO = {
     name: 'Multi-Timeframe Heikin-Ashi Confluence',
     desc: 'Analyzes Higher Timeframe alignment across Monthly, Weekly, and Daily charts using Heikin-Ashi candles and RSI + MACD momentum. When all three timeframes agree (+1 +1 +1 or -1 -1 -1), it indicates an extremely high-probability institutional trend confluence.',
     example: '<img src="/assets/multi_tf_diagram.png?v=1" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Bullish Confluence (+3):</strong> Monthly Green HA + Weekly Green HA + Daily RSI > 50 & MACD > 0.<br><strong>Bearish Confluence (-3):</strong> Monthly Red HA + Weekly Red HA + Daily RSI < 50 & MACD < 0.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., BAJAJ-AUTO has a green Monthly HA candle (+1), green Weekly HA candle (+1), and Daily RSI > 70 with positive MACD (+1). This 3-tier confluence filters out false counter-trend signals.</span>'
+  },
+  futures_combo: {
+    name: 'Futures Hourly & Daily Breakout',
+    desc: 'An explosive confluence strategy checking 24 distinct criteria across both Daily and 1-Hour charts, tracking SMA, RSI, VWAP and multi-bar high breakouts.',
+    example: '<strong>Entry:</strong> Buy when all 24 filters align (Daily Close > 20 SMA & 5-day Highs breakout, plus Hourly Close > 20 SMA & 1H VWAP & 5-hour Highs breakout).<br><strong>Stop Loss:</strong> Lowest low of the last 5 days.<br><strong>Target:</strong> 1:2 Risk/Reward.'
   },
   elephant_bullish: {
     name: 'Oliver Velez Bullish Elephant Candle (🐘)',
@@ -896,7 +902,7 @@ async function runScan() {
 
   try {
     const isEOD = AppState.timeframe === '1d';
-    const isMultiTF = strategyId === 'multi_tf';
+    const isMultiTF = strategyId === 'multi_tf' || strategyId === 'futures_combo';
     const BATCH_SIZE = isMultiTF ? 3 : (isEOD ? 25 : 6);
     const BATCH_DELAY = isMultiTF ? 600 : (isEOD ? 150 : 200);
 
@@ -915,16 +921,26 @@ async function runScan() {
           let data;
           let weeklyData = null;
           let monthlyData = null;
+          let hourlyData = null;
 
           if (isMultiTF) {
-            const [dData, wData, mData] = await Promise.all([
-              fetchOHLCV(ticker, '1d', signal),
-              fetchOHLCV(ticker, '1wk', signal),
-              fetchOHLCV(ticker, '1mo', signal)
-            ]);
-            data = dData;
-            weeklyData = wData;
-            monthlyData = mData;
+            if (strategyId === 'multi_tf') {
+              const [dData, wData, mData] = await Promise.all([
+                fetchOHLCV(ticker, '1d', signal),
+                fetchOHLCV(ticker, '1wk', signal),
+                fetchOHLCV(ticker, '1mo', signal)
+              ]);
+              data = dData;
+              weeklyData = wData;
+              monthlyData = mData;
+            } else if (strategyId === 'futures_combo') {
+              const [dData, hData] = await Promise.all([
+                fetchOHLCV(ticker, '1d', signal),
+                fetchOHLCV(ticker, '1h', signal)
+              ]);
+              data = dData;
+              hourlyData = hData;
+            }
           } else {
             data = await fetchOHLCV(ticker, AppState.timeframe, signal);
           }
@@ -981,6 +997,9 @@ async function runScan() {
             else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
             else if (strategyId.startsWith('smc_')) res = smcStrats.run(strategyId, data);
             else if (strategyId.startsWith('ha_donchian_')) res = haDonchianStrats.run(strategyId, data, AppState.timeframe);
+            else if (strategyId === 'futures_combo') {
+              res = futuresComboStrats.run(strategyId, { daily: data, hourly: hourlyData });
+            }
             else if (strategyId === 'multi_tf') {
               const lookback = parseInt(DOM.lookbackInput.value) || 0;
               const dLen = data.closes.length;
