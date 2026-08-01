@@ -144,6 +144,8 @@ function createChartPane(container, paneId, initialSymbol) {
     },
   });
 
+  console.log("DEBUG: Chart created:", chart, typeof chart.addCandlestickSeries);
+
   const candleSeries = chart.addCandlestickSeries({
     upColor: STYLES.profitColor,
     downColor: STYLES.lossColor,
