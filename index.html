@@ -156,6 +156,42 @@
       font-weight: 700;
       margin-top: 8px;
     }
+
+    /* Auto suggestions styling */
+    .suggestions-container {
+      position: relative;
+    }
+    .suggestions-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: rgba(22, 27, 34, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color, #30363D);
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      margin-top: 4px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    .suggestion-item {
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--text-main, #c9d1d9);
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.2s ease;
+    }
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+    .suggestion-item:hover, .suggestion-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: #58a6ff;
+    }
   </style>
 </head>
 
@@ -214,7 +250,7 @@
             <button class="pill" data-val="custom">Custom List</button>
           </div>
 
-          <div id="customTickerWrapper" class="hidden" style="margin-top: 12px;">
+          <div id="customTickerWrapper" class="hidden suggestions-container" style="margin-top: 12px;">
             <input type="text" id="tickerInput" class="input" placeholder="RELIANCE, INFY.BO, TCS"
               value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK">
           </div>

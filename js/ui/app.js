@@ -530,11 +530,129 @@ function initStrategyTuner() {
   updateTunerVisibility(AppState.strategy || 'all');
 }
 
+// ─── Autocomplete / Auto Suggestions ──────────────────────────────────────────
+let allKnownSymbols = [];
+
+async function initAutocomplete() {
+  try {
+    const res = await fetch('/api/symbols?index=niftytotal');
+    const data = await res.json();
+    if (data.symbols) {
+      allKnownSymbols = data.symbols;
+    }
+  } catch (err) {
+    console.error('Failed to load auto-suggest symbols:', err);
+  }
+
+  const wrapper = DOM.customTickerWrapper;
+  if (!wrapper) return;
+
+  const listEl = document.createElement('div');
+  listEl.className = 'suggestions-list hidden';
+  wrapper.appendChild(listEl);
+
+  let activeIndex = -1;
+
+  function showSuggestions(list) {
+    listEl.innerHTML = '';
+    if (list.length === 0) {
+      listEl.classList.add('hidden');
+      return;
+    }
+    listEl.classList.remove('hidden');
+    list.forEach((sym, idx) => {
+      const item = document.createElement('div');
+      item.className = 'suggestion-item';
+      item.innerText = sym;
+      item.addEventListener('click', () => {
+        selectSuggestion(sym);
+      });
+      listEl.appendChild(item);
+    });
+  }
+
+  function selectSuggestion(sym) {
+    const val = DOM.tickerInput.value;
+    const parts = val.split(',').map(s => s.trim());
+    if (parts.length > 0) {
+      parts[parts.length - 1] = sym;
+    } else {
+      parts.push(sym);
+    }
+    DOM.tickerInput.value = parts.join(', ') + ', ';
+    listEl.classList.add('hidden');
+    DOM.tickerInput.focus();
+    activeIndex = -1;
+    DOM.tickerInput.dispatchEvent(new Event('input'));
+  }
+
+  DOM.tickerInput.addEventListener('input', () => {
+    const val = DOM.tickerInput.value;
+    const parts = val.split(',');
+    const query = parts[parts.length - 1].trim().toUpperCase();
+
+    if (query.length < 1) {
+      listEl.classList.add('hidden');
+      activeIndex = -1;
+      return;
+    }
+
+    const filtered = allKnownSymbols
+      .filter(sym => sym.startsWith(query))
+      .slice(0, 10);
+
+    showSuggestions(filtered);
+    activeIndex = -1;
+  });
+
+  DOM.tickerInput.addEventListener('keydown', (e) => {
+    const items = listEl.querySelectorAll('.suggestion-item');
+    if (listEl.classList.contains('hidden') || items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = (activeIndex + 1) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0 && activeIndex < items.length) {
+        e.preventDefault();
+        selectSuggestion(items[activeIndex].innerText);
+      }
+    } else if (e.key === 'Escape') {
+      listEl.classList.add('hidden');
+      activeIndex = -1;
+    }
+  });
+
+  function updateActiveItem(items) {
+    items.forEach((item, idx) => {
+      if (idx === activeIndex) {
+        item.classList.add('active');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!wrapper.contains(e.target)) {
+      listEl.classList.add('hidden');
+      activeIndex = -1;
+    }
+  });
+}
+
 // ─── Initialize ─────────────────────────────────────────────────────────────
 async function init() {
   fetchStatus();
   setInterval(fetchStatus, 30000); // refresh every 30s
   initAlerts();
+  initAutocomplete();
   initStrategyTuner();
 
   // Tab Switching
