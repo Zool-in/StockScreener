@@ -1020,6 +1020,8 @@ async function runScan() {
 
   const results = [];
   const strategyId = AppState.strategy;
+  window._lastScanFailedCount = 0;
+  window._lastScanSuccessCount = 0;
 
   try {
     const isEOD = AppState.timeframe === '1d';
@@ -1243,8 +1245,10 @@ async function runScan() {
               entry, stop, t1, t2, s1, s2, s3, r1, r2, r3, srtVal
             });
           }
+          window._lastScanSuccessCount++;
         } catch (e) {
           console.error(`Skipping ${ticker}: `, e);
+          window._lastScanFailedCount++;
         }
       }));
       // Throttle between batches to avoid Hostinger 50req/s DDoS limit
@@ -1318,8 +1322,28 @@ let tableSortDir = 'desc';
 let lastMultiTfResults = null;
 
 function renderResults(results) {
+  let warningHtml = '';
+  if (window._lastScanFailedCount && window._lastScanFailedCount > 0) {
+    warningHtml = `
+      <div style="grid-column: 1 / -1; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #f87171; display: flex; align-items: center; gap: 10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <div>
+          <strong>Data Fetch Warning:</strong> ${window._lastScanFailedCount} stocks failed to load chart data (Yahoo Finance rate-limiting). 
+          Please log in to your broker at <a href="/fyers/login" target="_blank" style="color:#58a6ff; font-weight:600; text-decoration:underline;">http://localhost:5173/fyers/login</a> to activate Fyers API and scan reliably.
+        </div>
+      </div>
+    `;
+  }
+
   if (results.length === 0) {
-    DOM.resultsArea.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">No matching setups found for the selected strategy.</div>`;
+    DOM.resultsArea.innerHTML = `
+      ${warningHtml}
+      <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 64px 0;">No matching setups found for the selected strategy.</div>
+    `;
     return;
   }
 
@@ -1510,7 +1534,7 @@ function renderResults(results) {
 
   const isOptions = ['bps', 'strangle', 'iv_crush', 'csp', 'cc', 'bear_call'].includes(AppState.strategy);
 
-  let html = '';
+  let html = warningHtml;
   if (isOptions) {
     html += '<div class="options-tabs" style="grid-column: 1 / -1; display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin;">';
     results.forEach((r, idx) => {
