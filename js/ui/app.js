@@ -2,6 +2,7 @@
 import { AppState } from '../core/state.js?v=6';
 import { fetchOHLCV } from '../core/api.js?v=8';
 import { ema, rsi, adx, macd, cci, supertrend, smaSeries } from '../core/math.js?v=7';
+import { initDashboard } from './dashboard.js';
 import { runBacktest } from '../core/backtest.js?v=4';
 import { openStrategyTester } from './backtester_ui.js?v=1';
 
@@ -660,27 +661,32 @@ async function init() {
 
   // Tab Switching
   const tabScreener = document.getElementById('tabScreener');
+  const tabDashboard = document.getElementById('tabDashboard');
   const tabScripts = document.getElementById('tabScripts');
   const screenerView = document.getElementById('screener-view');
+  const dashboardView = document.getElementById('dashboard-view');
   const scriptsView = document.getElementById('scripts-view');
 
-  if (tabScreener && tabScripts) {
-    tabScreener.addEventListener('click', (e) => {
-      e.preventDefault();
-      tabScreener.style.color = 'var(--text-main)';
-      tabScripts.style.color = 'var(--text-muted)';
-      screenerView.style.display = 'block';
-      scriptsView.style.display = 'none';
-    });
-    tabScripts.addEventListener('click', (e) => {
-      e.preventDefault();
-      tabScripts.style.color = 'var(--text-main)';
-      tabScreener.style.color = 'var(--text-muted)';
-      screenerView.style.display = 'none';
-      scriptsView.style.display = 'block';
-      renderScripts();
-    });
-  }
+  const tabs = [
+    { button: tabScreener, view: screenerView },
+    { button: tabDashboard, view: dashboardView, onSelect: () => initDashboard() },
+    { button: tabScripts, view: scriptsView, onSelect: () => renderScripts() }
+  ];
+
+  tabs.forEach(t => {
+    if (t.button && t.view) {
+      t.button.addEventListener('click', (e) => {
+        e.preventDefault();
+        tabs.forEach(x => {
+          if (x.button) x.button.style.color = 'var(--text-muted)';
+          if (x.view) x.view.style.display = 'none';
+        });
+        t.button.style.color = 'var(--text-main)';
+        t.view.style.display = 'block';
+        if (t.onSelect) t.onSelect();
+      });
+    }
+  });
 
   // Setup Universe Pills
   const assetToggle = document.getElementById('assetToggle');
