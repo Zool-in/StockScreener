@@ -535,11 +535,14 @@ let allKnownSymbols = [];
 
 async function initAutocomplete() {
   try {
-    const res = await fetch('/api/symbols?index=niftytotal');
-    const data = await res.json();
-    if (data.symbols) {
-      allKnownSymbols = data.symbols;
-    }
+    const [resNse, resBse] = await Promise.all([
+      fetch('/api/symbols?index=all').then(r => r.ok ? r.json() : { symbols: [] }),
+      fetch('/api/symbols?index=bse_exclusive').then(r => r.ok ? r.json() : { symbols: [] })
+    ]);
+    allKnownSymbols = Array.from(new Set([
+      ...(resNse.symbols || []),
+      ...(resBse.symbols || [])
+    ])).filter(Boolean).sort();
   } catch (err) {
     console.error('Failed to load auto-suggest symbols:', err);
   }
