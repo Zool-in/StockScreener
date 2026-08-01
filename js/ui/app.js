@@ -1109,10 +1109,17 @@ async function runScan() {
             const t1 = res.t1 || (isShort ? entry - (riskAmount * 1.5) : entry + (riskAmount * 1.5));
             const t2 = res.t2 || (isShort ? entry - (riskAmount * 3) : entry + (riskAmount * 3));
 
+            // Calculate Speculation Ratio Territory (SRT) using 124-day SMA
+            let srtVal = null;
+            if (data.closes && data.closes.length >= 124) {
+              const sum124 = data.closes.slice(-124).reduce((a, b) => a + b, 0);
+              srtVal = parseFloat((curr / (sum124 / 124)).toFixed(3));
+            }
+
             results.push({
               ticker, data, ...res,
               chgPct, curr, ema20, ema50, ema200, rsiVal, adxVal, vr, macdVal, macdHist, cciVal,
-              entry, stop, t1, t2, s1, s2, s3, r1, r2, r3
+              entry, stop, t1, t2, s1, s2, s3, r1, r2, r3, srtVal
             });
           }
         } catch (e) {
@@ -1591,9 +1598,16 @@ function renderResults(results) {
           <span class="score-badge ${score >= 75 ? 'score-s' : 'score-m'}">${score}/100</span>
         </div>
         
-        <div class="price-row" style="margin-bottom: 8px;">
-          <span class="price">₹${r.curr.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-          <span class="chg ${chgClass}">${chgSign}${r.chgPct}%</span>
+        <div class="price-row" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="price">₹${r.curr.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            <span class="chg ${chgClass}">${chgSign}${r.chgPct}%</span>
+          </div>
+          ${r.srtVal ? `
+            <span class="srt-badge" title="Speculation Ratio Territory (Price / 124 SMA). Buying Zone: 0.6 - 0.9. Selling Zone: 1.3 - 1.5." style="font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; background: ${r.srtVal <= 0.9 ? 'rgba(36, 180, 126, 0.15)' : r.srtVal >= 1.35 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.05)'}; color: ${r.srtVal <= 0.9 ? '#34d399' : r.srtVal >= 1.35 ? '#f87171' : 'var(--text-muted)'}; border: 1px solid ${r.srtVal <= 0.9 ? 'rgba(36, 180, 126, 0.3)' : r.srtVal >= 1.35 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255,255,255,0.1)'};">
+              SRT: ${r.srtVal.toFixed(3)}
+            </span>
+          ` : ''}
         </div>
         <div style="margin-bottom: 12px;">${tagsHtml}</div>
         
@@ -1621,6 +1635,7 @@ function renderResults(results) {
               <div class="ind"><div class="ik">EMA 200</div><div class="iv">₹${r.ema200.toLocaleString('en-IN', { maximumFractionDigits: 1 })}</div></div>
               <div class="ind"><div class="ik">MACD</div><div class="iv" style="color:${r.macdHist >= 0 ? 'var(--green)' : 'var(--red)'}">${r.macdVal.toFixed(2)}</div></div>
               <div class="ind"><div class="ik">CCI 34</div><div class="iv" style="color:${r.cciVal > 100 ? 'var(--green)' : r.cciVal < -100 ? 'var(--red)' : 'var(--muted)'}">${r.cciVal.toFixed(1)}</div></div>
+              <div class="ind"><div class="ik">SRT 124</div><div class="iv" style="color:${r.srtVal ? (r.srtVal <= 0.9 ? 'var(--green)' : r.srtVal >= 1.35 ? 'var(--red)' : 'var(--muted)') : 'var(--muted)'}">${r.srtVal ? r.srtVal.toFixed(3) : 'N/A'}</div></div>
             </div>
             <div class="signal-dots">
               <span class="dot-row"><span class="dot ${r.curr > r.ema200 ? 'dy' : 'dn'}"></span>200 EMA</span>
