@@ -290,6 +290,38 @@ document.addEventListener('DOMContentLoaded', () => {
       stratContainer.appendChild(row);
     });
 
+    // Timeframes
+    const tfStatsBody = document.getElementById('timeframeStatsBody');
+    if (tfStatsBody) {
+      tfStatsBody.innerHTML = '';
+      if (dna.timeframeRankings) {
+        dna.timeframeRankings.forEach(tf => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="text-align: left; padding: 6px 0;">#${tf.rank}</td>
+            <td style="text-align: right; padding: 6px 0; font-weight: 600;">${tf.timeframe}</td>
+          `;
+          tfStatsBody.appendChild(row);
+        });
+      }
+    }
+
+    // Styles
+    const styleStatsBody = document.getElementById('styleStatsBody');
+    if (styleStatsBody) {
+      styleStatsBody.innerHTML = '';
+      if (dna.styleRankings) {
+        dna.styleRankings.forEach(style => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="text-align: left; padding: 6px 0;">#${style.rank}</td>
+            <td style="text-align: right; padding: 6px 0; font-weight: 600;">${style.style}</td>
+          `;
+          styleStatsBody.appendChild(row);
+        });
+      }
+    }
+
     // Fundamentals & Risk
     document.getElementById('statMarketCap').textContent = dna.marketCapCr ? `₹ ${dna.marketCapCr.toLocaleString('en-IN')} Cr` : 'Insufficient Data';
     document.getElementById('statSector').textContent = dna.sector;
