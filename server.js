@@ -206,7 +206,7 @@ async function handleChart(res, reqUrl) {
   const interval = reqUrl.searchParams.get('interval') || '1d';
   const range = reqUrl.searchParams.get('range') || '3mo';
 
-  if (!symbol || !/^[A-Za-z0-9.\-&]+$/.test(symbol)) {
+  if (!symbol || !/^[A-Za-z0-9.\-&:^]+$/.test(symbol)) {
     return sendJSON(res, 400, { error: 'Invalid or missing symbol' });
   }
 
@@ -535,6 +535,93 @@ async function handleFyersCallback(res, reqUrl) {
   }
 }
 
+function parseCloses(body) {
+  try {
+    const data = JSON.parse(body);
+    const result = data.chart.result[0];
+    const quote = result.indicators.quote[0];
+    const closes = [];
+    for (let i = 0; i < quote.close.length; i++) {
+      if (quote.close[i] !== null && quote.high[i] !== null && quote.low[i] !== null && quote.open[i] !== null) {
+        closes.push(quote.close[i]);
+      }
+    }
+    return closes;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchClosesInternal(symbol, interval, range) {
+  const cached = readCache(symbol, interval, range);
+  if (cached) {
+    const c = parseCloses(cached);
+    if (c && c.length > 0) return c;
+  }
+
+  if (fyers.isConfigured() && fyers.hasValidSession()) {
+    try {
+      const fbody = await fyers.fetchChart(symbol, interval, range);
+      writeCache(symbol, interval, range, fbody);
+      const c = parseCloses(fbody);
+      if (c && c.length > 0) return c;
+    } catch (e) {}
+  }
+
+  if (interval === '1d' && !symbol.includes('INDEX') && !symbol.startsWith('^')) {
+    try {
+      const bbody = await bhavcopy.fetchChart(symbol, interval, range);
+      writeCache(symbol, interval, range, bbody);
+      const c = parseCloses(bbody);
+      if (c && c.length > 0) return c;
+    } catch (e) {}
+  }
+
+  let body = null;
+  try {
+    body = await fetchDirect(symbol, interval, range);
+  } catch (e) {
+    try {
+      body = await fetchViaProxy(symbol, interval, range);
+    } catch (e2) {}
+  }
+
+  if (body && body.includes('"chart"')) {
+    writeCache(symbol, interval, range, body);
+    return parseCloses(body);
+  }
+  return null;
+}
+
+async function handleIndicesSrt(res) {
+  try {
+    const niftyCloses = await fetchClosesInternal('^NSEI', '1d', '2y');
+    const bnfCloses = await fetchClosesInternal('^NSEBANK', '1d', '2y');
+
+    const calcSRT = (closes) => {
+      if (!closes || closes.length < 124) return null;
+      const n = closes.length;
+      const curr = closes[n - 1];
+      const sum124 = closes.slice(-124).reduce((a, b) => a + b, 0);
+      const sma124 = sum124 / 124;
+      const value = parseFloat((curr / sma124).toFixed(3));
+      let zone = 'Neutral Zone';
+      if (value < 0.9) zone = 'Buying Zone';
+      else if (value <= 1.3) zone = 'Neutral Zone';
+      else zone = 'Selling Zone';
+      return { value, zone, curr, sma124 };
+    };
+
+    return sendJSON(res, 200, {
+      success: true,
+      nifty: calcSRT(niftyCloses),
+      banknifty: calcSRT(bnfCloses)
+    });
+  } catch (e) {
+    return sendJSON(res, 500, { error: e.message });
+  }
+}
+
 // ─── Router ───────────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const reqUrl = new URL(req.url, `http://localhost:${PORT}`);
@@ -550,6 +637,7 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/options/chain') return handleOptionsChain(res, reqUrl);
   if (p === '/api/dna') return handleDna(res, reqUrl);
   if (p === '/api/dna/generate') return handleDnaGenerate(res);
+  if (p === '/api/indices/srt') return handleIndicesSrt(res);
 
   // ─── Alerts Endpoints ───────────────────────────────────────────────────
   if (p === '/api/alerts' && req.method === 'GET') {

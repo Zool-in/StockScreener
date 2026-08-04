@@ -895,6 +895,37 @@ async function fetchStatus() {
       else if (mmiData.value > 70) mmiBadge.className = 'badge badge-red';
       else mmiBadge.className = 'badge badge-amber';
     }
+
+    // Fetch Indices SRT
+    try {
+      const srtIndicesRes = await fetch('/api/indices/srt');
+      if (srtIndicesRes.ok) {
+        const srtData = await srtIndicesRes.json();
+        const niftySrtBadge = document.getElementById('niftySrtStatus');
+        const bankNiftySrtBadge = document.getElementById('bankNiftySrtStatus');
+        
+        if (srtData.success) {
+          if (niftySrtBadge && srtData.nifty) {
+            const nVal = srtData.nifty.value;
+            const nZone = srtData.nifty.zone;
+            niftySrtBadge.innerHTML = `Nifty SRT: ${nVal} <span style="font-size:10px; font-weight:normal; opacity:0.8;">(${nZone})</span>`;
+            if (nZone === 'Buying Zone') niftySrtBadge.className = 'badge badge-green';
+            else if (nZone === 'Selling Zone') niftySrtBadge.className = 'badge badge-red';
+            else niftySrtBadge.className = 'badge badge-amber';
+          }
+          if (bankNiftySrtBadge && srtData.banknifty) {
+            const bVal = srtData.banknifty.value;
+            const bZone = srtData.banknifty.zone;
+            bankNiftySrtBadge.innerHTML = `Bank Nifty SRT: ${bVal} <span style="font-size:10px; font-weight:normal; opacity:0.8;">(${bZone})</span>`;
+            if (bZone === 'Buying Zone') bankNiftySrtBadge.className = 'badge badge-green';
+            else if (bZone === 'Selling Zone') bankNiftySrtBadge.className = 'badge badge-red';
+            else bankNiftySrtBadge.className = 'badge badge-amber';
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch indices SRT:', err);
+    }
   } catch (e) {
     console.error('Failed to fetch status:', e);
   }
