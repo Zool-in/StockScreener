@@ -214,6 +214,26 @@ document.addEventListener('DOMContentLoaded', () => {
       matrix.appendChild(card);
     });
 
+    // Add SRT to Core matrix card list
+    if (dna.srt && dna.srt.value != null) {
+      const srtCard = document.createElement('div');
+      srtCard.className = 'matrix-card';
+      const srtVal = dna.srt.value;
+      const srtPct = Math.min(100, Math.max(0, Math.round(((srtVal - 0.6) / (1.5 - 0.6)) * 100)));
+      let barColor = 'var(--accent-color)'; // default neutral
+      if (dna.srt.zone === 'Buying Zone') barColor = 'var(--profit-color)';
+      else if (dna.srt.zone === 'Selling Zone') barColor = 'var(--loss-color)';
+      
+      srtCard.innerHTML = `
+        <div class="matrix-label">Speculation Territory (SRT)</div>
+        <div class="matrix-value" style="color: ${barColor}">${srtVal} <span style="font-size:11px; font-weight:normal; color:var(--text-secondary);">(${dna.srt.zone})</span></div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: ${srtPct}%; background-color: ${barColor};"></div>
+        </div>
+      `;
+      matrix.appendChild(srtCard);
+    }
+
     // EMA Stats
     const maBody = document.getElementById('maStatsBody');
     maBody.innerHTML = '';

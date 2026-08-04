@@ -1251,7 +1251,12 @@ async function runScan() {
 
             // Calculate Speculation Ratio Territory (SRT) using 124-day SMA
             let srtVal = null;
-            if (data.closes && data.closes.length >= 124) {
+            const normTicker = ticker.replace(/\.NS$/i, '').toUpperCase();
+            if (window.stockDnaMap && window.stockDnaMap.has(normTicker)) {
+              const dna = window.stockDnaMap.get(normTicker);
+              if (dna && dna.srt) srtVal = dna.srt.value;
+            }
+            if (srtVal == null && data.closes && data.closes.length >= 124) {
               const sum124 = data.closes.slice(-124).reduce((a, b) => a + b, 0);
               srtVal = parseFloat((curr / (sum124 / 124)).toFixed(3));
             }
