@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (niftySrtBadge && srtData.nifty) {
             const nVal = srtData.nifty.value;
             const nZone = srtData.nifty.zone;
-            niftySrtBadge.innerHTML = `Nifty SRT: ${nVal} <span style="font-size:10px; font-weight:normal; opacity:0.8;">(${nZone})</span>`;
+            niftySrtBadge.innerHTML = `Nifty SRT: ${nVal}`;
             if (nZone === 'Buying Zone') niftySrtBadge.className = 'badge badge-green';
             else if (nZone === 'Selling Zone') niftySrtBadge.className = 'badge badge-red';
             else niftySrtBadge.className = 'badge badge-amber';
@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (bankNiftySrtBadge && srtData.banknifty) {
             const bVal = srtData.banknifty.value;
             const bZone = srtData.banknifty.zone;
-            bankNiftySrtBadge.innerHTML = `Bank Nifty SRT: ${bVal} <span style="font-size:10px; font-weight:normal; opacity:0.8;">(${bZone})</span>`;
+            bankNiftySrtBadge.innerHTML = `BNF SRT: ${bVal}`;
             if (bZone === 'Buying Zone') bankNiftySrtBadge.className = 'badge badge-green';
             else if (bZone === 'Selling Zone') bankNiftySrtBadge.className = 'badge badge-red';
             else bankNiftySrtBadge.className = 'badge badge-amber';
