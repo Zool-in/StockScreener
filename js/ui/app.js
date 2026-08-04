@@ -649,11 +649,26 @@ async function initAutocomplete() {
     }
   });
 }
+window.stockDnaMap = new Map();
+async function initDnaMap() {
+  try {
+    const res = await fetch('/api/dna');
+    const data = await res.json();
+    if (data.success && data.data) {
+      data.data.forEach(item => {
+        window.stockDnaMap.set(item.symbol, item);
+      });
+    }
+  } catch (e) {
+    console.error('Failed to pre-fetch Stock DNA database:', e);
+  }
+}
 
 // ─── Initialize ─────────────────────────────────────────────────────────────
 async function init() {
   fetchStatus();
   setInterval(fetchStatus, 30000); // refresh every 30s
+  initDnaMap();
   initAlerts();
   initAutocomplete();
   initStrategyTuner();

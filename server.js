@@ -483,7 +483,8 @@ async function handleDna(res, reqUrl) {
         pullbackReliability: db[k].ratings.pullbackReliability,
         swingQuality: db[k].ratings.swingQuality,
         optionsLiquidity: db[k].ratings.optionsLiquidity
-      }
+      },
+      srt: db[k].srt
     }));
     
     return sendJSON(res, 200, { success: true, count: summary.length, data: summary });

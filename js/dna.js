@@ -245,12 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('statGapDownRec').textContent = `${dna.openingBehavior.gapDownRecoveryPct}%`;
     document.getElementById('statOpenHigh').textContent = `${dna.openingBehavior.openEqualsHighPct}%`;
     document.getElementById('statOpenLow').textContent = `${dna.openingBehavior.openEqualsLowPct}%`;
-    document.getElementById('statInsideArticles').textContent = `${dna.candlePersonality.insideCandlePct}%`;
     document.getElementById('statMarubozu').textContent = `${dna.candlePersonality.marubozuPct}%`;
 
-    // Inside days correction (we mapped Inside Candle to statInsideArticles by typo in HTML? Let's check:
-    // in HTML it was id="statInsideCandles". Let's make sure it updates the right element)
-    const insideEl = document.getElementById('statInsideCandles') || document.getElementById('statInsideArticles');
+    const insideEl = document.getElementById('statInsideCandles');
     if (insideEl) insideEl.textContent = `${dna.candlePersonality.insideCandlePct}%`;
 
     // Strategies
