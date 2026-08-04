@@ -193,64 +193,6 @@
       color: #58a6ff;
     }
 
-    /* Dashboard specific styling */
-    .dashboard-grid {
-      transition: all 0.3s ease;
-    }
-    .chart-pane {
-      background: var(--surface, #161b22);
-      border: 1px solid var(--border, #30363d);
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      min-height: 380px;
-    }
-    .chart-pane-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .pane-controls {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .pane-chart {
-      flex: 1;
-      position: relative;
-      height: 0;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .indicator-toggles {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px dashed var(--border, #30363d);
-    }
-    .ind-btn {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text-muted, #8b949e);
-      padding: 3px 8px;
-      font-size: 11px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-    .ind-btn.active {
-      background: rgba(59, 130, 246, 0.15);
-      border-color: rgba(59, 130, 246, 0.4);
-      color: #58a6ff;
-    }
   </style>
 </head>
 
@@ -267,12 +209,12 @@
       <div class="hud-menu">
         <a href="#" id="tabScreener" class="nav-tab" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock
           Screener</a>
-        <a href="#" id="tabDashboard" class="nav-tab" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Dashboard</a>
         <a href="#" id="tabAlerts" class="nav-tab" style="color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
           🔔 Live Alerts <span id="alertBadge" class="badge badge-red hidden" style="background: var(--red); color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700;">0</span>
         </a>
         <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options
           (Gamma)</a>
+        <a href="dna.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">🧬 Stock DNA</a>
         <a href="#" id="tabScripts"
           style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
       </div>
@@ -559,31 +501,7 @@
       </div>
     </div><!-- End Screener View -->
 
-    <!-- Dashboard View -->
-    <div id="dashboard-view" style="display: none;">
-      <div class="card" style="margin-bottom: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-          <div>
-            <h2 style="margin: 0; color: var(--text-main);">Multi-Chart Dashboard</h2>
-            <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 0 0;">Interactive real-time charting powered by Fyers API & Lightweight Charts</p>
-          </div>
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <label class="input-label" style="margin: 0; font-size: 12px;">Grid Layout:</label>
-            <div class="pill-container" id="dashboardLayoutPills" style="gap: 4px; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-              <button class="pill active" data-layout="1" style="padding: 4px 10px; font-size: 11px; min-height: unset; margin: 0;">1 Chart</button>
-              <button class="pill" data-layout="2" style="padding: 4px 10px; font-size: 11px; min-height: unset; margin: 0;">2 Charts</button>
-              <button class="pill" data-layout="4" style="padding: 4px 10px; font-size: 11px; min-height: unset; margin: 0;">4 Charts</button>
-              <button class="pill" data-layout="6" style="padding: 4px 10px; font-size: 11px; min-height: unset; margin: 0;">6 Charts</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Dashboard Workspace Grid -->
-      <div id="dashboardGrid" class="dashboard-grid" style="display: grid; gap: 16px; min-height: 70vh;">
-        <!-- Chart panes will be dynamically loaded here by dashboard.js -->
-      </div>
-    </div>
 
     <!-- Scripts View -->
     <div id="scripts-view" style="display: none;">

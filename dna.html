@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock DNA Library — StockScan Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design_tokens.css">
+  <link rel="stylesheet" href="css/theme.css?v=7">
+  <link rel="stylesheet" href="css/components.css?v=7">
+  <style>
+    :root {
+      --glass-bg: rgba(22, 27, 34, 0.4);
+      --glass-border: rgba(48, 54, 61, 0.6);
+    }
+    
+    .dna-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    
+    @media (max-width: 900px) {
+      .dna-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .search-panel {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur, blur(12px));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-lg, 12px);
+      padding: var(--spacing-md, 16px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: fit-content;
+    }
+    
+    .search-input {
+      width: 100%;
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid var(--border-color, #30363D);
+      padding: 10px 14px;
+      border-radius: var(--border-radius-md, 8px);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    
+    .search-input:focus {
+      border-color: var(--accent-color, #2F81F7);
+    }
+    
+    .stock-list {
+      max-height: 500px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+      padding-right: 4px;
+    }
+    
+    .stock-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: var(--border-radius-sm, 6px);
+      background: rgba(30, 35, 45, 0.3);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      border: 1px solid transparent;
+    }
+    
+    .stock-item:hover, .stock-item.active {
+      background: rgba(47, 129, 247, 0.15);
+      border-color: var(--accent-color, #2F81F7);
+    }
+    
+    .stock-symbol {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    
+    .stock-tag {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+    }
+    
+    .dna-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .dna-hero-card {
+      background: linear-gradient(135deg, rgba(22, 27, 34, 0.8) 0%, rgba(13, 17, 23, 0.9) 100%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-lg, 12px);
+      padding: 24px;
+      box-shadow: var(--box-shadow-premium);
+    }
+    
+    .hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-bottom: 1px solid var(--border-color, #30363D);
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .hero-title h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    
+    .hero-title p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin: 4px 0 0 0;
+    }
+    
+    .hero-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .badge-personality {
+      background: rgba(47, 129, 247, 0.15);
+      color: #58a6ff;
+      border: 1px solid rgba(47, 129, 247, 0.3);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge-sector {
+      background: rgba(46, 160, 67, 0.15);
+      color: #3fb950;
+      border: 1px solid rgba(46, 160, 67, 0.3);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .matrix-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    
+    .matrix-card {
+      background: rgba(30, 35, 45, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-md, 8px);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .matrix-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .matrix-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent-color, #2F81F7);
+      border-radius: 3px;
+    }
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    
+    .detail-card {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-lg, 12px);
+      padding: 20px;
+      box-shadow: var(--box-shadow-premium);
+    }
+    
+    .detail-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+    
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .stats-table td {
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    
+    .stats-table td:first-child {
+      color: var(--text-secondary);
+    }
+    
+    .stats-table td:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .strategy-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .strategy-row:last-child {
+      border-bottom: none;
+    }
+    
+    .strategy-name {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .strategy-rate {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    
+    .confidence-tag {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .confidence-Excellent { background: rgba(46, 160, 67, 0.15); color: #2ea043; }
+    .confidence-High { background: rgba(47, 129, 247, 0.15); color: #2f81f7; }
+    .confidence-Moderate { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    
+    /* Comparison panel styles */
+    .compare-container {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .compare-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .compare-panel {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-lg);
+      padding: 20px;
+    }
+    
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .tab-btn.active {
+      color: var(--text-main);
+      border-bottom-color: var(--accent-color);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Global HUD -->
+  <header class="hud-bar">
+    <div class="logo"><a href="index.html" class="hud-brand" style="text-decoration: none;">StockScan Pro</a></div>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" style="display: none;">
+    <label for="nav-toggle" class="nav-toggle-label">&#9776;</label>
+
+    <div class="hud-nav-container">
+      <div class="hud-menu">
+        <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Stock Screener</a>
+        <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options (Gamma)</a>
+        <a href="dna.html" style="color: var(--text-main); font-weight: 500; text-decoration: none; font-size: 14px;">🧬 Stock DNA</a>
+      </div>
+      <div class="hud-stats">
+        <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+      <div style="display: flex; gap: 8px;">
+        <button id="btnDnaView" class="tab-btn active">🧬 Stock Encyclopedia</button>
+        <button id="btnCompareView" class="tab-btn">⚖ Compare DNA</button>
+      </div>
+      <button id="btnRegen" class="badge badge-amber" style="cursor: pointer; border: none; font-family: inherit;">Regenerate Library</button>
+    </div>
+
+    <!-- MAIN DNA EXPLORER VIEW -->
+    <div id="dnaExplorerTab" class="dna-grid">
+      <!-- Search & Sidebar -->
+      <div class="search-panel">
+        <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);">F&O Universe</h3>
+        <input type="text" id="symbolSearch" class="search-input" placeholder="Search symbol (e.g. RELIANCE)...">
+        
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 12px; color: var(--text-secondary);">Filter by Strategy</label>
+          <select id="strategyFilter" class="search-input" style="padding: 8px;">
+            <option value="">All Strategies</option>
+            <option value="20 EMA Pullback">20 EMA Pullback</option>
+            <option value="52W High Breakout">52W High Breakout</option>
+            <option value="Volume Breakout">Volume Breakout</option>
+            <option value="RSI Reversal">RSI Reversal</option>
+          </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 12px; color: var(--text-secondary);">Filter by Personality</label>
+          <select id="personalityFilter" class="search-input" style="padding: 8px;">
+            <option value="">All Personalities</option>
+            <option value="Breakout Machine">Breakout Machine</option>
+            <option value="Pullback Specialist">Pullback Specialist</option>
+            <option value="Institutional">Institutional</option>
+            <option value="Mean Reverter">Mean Reverter</option>
+            <option value="Explosive">Explosive</option>
+          </select>
+        </div>
+
+        <div class="stock-list" id="stockListContainer">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Main Detailed Card -->
+      <div class="dna-content" id="dnaContentPanel">
+        <!-- Hero Details -->
+        <div class="dna-hero-card">
+          <div class="hero-header">
+            <div class="hero-title">
+              <h1 id="heroSymbol">SELECT A STOCK</h1>
+              <p id="heroName">Select a constituent from the sidebar to inspect its Stock DNA profile.</p>
+            </div>
+            <div class="hero-badges" id="heroBadges">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+          
+          <h4 style="margin: 12px 0 6px 0; color: var(--text-secondary); font-size: 13px; text-transform: uppercase;">Quantitative Profile Summary</h4>
+          <p id="heroSummary" style="font-size: 14px; line-height: 1.6; color: var(--text-primary); margin: 0; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 3px solid var(--accent-color);">
+            Select a stock to read its quantitative DNA summary and statistical trading strategies.
+          </p>
+
+          <!-- Core Scores Matrix -->
+          <div class="matrix-section" id="matrixSection">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Detailed score grids -->
+        <div class="detail-grid">
+          <!-- Moving Average Respect -->
+          <div class="detail-card">
+            <h3>Moving Average Respect</h3>
+            <table class="stats-table" id="maStatsTable">
+              <thead>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase;">
+                  <th style="text-align: left; padding-bottom: 6px; color: var(--text-secondary);">EMA Period</th>
+                  <th style="text-align: right; padding-bottom: 6px; color: var(--text-secondary);">Respect Rate</th>
+                  <th style="text-align: right; padding-bottom: 6px; color: var(--text-secondary);">Slice Rate</th>
+                </tr>
+              </thead>
+              <tbody id="maStatsBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+            <div id="bestMAExplanation" style="margin-top: 14px; font-size: 12px; color: var(--text-secondary); background: rgba(255,255,255,0.03); padding: 8px; border-radius: 4px;">
+              No stock selected.
+            </div>
+          </div>
+
+          <!-- Opening & Candle behavior -->
+          <div class="detail-card">
+            <h3>Structural & Opening Behavior</h3>
+            <table class="stats-table">
+              <tbody>
+                <tr>
+                  <td>Gap-Up Continuation</td>
+                  <td id="statGapUpCont">0%</td>
+                </tr>
+                <tr>
+                  <td>Gap-Down Recovery</td>
+                  <td id="statGapDownRec">0%</td>
+                </tr>
+                <tr>
+                  <td>Open = High Frequency</td>
+                  <td id="statOpenHigh">0%</td>
+                </tr>
+                <tr>
+                  <td>Open = Low Frequency</td>
+                  <td id="statOpenLow">0%</td>
+                </tr>
+                <tr>
+                  <td>Inside Days Frequency</td>
+                  <td id="statInsideCandles">0%</td>
+                </tr>
+                <tr>
+                  <td>Marubozu Frequency</td>
+                  <td id="statMarubozu">0%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Best strategies -->
+          <div class="detail-card">
+            <h3>Best Historical Strategies</h3>
+            <div id="strategiesContainer">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Risk Profile -->
+          <div class="detail-card">
+            <h3>Risk Profile & Fundamentals</h3>
+            <table class="stats-table">
+              <tbody>
+                <tr>
+                  <td>Market Capitalization</td>
+                  <td id="statMarketCap">N/A</td>
+                </tr>
+                <tr>
+                  <td>Sector / Industry</td>
+                  <td id="statSector">N/A</td>
+                </tr>
+                <tr>
+                  <td>Promoter Holding</td>
+                  <td id="statPromoter">N/A</td>
+                </tr>
+                <tr>
+                  <td>Institution Holding</td>
+                  <td id="statInstitution">N/A</td>
+                </tr>
+                <tr>
+                  <td>Stock Beta (vs Nifty)</td>
+                  <td id="statBeta">1.0</td>
+                </tr>
+                <tr>
+                  <td>Historical Volatility (HV)</td>
+                  <td id="statHV">0%</td>
+                </tr>
+                <tr>
+                  <td>ATR (14 Day)</td>
+                  <td id="statATR">0</td>
+                </tr>
+                <tr>
+                  <td>Ideal Stop Loss</td>
+                  <td id="statStopLoss">N/A</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE BY SIDE COMPARISON VIEW -->
+    <div id="dnaComparisonTab" class="compare-container">
+      <!-- Stock 1 -->
+      <div class="compare-panel">
+        <h3 style="margin-top: 0; color: var(--text-primary);">Stock A</h3>
+        <select id="compareStockA" class="search-input" style="margin-bottom: 20px;">
+          <option value="">Select Stock A...</option>
+        </select>
+        <div id="compareDetailsA" style="display: none;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Stock 2 -->
+      <div class="compare-panel">
+        <h3 style="margin-top: 0; color: var(--text-primary);">Stock B</h3>
+        <select id="compareStockB" class="search-input" style="margin-bottom: 20px;">
+          <option value="">Select Stock B...</option>
+        </select>
+        <div id="compareDetailsB" style="display: none;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/dna.js"></script>
+</body>
+</html>

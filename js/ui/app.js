@@ -2,7 +2,6 @@
 import { AppState } from '../core/state.js?v=6';
 import { fetchOHLCV } from '../core/api.js?v=8';
 import { ema, rsi, adx, macd, cci, supertrend, smaSeries } from '../core/math.js?v=7';
-import { initDashboard } from './dashboard.js';
 import { runBacktest } from '../core/backtest.js?v=4';
 import { openStrategyTester } from './backtester_ui.js?v=1';
 
@@ -661,15 +660,12 @@ async function init() {
 
   // Tab Switching
   const tabScreener = document.getElementById('tabScreener');
-  const tabDashboard = document.getElementById('tabDashboard');
   const tabScripts = document.getElementById('tabScripts');
   const screenerView = document.getElementById('screener-view');
-  const dashboardView = document.getElementById('dashboard-view');
   const scriptsView = document.getElementById('scripts-view');
 
   const tabs = [
     { button: tabScreener, view: screenerView },
-    { button: tabDashboard, view: dashboardView, onSelect: () => initDashboard() },
     { button: tabScripts, view: scriptsView, onSelect: () => renderScripts() }
   ];
 

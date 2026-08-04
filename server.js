@@ -449,6 +449,69 @@ async function handleMmi(res) {
   }
 }
 
+// ─── Stock DNA Library ───────────────────────────────────────────────────────
+async function handleDna(res, reqUrl) {
+  const symbol = reqUrl.searchParams.get('symbol');
+  const dnaPath = path.join(__dirname, 'js', 'data', 'stock_dna.json');
+  
+  try {
+    if (!fs.existsSync(dnaPath)) {
+      return sendJSON(res, 404, { error: 'Stock DNA database not found. Please run the generation script.' });
+    }
+    
+    const raw = fs.readFileSync(dnaPath, 'utf8');
+    const db = JSON.parse(raw);
+    
+    if (symbol) {
+      const upperSym = symbol.toUpperCase().replace(/\.NS$/i, '');
+      if (db[upperSym]) {
+        return sendJSON(res, 200, { success: true, data: db[upperSym] });
+      } else {
+        return sendJSON(res, 404, { error: `Stock DNA not found for symbol: ${upperSym}` });
+      }
+    }
+    
+    // Return list of available symbols and their basic personalities
+    const summary = Object.keys(db).map(k => ({
+      symbol: k,
+      companyName: db[k].companyName,
+      sector: db[k].sector,
+      personality: db[k].personality,
+      ratings: {
+        trendStrength: db[k].ratings.trendStrength,
+        volatility: db[k].ratings.volatility,
+        pullbackReliability: db[k].ratings.pullbackReliability,
+        swingQuality: db[k].ratings.swingQuality,
+        optionsLiquidity: db[k].ratings.optionsLiquidity
+      }
+    }));
+    
+    return sendJSON(res, 200, { success: true, count: summary.length, data: summary });
+  } catch (e) {
+    return sendJSON(res, 500, { error: e.message });
+  }
+}
+
+async function handleDnaGenerate(res) {
+  const { exec } = require('child_process');
+  console.log('[DNA] Received asynchronous request to regenerate DNA Library.');
+  
+  // Kick off generation asynchronously
+  const scriptPath = path.join(__dirname, 'scripts', 'generate_fundamentals.js');
+  const analyzePath = path.join(__dirname, 'scripts', 'analyze_dna.js');
+  
+  exec(`node "${scriptPath}" && node "${analyzePath}"`, (err, stdout, stderr) => {
+    if (err) {
+      console.error('[DNA Generation Error]:', err.message);
+      return;
+    }
+    console.log('[DNA Generation Output]:', stdout);
+    if (stderr) console.error('[DNA Generation Stderr]:', stderr);
+  });
+  
+  return sendJSON(res, 202, { success: true, message: 'DNA Library generation started in background. Refresh in a few minutes.' });
+}
+
 
 async function handleFyersCallback(res, reqUrl) {
   const code = reqUrl.searchParams.get('auth_code');
@@ -475,6 +538,7 @@ async function handleFyersCallback(res, reqUrl) {
 const server = http.createServer(async (req, res) => {
   const reqUrl = new URL(req.url, `http://localhost:${PORT}`);
   const p = reqUrl.pathname;
+  console.log(`[HTTP] ${req.method} ${req.url}`);
 
   if (p === '/api/chart') return handleChart(res, reqUrl);
   if (p === '/api/symbols') return handleSymbols(res, reqUrl);
@@ -483,6 +547,8 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/mmi') return handleMmi(res);
   if (p === '/api/whoami') return handleWhoami(res);
   if (p === '/api/options/chain') return handleOptionsChain(res, reqUrl);
+  if (p === '/api/dna') return handleDna(res, reqUrl);
+  if (p === '/api/dna/generate') return handleDnaGenerate(res);
 
   // ─── Alerts Endpoints ───────────────────────────────────────────────────
   if (p === '/api/alerts' && req.method === 'GET') {
