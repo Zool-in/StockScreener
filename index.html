@@ -199,35 +199,7 @@
 <body>
 
   <!-- Global HUD -->
-  <header class="hud-bar">
-    <div class="logo"><a href="index.html" class="hud-brand" style="text-decoration: none;">StockScan Pro</a></div>
-
-    <input type="checkbox" id="nav-toggle" class="nav-toggle" style="display: none;">
-    <label for="nav-toggle" class="nav-toggle-label">&#9776;</label>
-
-    <div class="hud-nav-container">
-      <div class="hud-menu">
-        <a href="#" id="tabScreener" class="nav-tab" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Stock
-          Screener</a>
-        <a href="#" id="tabAlerts" class="nav-tab" style="color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
-          🔔 Live Alerts <span id="alertBadge" class="badge badge-red hidden" style="background: var(--red); color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700;">0</span>
-        </a>
-        <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options
-          (Gamma)</a>
-        <a href="dna.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">🧬 Stock DNA</a>
-        <a href="#" id="tabScripts"
-          style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
-      </div>
-      <div class="hud-stats">
-        <a href="lots.html?v=2" class="badge badge-amber" style="text-decoration:none;">F&O Lot Sizes</a>
-        <div id="mmiStatus" class="badge badge-muted" style="cursor: pointer;">Market: Loading... <span
-            class="info-icon" style="margin-left:4px;">i</span></div>
-        <div id="niftySrtStatus" class="badge badge-muted">Nifty SRT: Loading...</div>
-        <div id="bankNiftySrtStatus" class="badge badge-muted">BNF SRT: Loading...</div>
-        <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
-      </div>
-    </div>
-  </header>
+  <header id="global-header" class="hud-bar"></header>
 
   <main class="app-container">
 
@@ -623,6 +595,7 @@
     }
   </script>
 
+  <script src="js/ui/header.js?v=2"></script>
   <!-- Entry point for UI routing and execution -->
   <script type="module" src="js/ui/app.js?v=92" defer></script>
 </body>

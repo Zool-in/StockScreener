@@ -666,8 +666,6 @@ async function initDnaMap() {
 
 // ─── Initialize ─────────────────────────────────────────────────────────────
 async function init() {
-  fetchStatus();
-  setInterval(fetchStatus, 30000); // refresh every 30s
   initDnaMap();
   initAlerts();
   initAutocomplete();
@@ -872,62 +870,6 @@ async function init() {
 }
 
 // ─── Status Checking ────────────────────────────────────────────────────────
-async function fetchStatus() {
-  try {
-    const fyersRes = await fetch('/fyers/status');
-    const fyersData = await fyersRes.json();
-
-    const connBadge = document.getElementById('connStatus');
-    if (fyersData.connected) {
-      connBadge.className = 'badge badge-green';
-      connBadge.innerText = 'Brokers: Connected (Fyers)';
-    } else {
-      connBadge.className = 'badge badge-red';
-      connBadge.innerHTML = 'Brokers: Disconnected <a href="/fyers/login" style="margin-left:8px; color:inherit; text-decoration:underline;">Login</a>';
-    }
-
-    const mmiRes = await fetch('/api/mmi');
-    if (mmiRes.ok) {
-      const mmiData = await mmiRes.json();
-      const mmiBadge = document.getElementById('mmiStatus');
-      mmiBadge.innerHTML = `MMI: ${mmiData.value || 'N/A'} <span class="info-icon" style="margin-left:4px;">i</span>`;
-      if (mmiData.value < 30) mmiBadge.className = 'badge badge-green';
-      else if (mmiData.value > 70) mmiBadge.className = 'badge badge-red';
-      else mmiBadge.className = 'badge badge-amber';
-    }
-
-    // Fetch Indices SRT
-    try {
-      const srtIndicesRes = await fetch('/api/indices/srt');
-      if (srtIndicesRes.ok) {
-        const srtData = await srtIndicesRes.json();
-        const niftySrtBadge = document.getElementById('niftySrtStatus');
-        const bankNiftySrtBadge = document.getElementById('bankNiftySrtStatus');
-        
-          if (niftySrtBadge && srtData.nifty) {
-            const nVal = srtData.nifty.value;
-            const nZone = srtData.nifty.zone;
-            niftySrtBadge.innerHTML = `Nifty SRT: ${nVal}`;
-            if (nZone === 'Buying Zone') niftySrtBadge.className = 'badge badge-green';
-            else if (nZone === 'Selling Zone') niftySrtBadge.className = 'badge badge-red';
-            else niftySrtBadge.className = 'badge badge-amber';
-          }
-          if (bankNiftySrtBadge && srtData.banknifty) {
-            const bVal = srtData.banknifty.value;
-            const bZone = srtData.banknifty.zone;
-            bankNiftySrtBadge.innerHTML = `BNF SRT: ${bVal}`;
-            if (bZone === 'Buying Zone') bankNiftySrtBadge.className = 'badge badge-green';
-            else if (bZone === 'Selling Zone') bankNiftySrtBadge.className = 'badge badge-red';
-            else bankNiftySrtBadge.className = 'badge badge-amber';
-          }
-      }
-    } catch (err) {
-      console.error('Failed to fetch indices SRT:', err);
-    }
-  } catch (e) {
-    console.error('Failed to fetch status:', e);
-  }
-}
 
 let currentScanId = 0;
 let currentAbortController = null;

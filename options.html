@@ -34,25 +34,7 @@
 </head>
 <body>
 
-  <!-- Global HUD -->
-  <header class="hud-bar">
-    <div class="logo"><a href="index.html" class="hud-brand" style="text-decoration: none;">StockScan Pro</a></div>
-    
-    <input type="checkbox" id="nav-toggle" class="nav-toggle" style="display: none;">
-    <label for="nav-toggle" class="nav-toggle-label">&#9776;</label>
-
-    <div class="hud-nav-container">
-      <div class="hud-menu">
-        <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Stock Screener</a>
-        <a href="options.html" style="color: var(--text-main); font-weight: 500; text-decoration: none;">Options (Gamma)</a>
-        <a href="dna.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">🧬 Stock DNA</a>
-        <a href="index.html#tabScripts" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
-      </div>
-      <div class="hud-stats">
-        <div id="connStatus" class="badge badge-muted">Brokers: Offline</div>
-      </div>
-    </div>
-  </header>
+  <header id="global-header" class="hud-bar"></header>
 
   <main class="app-container">
     
@@ -136,6 +118,7 @@
     </div>
   </main>
 
+  <script src="js/ui/header.js?v=2"></script>
   <script type="module" src="js/ui/options_app.js?v=21" defer></script>
 </body>
 </html>

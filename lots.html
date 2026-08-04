@@ -77,24 +77,7 @@
 </head>
 <body>
 
-  <!-- Global HUD -->
-  <header class="hud-bar">
-    <div class="logo"><a href="index.html" class="hud-brand" style="text-decoration: none;">StockScan Pro</a></div>
-    
-    <input type="checkbox" id="nav-toggle" class="nav-toggle" style="display: none;">
-    <label for="nav-toggle" class="nav-toggle-label">&#9776;</label>
-
-    <div class="hud-nav-container">
-      <div class="hud-menu">
-        <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Stock Screener</a>
-        <a href="options.html" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Options (Gamma)</a>
-        <a href="index.html#tabScripts" style="color: var(--text-muted); text-decoration: none; font-size: 14px;">Scripts</a>
-      </div>
-      <div class="hud-stats">
-        <div class="badge badge-amber">F&O Live Lots</div>
-      </div>
-    </div>
-  </header>
+  <header id="global-header" class="hud-bar"></header>
 
   <main class="app-container">
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
@@ -251,5 +234,6 @@
 
     init();
   </script>
+  <script src="js/ui/header.js?v=2"></script>
 </body>
 </html>
