@@ -282,6 +282,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('statHV').textContent = `${dna.historicalVolatilityPct}%`;
     document.getElementById('statATR').textContent = `₹ ${dna.atr}`;
     document.getElementById('statStopLoss').textContent = `${dna.riskProfile.stopLoss} (${dna.riskProfile.averageRetracementPct}% avg swing)`;
+    
+    // Render SRT Value and Zone
+    const srtVal = dna.srt ? dna.srt.value : 'N/A';
+    const srtZone = dna.srt ? dna.srt.zone : 'Insufficient Data';
+    let srtColor = 'inherit';
+    if (srtZone === 'Buying Zone') srtColor = 'var(--profit-color)';
+    else if (srtZone === 'Selling Zone') srtColor = 'var(--loss-color)';
+    
+    const srtEl = document.getElementById('statSRT');
+    if (srtEl) {
+      srtEl.textContent = `${srtVal} (${srtZone})`;
+      srtEl.style.color = srtColor;
+    }
   }
 
   // Compare Mode Selection
@@ -381,6 +394,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <tr>
             <td>Avg Delivery %</td>
             <td><strong>${dna.deliveryPct || 'N/A'}%</strong></td>
+          </tr>
+          <tr>
+            <td>Speculation Ratio Territory (SRT)</td>
+            <td style="color: ${dna.srt && dna.srt.zone === 'Buying Zone' ? 'var(--profit-color)' : dna.srt && dna.srt.zone === 'Selling Zone' ? 'var(--loss-color)' : 'inherit'}">
+              <strong>${dna.srt ? dna.srt.value : 'N/A'} (${dna.srt ? dna.srt.zone : 'N/A'})</strong>
+            </td>
           </tr>
         </tbody>
       </table>

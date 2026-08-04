@@ -30,6 +30,22 @@ function calculateEMA(prices, period) {
   return ema;
 }
 
+// Helper: Calculate SMA array
+function calculateSMA(prices, period) {
+  const sma = new Array(prices.length).fill(null);
+  if (prices.length < period) return sma;
+  
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += prices[i];
+  sma[period - 1] = sum / period;
+  
+  for (let i = period; i < prices.length; i++) {
+    sum = sum - prices[i - period] + prices[i];
+    sma[i] = sum / period;
+  }
+  return sma;
+}
+
 // Helper: Calculate ADX, +DI, -DI
 function calculateDMI(highs, lows, closes, period = 14) {
   const n = closes.length;
@@ -127,8 +143,8 @@ async function analyze() {
       continue;
     }
 
-    if (!chart || !chart.close || chart.close.length < 50) {
-      console.log(`[DNA Analyzer] Insufficient historical data for ${sym}. Skipping.`);
+    if (!chart || !chart.close || chart.close.length < 130) {
+      console.log(`[DNA Analyzer] Insufficient historical data for ${sym} (needs at least 130 days). Skipping.`);
       continue;
     }
 
@@ -148,6 +164,7 @@ async function analyze() {
     const ema50 = calculateEMA(closes, 50);
     const ema100 = calculateEMA(closes, 100);
     const ema200 = calculateEMA(closes, 200);
+    const sma124 = calculateSMA(closes, 124);
 
     const { adx, plusDI, minusDI } = calculateDMI(highs, lows, closes, 14);
 
@@ -397,6 +414,21 @@ async function analyze() {
       trendStrength = 5;
     }
 
+    // Speculation Ratio Territory (SRT)
+    const lastSma124 = sma124[n-1];
+    let srtValue = null;
+    let srtZone = 'Neutral Zone';
+    if (lastSma124 != null && lastSma124 > 0) {
+      srtValue = parseFloat((lastClose / lastSma124).toFixed(3));
+      if (srtValue < 0.9) {
+        srtZone = 'Buying Zone';
+      } else if (srtValue <= 1.3) {
+        srtZone = 'Neutral Zone';
+      } else {
+        srtZone = 'Selling Zone';
+      }
+    }
+
     // Volatility score (1-10)
     const hvPct = fund.historicalVolatilityPct || 25;
     const volatilityScore = Math.min(10, Math.max(1, Math.round(hvPct / 8)));
@@ -483,7 +515,11 @@ async function analyze() {
         maxDrawdownPct: Math.round(volatilityScore * 2.5),
         averageRetracementPct: Math.round(volatilityScore * 1.2)
       },
-      aiSummary: aiSummary
+      aiSummary: aiSummary,
+      srt: {
+        value: srtValue,
+        zone: srtZone
+      }
     };
   }
 
