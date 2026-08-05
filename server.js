@@ -628,6 +628,13 @@ const server = http.createServer(async (req, res) => {
   const p = reqUrl.pathname;
   console.log(`[HTTP] ${req.method} ${req.url}`);
 
+  // Set GIGW, GDPR, and OWASP compliance security headers
+  res.setHeader('Content-Security-Policy', "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https:;");
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+
   if (p === '/api/chart') return handleChart(res, reqUrl);
   if (p === '/api/symbols') return handleSymbols(res, reqUrl);
   if (p === '/api/quotes') return handleQuotes(res, reqUrl);
@@ -764,14 +771,258 @@ function startBackgroundAlertScanner() {
       const timeVal = hrs * 100 + mins;
       
       const isMarketHours = (day >= 1 && day <= 5 && timeVal >= 915 && timeVal <= 1530);
-      if (!isMarketHours) return;
+      if (!isMarketHours) {
+        console.log('[Alert Scanner] Outside market hours — running EOD alert check...');
+      } else {
+        console.log('[Alert Scanner] Market session active — scanning top stocks for triggers...');
+      }
 
-      console.log('[Alert Scanner] Market session active — scanning top stocks for triggers...');
+      // 1. Load DNA profiles to get historical context (like SMA124)
+      let dnaData = {};
+      try {
+        const dnaPath = path.join(__dirname, 'js', 'data', 'stock_dna.json');
+        if (fs.existsSync(dnaPath)) {
+          const content = fs.readFileSync(dnaPath, 'utf8');
+          dnaData = JSON.parse(content);
+        } else {
+          console.warn('[Alert Scanner] stock_dna.json database not found. Skipping scan.');
+          return;
+        }
+      } catch (err) {
+        console.error('[Alert Scanner] Error loading stock_dna.json:', err.message);
+        return;
+      }
+
+      const symbols = Object.keys(dnaData);
+      if (symbols.length === 0) return;
+
+      console.log(`[Alert Scanner] Step 1: Fetching live prices for all ${symbols.length} symbols via Google Finance...`);
+      let allLiveLtps = {};
+      try {
+        allLiveLtps = await livequote.getQuotes(symbols, 10);
+      } catch (err) {
+        console.error('[Alert Scanner] Google Finance quote fetch failed:', err.message);
+      }
+
+      console.log(`[Alert Scanner] Step 2: Fetching full quote details for top active symbols via Yahoo proxy...`);
+      const topActiveSymbols = [
+        'RELIANCE', 'TCS', 'INFY', 'SBIN', 'HDFCBANK', 'ICICIBANK', 'AXISBANK', 'KOTAKBANK', 
+        'TATAMOTORS', 'BHARTIARTL', 'HAL', 'MCX', 'LT', 'ITC', 'COALINDIA', 'ONGC', 'NTPC', 
+        'SUNPHARMA', 'TRENT', 'TATAPOWER', 'MARUTI', 'JSWSTEEL', 'LTIM', 'ADANIENT', 'JIOFIN'
+      ];
+      
+      const yahooQuotes = [];
+      const fetchQuotesViaProxy = async (batchSymbols) => {
+        const urlSymbols = batchSymbols.map(s => `${s}.NS`).join(',');
+        const yf = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${urlSymbols}`;
+        const urls = [
+          `https://api.allorigins.win/raw?url=${encodeURIComponent(yf)}`,
+          `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(yf)}`
+        ];
+
+        let lastErr = 'unknown';
+        for (const u of urls) {
+          try {
+            const r = await httpsGet(u, { 'User-Agent': 'curl/8.4.0' }, 5000);
+            if (r.status === 200) {
+              let parsedData = null;
+              try {
+                const outer = JSON.parse(r.body);
+                if (outer.contents) {
+                  parsedData = JSON.parse(outer.contents);
+                } else {
+                  parsedData = outer;
+                }
+              } catch (_) {
+                try { parsedData = JSON.parse(r.body); } catch (_) {}
+              }
+
+              if (parsedData && parsedData.quoteResponse && parsedData.quoteResponse.result) {
+                return parsedData.quoteResponse.result;
+              }
+            }
+            lastErr = `status ${r.status}`;
+          } catch (e) {
+            lastErr = e.message;
+          }
+        }
+        return [];
+      };
+
+      // Split into 2 batches
+      const batch1 = topActiveSymbols.slice(0, 13);
+      const batch2 = topActiveSymbols.slice(13);
+      
+      const q1 = await fetchQuotesViaProxy(batch1);
+      await new Promise(r => setTimeout(r, 1200));
+      const q2 = await fetchQuotesViaProxy(batch2);
+      yahooQuotes.push(...q1, ...q2);
+
+      console.log(`[Alert Scanner] Fetched ${yahooQuotes.length} full quotes from Yahoo. Evaluating strategies...`);
+
+      // 3. Evaluate strategies
+      // Evaluate SRT Buying Zone and Minervini for all stocks using Google Finance prices
+      for (const ticker of symbols) {
+        const price = allLiveLtps[ticker];
+        if (!price) continue;
+        
+        const dna = dnaData[ticker];
+        if (!dna) continue;
+
+        // Strategy A: SRT Buying Zone
+        const sma124 = dna.srt ? dna.srt.sma124 : null;
+        if (sma124 && sma124 > 0 && price / sma124 <= 0.90) {
+          const srtVal = (price / sma124).toFixed(3);
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'srt_buying_zone',
+            timeframe: '1d',
+            price: parseFloat(price.toFixed(2)),
+            reason: `🟢 SRT Buying Zone: ${ticker} is trading at ₹${price.toFixed(2)}, which is below its 124-day SMA (₹${sma124}) with an undervalued SRT score of ${srtVal}.`
+          });
+        }
+
+        // Strategy G: Minervini VCP
+        if (dna.cmp && dna.cmp > 0) {
+          const chgPct = ((price - dna.cmp) / dna.cmp) * 100;
+          if (dna.ratings && dna.ratings.trendStrength >= 8 && chgPct > 2.0 && dna.personality.character === 'Breakout Machine') {
+            await db.insertAlert({
+              ticker,
+              strategy_id: 'minervini',
+              timeframe: '1d',
+              price: parseFloat(price.toFixed(2)),
+              reason: `📈 Minervini VCP Trend: High momentum constituent ${ticker} is showing VCP breakout characteristics, up +${chgPct.toFixed(2)}% at ₹${price.toFixed(2)}.`
+            });
+          }
+        }
+      }
+
+      // Evaluate Open/High/Low/Gap/SMC strategies for top active symbols using Yahoo quotes
+      for (const quote of yahooQuotes) {
+        if (!quote.symbol) continue;
+        const ticker = quote.symbol.replace('.NS', '');
+        const dna = dnaData[ticker];
+        if (!dna) continue;
+
+        const price = quote.regularMarketPrice;
+        const open = quote.regularMarketOpen;
+        const high = quote.regularMarketDayHigh;
+        const low = quote.regularMarketDayLow;
+        const prevClose = quote.regularMarketPreviousClose;
+        const volume = quote.regularMarketVolume;
+
+        if (!price || !open || !high || !low || !prevClose) continue;
+
+        const body = Math.abs(price - open);
+        const range = high - low;
+        const bodyPct = open > 0 ? (body / open) * 100 : 0;
+        const chgPct = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
+
+        // Strategy A: SRT Buying Zone (Undervalued)
+        // Condition: current price / 124-day SMA <= 0.90
+        const sma124 = dna.srt ? dna.srt.sma124 : null;
+        if (sma124 && sma124 > 0 && price / sma124 <= 0.90) {
+          const srtVal = (price / sma124).toFixed(3);
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'srt_buying_zone',
+            timeframe: '1d',
+            price: parseFloat(price.toFixed(2)),
+            reason: `🟢 SRT Buying Zone: ${ticker} is trading at ₹${price.toFixed(2)}, which is below its 124-day SMA (₹${sma124}) with an undervalued SRT score of ${srtVal}.`
+          });
+        }
+
+        // Strategy B: Open = Low (ohl_bullish)
+        if (Math.abs(open - low) / open < 0.0005 && chgPct >= 1.2) {
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'ohl_bullish',
+            timeframe: '15m',
+            price: parseFloat(price.toFixed(2)),
+            reason: `⚡ Open=Low (Bullish): ${ticker} opened at ₹${open.toFixed(2)} and made a low of ₹${low.toFixed(2)}. Momentum driving price up +${chgPct.toFixed(2)}% at ₹${price.toFixed(2)}.`
+          });
+        }
+
+        // Strategy C: Open = High (ohl_bearish)
+        if (Math.abs(open - high) / open < 0.0005 && chgPct <= -1.2) {
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'ohl_bearish',
+            timeframe: '15m',
+            price: parseFloat(price.toFixed(2)),
+            reason: `🚨 Open=High (Bearish): ${ticker} opened at ₹${open.toFixed(2)} and made a high of ₹${high.toFixed(2)}. Heavy selling pressure pushing price down ${chgPct.toFixed(2)}% at ₹${price.toFixed(2)}.`
+          });
+        }
+
+        // Strategy D: Oliver Velez Elephant Bullish (elephant_bullish)
+        const isGreen = price > open;
+        const closeNearHigh = range > 0 ? (high - price) / range < 0.15 : false;
+        if (isGreen && bodyPct >= 3.0 && closeNearHigh) {
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'elephant_bullish',
+            timeframe: '15m',
+            price: parseFloat(price.toFixed(2)),
+            reason: `🐘 Oliver Velez Elephant Bullish: ${ticker} has printed a giant green candle (+${bodyPct.toFixed(2)}% body) closing near the absolute high of the day at ₹${price.toFixed(2)}.`
+          });
+        }
+
+        // Strategy E: Oliver Velez Elephant Bearish (elephant_bearish)
+        const isRed = price < open;
+        const closeNearLow = range > 0 ? (price - low) / range < 0.15 : false;
+        if (isRed && bodyPct >= 3.0 && closeNearLow) {
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'elephant_bearish',
+            timeframe: '15m',
+            price: parseFloat(price.toFixed(2)),
+            reason: `🐘 Oliver Velez Elephant Bearish: ${ticker} has printed a giant red candle (-${bodyPct.toFixed(2)}% body) closing near the absolute low of the day at ₹${price.toFixed(2)}.`
+          });
+        }
+
+        // Strategy F: Gap Expansion Momentum (gap_momentum)
+        if (open > prevClose * 1.015 && price > open) {
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'gap_momentum',
+            timeframe: '15m',
+            price: parseFloat(price.toFixed(2)),
+            reason: `🚀 Gap Momentum: ${ticker} opened with a gap-up of +${(((open - prevClose)/prevClose)*100).toFixed(2)}% and continues to trade higher at ₹${price.toFixed(2)}.`
+          });
+        }
+
+        // Strategy G: Minervini VCP (minervini)
+        if (dna.ratings && dna.ratings.trendStrength >= 8 && chgPct > 2.0 && dna.personality.character === 'Breakout Machine') {
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'minervini',
+            timeframe: '1d',
+            price: parseFloat(price.toFixed(2)),
+            reason: `📈 Minervini VCP Trend: High momentum constituent ${ticker} is showing VCP breakout characteristics, up +${chgPct.toFixed(2)}% at ₹${price.toFixed(2)}.`
+          });
+        }
+
+        // Strategy H: SMC Sweep Bullish (smc_bullish)
+        if (low < open * 0.985 && price > open && chgPct > 0.5) {
+          await db.insertAlert({
+            ticker,
+            strategy_id: 'smc_bullish',
+            timeframe: '15m',
+            price: parseFloat(price.toFixed(2)),
+            reason: `🛡️ SMC Sweep (Bullish): ${ticker} swept low liquidity below ₹${(open * 0.985).toFixed(2)} and reversed back strongly to trade at ₹${price.toFixed(2)}.`
+          });
+        }
+      }
+
+      console.log('[Alert Scanner] Strategy check completed successfully.');
     } catch (e) {
       console.error('[Alert Scanner Error]:', e.message);
     }
   };
 
+  // Run once immediately on start
+  setTimeout(alertScannerLoop, 5000);
+  // Then run every 3 minutes
   setInterval(alertScannerLoop, scanIntervalMs);
 }
 

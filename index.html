@@ -228,7 +228,7 @@
 
           <div id="customTickerWrapper" class="hidden suggestions-container" style="margin-top: 12px;">
             <input type="text" id="tickerInput" class="input" placeholder="RELIANCE, INFY.BO, TCS"
-              value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK">
+              value="RELIANCE, INFY, TCS, HDFCBANK, ICICIBANK" aria-label="Custom Ticker Symbols Input List">
           </div>
         </div>
 
@@ -510,9 +510,10 @@
           <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">🔔 Live Strategy Signals & Alert Hub</h2>
           <div style="font-size: 13px; color: var(--text-muted);">Real-time background signals triggered across Oliver Velez Elephant, OHL, Gap Momentum, TTM, SMC, and Minervini strategies.</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
           <select id="alertStrategyFilter" style="background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; font-size: 13px;">
             <option value="all">All Strategies</option>
+            <option value="srt_buying_zone">SRT Buying Zone</option>
             <option value="elephant_bullish">Oliver Velez Elephant (Bullish)</option>
             <option value="elephant_bearish">Oliver Velez Elephant (Bearish)</option>
             <option value="gap_momentum">Gap Expansion Momentum</option>
@@ -593,6 +594,42 @@
       document.getElementById(`tab-${tab}`).classList.add('active');
       window.renderBtTab(tab);
     }
+  </script>
+
+  <!-- GDPR & DPDP Compliance Cookie Consent Banner -->
+  <div id="cookieConsentBanner" style="position: fixed; bottom: 20px; right: 20px; max-width: 400px; background: var(--surface, #161b22); border: 1px solid var(--border, #30363d); border-radius: 12px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 10000; display: none; flex-direction: column; gap: 12px; font-family: 'Inter', sans-serif;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--text-main, #c9d1d9); display: flex; align-items: center; gap: 8px;">
+      <span>🍪 Cookie & Privacy Consent</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted, #8b949e); line-height: 1.5;">
+      We use cookies and process local parameters (such as broker session tokens) in compliance with the Digital Personal Data Protection (DPDP) Act, 2023 and GDPR.
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px;">
+      <button id="btnRejectCookies" style="background: transparent; border: 1px solid var(--border, #30363d); color: var(--text-main); font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 500;">Reject All</button>
+      <button id="btnAcceptCookies" style="background: var(--v-accent, #58a6ff); border: 1px solid transparent; color: #0d1117; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">Accept All</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const banner = document.getElementById('cookieConsentBanner');
+      const acceptBtn = document.getElementById('btnAcceptCookies');
+      const rejectBtn = document.getElementById('btnRejectCookies');
+
+      if (!localStorage.getItem('cookie_consent')) {
+        banner.style.display = 'flex';
+      }
+
+      acceptBtn.addEventListener('click', () => {
+        localStorage.setItem('cookie_consent', 'accepted');
+        banner.style.display = 'none';
+      });
+
+      rejectBtn.addEventListener('click', () => {
+        localStorage.setItem('cookie_consent', 'rejected');
+        banner.style.display = 'none';
+      });
+    });
   </script>
 
   <script src="js/ui/header.js?v=2"></script>
