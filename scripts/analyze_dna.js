@@ -567,7 +567,8 @@ async function analyze() {
       aiSummary: aiSummary,
       srt: {
         value: srtValue,
-        zone: srtZone
+        zone: srtZone,
+        sma124: lastSma124 ? parseFloat(lastSma124.toFixed(2)) : null
       }
     };
   }

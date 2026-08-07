@@ -176,16 +176,20 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fetchHeaderStatus() {
     try {
       // 1. Connection Status
-      const whoRes = await fetch('/api/whoami');
+      const statusRes = await fetch('/fyers/status');
       const connBadge = document.getElementById('connStatus');
-      if (connBadge) {
-        if (whoRes.status === 200) {
+      if (connBadge && statusRes.ok) {
+        const data = await statusRes.json();
+        if (data.connected) {
           connBadge.className = 'badge badge-green';
           connBadge.innerText = 'Brokers: Connected (Fyers)';
         } else {
           connBadge.className = 'badge badge-red';
           connBadge.innerHTML = 'Brokers: Disconnected <a href="/fyers/login" style="margin-left:6px; color:inherit; text-decoration:underline;">Login</a>';
         }
+      } else if (connBadge) {
+        connBadge.className = 'badge badge-red';
+        connBadge.innerHTML = 'Brokers: Disconnected <a href="/fyers/login" style="margin-left:6px; color:inherit; text-decoration:underline;">Login</a>';
       }
     } catch (_) {}
 

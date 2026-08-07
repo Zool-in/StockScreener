@@ -224,7 +224,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 45.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.072,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1077.66
     }
   },
   "ABB": {
@@ -452,7 +453,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 79%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.142,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 6742.79
     }
   },
   "ABCAPITAL": {
@@ -680,7 +682,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 52.9%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 60%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.182,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 355.33
     }
   },
   "ADANIENSOL": {
@@ -908,7 +911,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 85.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 64%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.244,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1322.93
     }
   },
   "ADANIENT": {
@@ -1136,7 +1140,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 31%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.198,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2546.46
     }
   },
   "ADANIGREEN": {
@@ -1364,7 +1369,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 46.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 36%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.119,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1236.35
     }
   },
   "ADANIPORTS": {
@@ -1592,7 +1598,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 45.5%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 53%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.036,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1647.35
     }
   },
   "ADANIPOWER": {
@@ -1820,7 +1827,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 62.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.07,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 196.16
     }
   },
   "ALKEM": {
@@ -2048,7 +2056,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 53.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.026,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 5466.77
     }
   },
   "AMBER": {
@@ -2276,7 +2285,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 52.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.982,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 7532.02
     }
   },
   "AMBUJACEM": {
@@ -2504,7 +2514,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 48%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.983,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 443.8
     }
   },
   "ANGELONE": {
@@ -2732,7 +2743,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 60%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.623,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 482.12
     }
   },
   "APLAPOLLO": {
@@ -2960,7 +2972,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 54.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 56%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.99,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1940
     }
   },
   "APOLLOHOSP": {
@@ -3188,7 +3201,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 53.8%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 53%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.121,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 8075.36
     }
   },
   "ASHOKLEY": {
@@ -3416,7 +3430,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 56.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 67%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.027,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 167.62
     }
   },
   "ASIANPAINT": {
@@ -3644,7 +3659,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 55.3%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 65%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.105,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2511.82
     }
   },
   "ASTRAL": {
@@ -3872,7 +3888,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 49.3%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 34%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.939,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1541.61
     }
   },
   "AUBANK": {
@@ -4100,7 +4117,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 59%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.071,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 988.58
     }
   },
   "AUROPHARMA": {
@@ -4328,7 +4346,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 48.3%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 52%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.125,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1409.34
     }
   },
   "AXISBANK": {
@@ -4556,7 +4575,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 43.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.972,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1297.69
     }
   },
   "BAJAJ-AUTO": {
@@ -4784,7 +4804,8 @@
     "aiSummary": "This is a pullback specialist stock showing a strong trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 44.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 77%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.162,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 9979.9
     }
   },
   "BAJAJFINSV": {
@@ -5012,7 +5033,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 44%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.156,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1820.18
     }
   },
   "BAJAJHLDNG": {
@@ -5240,7 +5262,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 52.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.108,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 10356.42
     }
   },
   "BAJFINANCE": {
@@ -5468,7 +5491,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 71.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.21,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 949.3
     }
   },
   "BANDHANBNK": {
@@ -5696,7 +5720,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 56.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 57%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.935,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 185.63
     }
   },
   "BANKBARODA": {
@@ -5924,7 +5949,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 48.2%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 54%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.903,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 271.33
     }
   },
   "BANKINDIA": {
@@ -6152,7 +6178,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 48.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.953,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 147.4
     }
   },
   "BDL": {
@@ -6380,7 +6407,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 46.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.976,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1296.35
     }
   },
   "BEL": {
@@ -6608,7 +6636,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 48.8%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 43%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.921,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 425.01
     }
   },
   "BHARATFORG": {
@@ -6836,7 +6865,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 54.5%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 62%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.139,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1926.66
     }
   },
   "BHARTIARTL": {
@@ -7064,7 +7094,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 53.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 33%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.053,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1871.71
     }
   },
   "BHEL": {
@@ -7292,7 +7323,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 44%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 56%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.196,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 344.49
     }
   },
   "BIOCON": {
@@ -7520,7 +7552,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 41.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 83%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.064,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 396.7
     }
   },
   "BLUESTARCO": {
@@ -7748,7 +7781,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 56.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.975,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1727.36
     }
   },
   "BOSCHLTD": {
@@ -7976,7 +8010,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 70%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.119,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 36833.47
     }
   },
   "BPCL": {
@@ -8204,7 +8239,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 52.9%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 70%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.037,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 312.46
     }
   },
   "BRITANNIA": {
@@ -8432,7 +8468,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 48.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.988,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 5541.88
     }
   },
   "BSE": {
@@ -8660,7 +8697,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 48.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 71%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.038,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 3487.07
     }
   },
   "CAMS": {
@@ -8888,7 +8926,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 41.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.093,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 740.47
     }
   },
   "CANBK": {
@@ -9116,7 +9155,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 52.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 57%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.951,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 134.66
     }
   },
   "CDSL": {
@@ -9344,7 +9384,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 44.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.048,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1278.47
     }
   },
   "CGPOWER": {
@@ -9572,7 +9613,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 49.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 36%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.077,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 817.45
     }
   },
   "CHOLAFIN": {
@@ -9800,7 +9842,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 52.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.155,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1623.07
     }
   },
   "CIPLA": {
@@ -10028,7 +10071,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 46.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.081,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1350.26
     }
   },
   "COALINDIA": {
@@ -10256,7 +10300,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 54.5%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 56%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.937,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 445.5
     }
   },
   "COCHINSHIP": {
@@ -10484,7 +10529,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.971,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1473.05
     }
   },
   "COFORGE": {
@@ -10712,7 +10758,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 58.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.305,
-      "zone": "Selling Zone"
+      "zone": "Selling Zone",
+      "sma124": 1340.69
     }
   },
   "COLPAL": {
@@ -10940,7 +10987,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 47%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.976,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2058.68
     }
   },
   "CONCOR": {
@@ -11168,7 +11216,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 48.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.067,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 482.57
     }
   },
   "CROMPTON": {
@@ -11396,7 +11445,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.003,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 262.28
     }
   },
   "CUMMINSIND": {
@@ -11624,7 +11674,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 39%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 55%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.064,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 5216.3
     }
   },
   "DABUR": {
@@ -11852,7 +11903,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 46.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.915,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 447.57
     }
   },
   "DALBHARAT": {
@@ -12080,7 +12132,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 51.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.99,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1846.03
     }
   },
   "DELHIVERY": {
@@ -12308,7 +12361,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 52.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.059,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 455.03
     }
   },
   "DIVISLAB": {
@@ -12536,7 +12590,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 51.8%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 37%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.272,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 6588.1
     }
   },
   "DIXON": {
@@ -12764,7 +12819,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 53.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.211,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 11552.05
     }
   },
   "DLF": {
@@ -12992,7 +13048,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.073,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 599.44
     }
   },
   "DMART": {
@@ -13220,7 +13277,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 53.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.974,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 4130.55
     }
   },
   "DRREDDY": {
@@ -13448,7 +13506,8 @@
     "aiSummary": "This is a institutional stock showing a mean reverting profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.92,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1274.59
     }
   },
   "EICHERMOT": {
@@ -13676,7 +13735,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 45.6%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 66%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.082,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 7330.47
     }
   },
   "ETERNAL": {
@@ -13904,7 +13964,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 47.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.217,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 256.77
     }
   },
   "FEDERALBNK": {
@@ -14132,7 +14193,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 44.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 75%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.204,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 301.07
     }
   },
   "FORCEMOT": {
@@ -14360,7 +14422,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 47.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 75%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.911,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 20176.58
     }
   },
   "FORTIS": {
@@ -14588,7 +14651,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 48.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.012,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 921.64
     }
   },
   "GAIL": {
@@ -14816,7 +14880,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 46.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.074,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 162.9
     }
   },
   "GLENMARK": {
@@ -15044,7 +15109,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 45.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.007,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2210.49
     }
   },
   "GMRAIRPORT": {
@@ -15272,7 +15338,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 42.1%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 59%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.065,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 100.02
     }
   },
   "GODFRYPHLP": {
@@ -15500,7 +15567,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 47.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.083,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2158.3
     }
   },
   "GODREJCP": {
@@ -15728,7 +15796,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 46.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.991,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1067.99
     }
   },
   "GODREJPROP": {
@@ -15956,7 +16025,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 47.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.133,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1794.96
     }
   },
   "GRASIM": {
@@ -16184,7 +16254,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 43.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.072,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2927.03
     }
   },
   "GVT&D": {
@@ -16412,7 +16483,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 63%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.003,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 4321.66
     }
   },
   "HAL": {
@@ -16640,7 +16712,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 45%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.091,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 4247.12
     }
   },
   "HAVELLS": {
@@ -16868,7 +16941,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 41.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.037,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1248.54
     }
   },
   "HCLTECH": {
@@ -17096,7 +17170,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.2%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 61%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.081,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1267.44
     }
   },
   "HDFCAMC": {
@@ -17324,7 +17399,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 41.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.977,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2615.32
     }
   },
   "HDFCBANK": {
@@ -17552,7 +17628,8 @@
     "aiSummary": "This is a explosive stock showing a mean reverting profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 43.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.931,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 797.39
     }
   },
   "HDFCLIFE": {
@@ -17780,7 +17857,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 71.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.882,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 607.73
     }
   },
   "HEROMOTOCO": {
@@ -18008,7 +18086,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 54.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 83%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.077,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 5151.98
     }
   },
   "HINDALCO": {
@@ -18236,7 +18315,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 64.3%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 57%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.032,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 987.91
     }
   },
   "HINDPETRO": {
@@ -18464,7 +18544,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 40.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.013,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 386.29
     }
   },
   "HINDUNILVR": {
@@ -18692,7 +18773,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 43.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.956,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2192.61
     }
   },
   "HINDZINC": {
@@ -18920,7 +19002,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 41.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 70%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.984,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 571.81
     }
   },
   "HYUNDAI": {
@@ -19148,7 +19231,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 42.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.142,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1943.3
     }
   },
   "ICICIBANK": {
@@ -19376,7 +19460,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 43.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.095,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1328.81
     }
   },
   "ICICIGI": {
@@ -19604,7 +19689,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 46.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.918,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1791.93
     }
   },
   "ICICIPRULI": {
@@ -19832,7 +19918,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 64%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.954,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 538.38
     }
   },
   "IDEA": {
@@ -20060,7 +20147,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 52.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 67%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.087,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 11.87
     }
   },
   "IDFCFIRSTB": {
@@ -20288,7 +20376,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 42.9%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 64%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.187,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 72.44
     }
   },
   "IEX": {
@@ -20516,7 +20605,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 46.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.038,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 124.51
     }
   },
   "INDHOTEL": {
@@ -20744,7 +20834,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 40%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.121,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 669.03
     }
   },
   "INDIANB": {
@@ -20972,7 +21063,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 42.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 63%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.97,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 870.89
     }
   },
   "INDIGO": {
@@ -21200,7 +21292,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 44.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.145,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 4680.44
     }
   },
   "INDUSINDBK": {
@@ -21428,7 +21521,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 47.1%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 72%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.127,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 910.56
     }
   },
   "INDUSTOWER": {
@@ -21656,7 +21750,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 55%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.926,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 421.17
     }
   },
   "INFY": {
@@ -21884,7 +21979,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 42.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.976,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1195.62
     }
   },
   "INOXWIND": {
@@ -22112,7 +22208,8 @@
     "aiSummary": "This is a institutional stock showing a mean reverting profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 64.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.891,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 88.86
     }
   },
   "IOC": {
@@ -22340,7 +22437,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 54.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 44%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.964,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 146.92
     }
   },
   "IREDA": {
@@ -22568,7 +22666,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 41.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.969,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 124.23
     }
   },
   "IRFC": {
@@ -22796,7 +22895,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 52.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.919,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 97.51
     }
   },
   "ITC": {
@@ -23024,7 +23124,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 42.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.97,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 298.06
     }
   },
   "JINDALSTEL": {
@@ -23252,7 +23353,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 63%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.966,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1163.2
     }
   },
   "JIOFIN": {
@@ -23480,7 +23582,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 44.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.097,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 241.52
     }
   },
   "JSWENERGY": {
@@ -23708,7 +23811,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 47%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 38%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.062,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 534.9
     }
   },
   "JSWSTEEL": {
@@ -23936,7 +24040,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 39.1%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 40%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.048,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1240.09
     }
   },
   "JUBLFOOD": {
@@ -24164,7 +24269,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 44.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.022,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 454.97
     }
   },
   "KALYANKJIL": {
@@ -24392,7 +24498,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 57.1%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 54%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.42,
-      "zone": "Selling Zone"
+      "zone": "Selling Zone",
+      "sma124": 416.5
     }
   },
   "KAYNES": {
@@ -24620,7 +24727,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 56.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.077,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 3597.17
     }
   },
   "KEI": {
@@ -24848,7 +24956,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 50.6%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 58%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.123,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 4898.67
     }
   },
   "KFINTECH": {
@@ -25076,7 +25185,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 46.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.049,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 904.47
     }
   },
   "KOTAKBANK": {
@@ -25304,7 +25414,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.029,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 386.96
     }
   },
   "KPITTECH": {
@@ -25532,7 +25643,8 @@
     "aiSummary": "This is a institutional stock showing a mean reverting profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 50.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.889,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 704.07
     }
   },
   "LAURUSLABS": {
@@ -25760,7 +25872,8 @@
     "aiSummary": "This is a pullback specialist stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 48.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 86%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.458,
-      "zone": "Selling Zone"
+      "zone": "Selling Zone",
+      "sma124": 1268.52
     }
   },
   "LICHSGFIN": {
@@ -25988,7 +26101,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 51.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.955,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 535.98
     }
   },
   "LICI": {
@@ -26216,7 +26330,8 @@
     "aiSummary": "This is a explosive stock showing a mean reverting profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 46.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.593,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 659.49
     }
   },
   "LODHA": {
@@ -26444,7 +26559,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 45.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.3,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 946.05
     }
   },
   "LT": {
@@ -26672,7 +26788,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 43.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 72%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.01,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 3951.76
     }
   },
   "LTF": {
@@ -26900,7 +27017,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.9%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 40%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.114,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 285.49
     }
   },
   "LUPIN": {
@@ -27128,7 +27246,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 48%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 63%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.034,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2330.05
     }
   },
   "M&M": {
@@ -27356,7 +27475,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.083,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 3171.01
     }
   },
   "MANAPPURAM": {
@@ -27584,7 +27704,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.1%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 55%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.18,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 302.22
     }
   },
   "MANKIND": {
@@ -27812,7 +27933,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 52.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.059,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2303.09
     }
   },
   "MARICO": {
@@ -28040,7 +28162,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 49.2%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 63%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.089,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 803.32
     }
   },
   "MARUTI": {
@@ -28268,7 +28391,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 66.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.046,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 13548.77
     }
   },
   "MAXHEALTH": {
@@ -28496,7 +28620,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.038,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1037.13
     }
   },
   "MAZDOCK": {
@@ -28724,7 +28849,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.984,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2427.94
     }
   },
   "MCX": {
@@ -28952,7 +29078,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 53.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.971,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2761.12
     }
   },
   "MFSL": {
@@ -29180,7 +29307,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 53.7%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 48%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.929,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1636.16
     }
   },
   "MOTHERSON": {
@@ -29408,7 +29536,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 44.8%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 68%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.143,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 132.07
     }
   },
   "MOTILALOFS": {
@@ -29636,7 +29765,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 51.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.046,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 823.06
     }
   },
   "MPHASIS": {
@@ -29864,7 +29994,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.049,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2269.24
     }
   },
   "MUTHOOTFIN": {
@@ -30092,7 +30223,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 66.7%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 46%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.877,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 3273.59
     }
   },
   "NAM-INDIA": {
@@ -30320,7 +30452,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 41.7%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 38%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.166,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1031.3
     }
   },
   "NATIONALUM": {
@@ -30548,7 +30681,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 64%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.987,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 382.16
     }
   },
   "NAUKRI": {
@@ -30776,7 +30910,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 53.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.218,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1034.33
     }
   },
   "NBCC": {
@@ -31004,7 +31139,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 46.2%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 94.85
     }
   },
   "NESTLEIND": {
@@ -31232,7 +31368,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 42.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.117,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1360.65
     }
   },
   "NHPC": {
@@ -31460,7 +31597,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 56.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.035,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 77.81
     }
   },
   "NMDC": {
@@ -31688,7 +31826,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 62.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 38%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.991,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 84.98
     }
   },
   "NTPC": {
@@ -31916,7 +32055,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 46.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.922,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 372.66
     }
   },
   "NYKAA": {
@@ -32144,7 +32284,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 46.8%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 70%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.237,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 276.8
     }
   },
   "OBEROIRLTY": {
@@ -32372,7 +32513,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 61.5%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 56%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.074,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1656.11
     }
   },
   "OFSS": {
@@ -32600,7 +32742,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 71.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 70%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.303,
-      "zone": "Selling Zone"
+      "zone": "Selling Zone",
+      "sma124": 8901.63
     }
   },
   "OIL": {
@@ -32828,7 +32971,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 37.3%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 53%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.972,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 463.13
     }
   },
   "ONGC": {
@@ -33056,7 +33200,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 44.9%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 64%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.902,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 268.42
     }
   },
   "PAGEIND": {
@@ -33284,7 +33429,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 53.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.082,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 36743.19
     }
   },
   "PATANJALI": {
@@ -33512,7 +33658,8 @@
     "aiSummary": "This is a explosive stock showing a mean reverting profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 47.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.804,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 447.58
     }
   },
   "PAYTM": {
@@ -33740,7 +33887,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 52.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 41%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.231,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1137.67
     }
   },
   "PERSISTENT": {
@@ -33968,7 +34116,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 43.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 83%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.098,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 5009.19
     }
   },
   "PETRONET": {
@@ -34196,7 +34345,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 44.4%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 45%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.026,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 277.75
     }
   },
   "PFC": {
@@ -34424,7 +34574,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 48.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 60%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.988,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 425.03
     }
   },
   "PGEL": {
@@ -34652,7 +34803,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 51.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.133,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 540.24
     }
   },
   "PHOENIXLTD": {
@@ -34880,7 +35032,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 51.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 67%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.082,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1786.25
     }
   },
   "PIDILITIND": {
@@ -35108,7 +35261,8 @@
     "aiSummary": "This is a explosive stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 50.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.104,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1467.34
     }
   },
   "PIIND": {
@@ -35336,7 +35490,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 47%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.967,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2879.65
     }
   },
   "PNB": {
@@ -35564,7 +35719,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 66.7%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 58%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.031,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 110.61
     }
   },
   "PNBHOUSING": {
@@ -35792,7 +35948,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 45.3%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 39%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.126,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 959.07
     }
   },
   "POLICYBZR": {
@@ -36020,7 +36177,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 46.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.014,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1575.35
     }
   },
   "POLYCAB": {
@@ -36248,7 +36406,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 53%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.069,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 8581.73
     }
   },
   "POWERGRID": {
@@ -36476,7 +36635,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 54.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 38%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.956,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 296.43
     }
   },
   "POWERINDIA": {
@@ -36704,7 +36864,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 71.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 67%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.052,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 30432.44
     }
   },
   "PREMIERENE": {
@@ -36932,7 +37093,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 55.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.076,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 962.92
     }
   },
   "PRESTIGE": {
@@ -37160,7 +37322,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 83.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.113,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1432.61
     }
   },
   "RADICO": {
@@ -37388,7 +37551,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.33,
-      "zone": "Selling Zone"
+      "zone": "Selling Zone",
+      "sma124": 3345.34
     }
   },
   "RBLBANK": {
@@ -37616,7 +37780,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 37%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 58%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.132,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 336.29
     }
   },
   "RECLTD": {
@@ -37844,7 +38009,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 68.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.053,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 349.51
     }
   },
   "RELIANCE": {
@@ -38072,7 +38238,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.956,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1349.81
     }
   },
   "RVNL": {
@@ -38300,7 +38467,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 53.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.873,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 265
     }
   },
   "SAIL": {
@@ -38528,7 +38696,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 62.5%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 60%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.011,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 171.61
     }
   },
   "SBICARD": {
@@ -38756,7 +38925,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 51.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.999,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 658.76
     }
   },
   "SBILIFE": {
@@ -38984,7 +39154,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 49%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.016,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1869.17
     }
   },
   "SBIN": {
@@ -39212,7 +39383,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 57.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 67%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.989,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1053.79
     }
   },
   "SHREECEM": {
@@ -39440,7 +39612,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 44.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.07,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 25151.77
     }
   },
   "SHRIRAMFIN": {
@@ -39668,7 +39841,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 42.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 47%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.092,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 995.99
     }
   },
   "SIEMENS": {
@@ -39896,7 +40070,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 40.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.141,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 3505.29
     }
   },
   "SOLARINDS": {
@@ -40124,7 +40299,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 75%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.163,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 16072.83
     }
   },
   "SONACOMS": {
@@ -40352,7 +40528,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 47.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 69%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.336,
-      "zone": "Selling Zone"
+      "zone": "Selling Zone",
+      "sma124": 588.86
     }
   },
   "SRF": {
@@ -40580,7 +40757,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 45%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.002,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2636.67
     }
   },
   "SUNPHARMA": {
@@ -40808,7 +40986,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 43.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 62%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.084,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1812.33
     }
   },
   "SUPREMEIND": {
@@ -41036,7 +41215,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 52.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.964,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 3631.18
     }
   },
   "SUZLON": {
@@ -41264,7 +41444,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 50.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.959,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 50.09
     }
   },
   "SWIGGY": {
@@ -41492,7 +41673,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 48.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.063,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 273.7
     }
   },
   "TATACONSUM": {
@@ -41720,7 +41902,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 46.2%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 34%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.974,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1121.66
     }
   },
   "TATAELXSI": {
@@ -41948,7 +42131,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.899,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 4158.98
     }
   },
   "TATAPOWER": {
@@ -42176,7 +42360,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 48.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.955,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 397.86
     }
   },
   "TATASTEEL": {
@@ -42404,7 +42589,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 42.6%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 47%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.952,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 200.57
     }
   },
   "TCS": {
@@ -42632,7 +42818,8 @@
     "aiSummary": "This is a institutional stock showing a mean reverting profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 44.8%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 44%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.039,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2366.77
     }
   },
   "TECHM": {
@@ -42860,7 +43047,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 59%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.137,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1450.41
     }
   },
   "TIINDIA": {
@@ -43088,7 +43276,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 55.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.963,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 2850.54
     }
   },
   "TITAN": {
@@ -43316,7 +43505,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 52.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 71%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.142,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 4322.27
     }
   },
   "TMPV": {
@@ -43544,7 +43734,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 44.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.995,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 350.33
     }
   },
   "TORNTPHARM": {
@@ -43772,7 +43963,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 20 EMA exceptionally well, with a bounce success rate of 52.8%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 71%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.132,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 4443.07
     }
   },
   "TRENT": {
@@ -44000,7 +44192,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 66.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.86,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 3615.03
     }
   },
   "TVSMOTOR": {
@@ -44228,7 +44421,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 50%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 63%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.208,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 3609.07
     }
   },
   "ULTRACEMCO": {
@@ -44456,7 +44650,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 200 EMA exceptionally well, with a bounce success rate of 55.6%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.034,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 11650.87
     }
   },
   "UNIONBANK": {
@@ -44684,7 +44879,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 47.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.996,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 174.67
     }
   },
   "UNITDSPR": {
@@ -44912,7 +45108,8 @@
     "aiSummary": "This is a institutional stock showing a strong trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 44.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 75%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.14,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1337.37
     }
   },
   "UNOMINDA": {
@@ -45140,7 +45337,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 56.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.099,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1116.57
     }
   },
   "UPL": {
@@ -45368,7 +45566,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 57.1%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 50%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.926,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 628.44
     }
   },
   "VBL": {
@@ -45596,7 +45795,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 5 EMA exceptionally well, with a bounce success rate of 51.7%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.929,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 472.76
     }
   },
   "VEDL": {
@@ -45824,7 +46024,8 @@
     "aiSummary": "This is a explosive stock showing a mean reverting profile. It respects the 21 EMA exceptionally well, with a bounce success rate of 37.1%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 63%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.562,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 478.83
     }
   },
   "VMM": {
@@ -46052,7 +46253,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 44.4%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.958,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 116.2
     }
   },
   "VOLTAS": {
@@ -46280,7 +46482,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 48.7%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 38%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.978,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 1357.59
     }
   },
   "WAAREEENER": {
@@ -46508,7 +46711,8 @@
     "aiSummary": "This is a institutional stock showing a mean reverting profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 61.9%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.887,
-      "zone": "Buying Zone"
+      "zone": "Buying Zone",
+      "sma124": 3008.67
     }
   },
   "WIPRO": {
@@ -46736,7 +46940,8 @@
     "aiSummary": "This is a mean reverter stock showing a range bound profile. It respects the 9 EMA exceptionally well, with a bounce success rate of 50.5%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 75%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 0.968,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 192.5
     }
   },
   "YESBANK": {
@@ -46964,7 +47169,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 50 EMA exceptionally well, with a bounce success rate of 56.3%. Historical backtests show that the best-performing setup is the 52W High Breakout (win rate: 78%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.07,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 21.5
     }
   },
   "ZYDUSLIFE": {
@@ -47192,7 +47398,8 @@
     "aiSummary": "This is a institutional stock showing a slow trend profile. It respects the 100 EMA exceptionally well, with a bounce success rate of 60%. Historical backtests show that the best-performing setup is the 20 EMA Pullback (win rate: 52%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.",
     "srt": {
       "value": 1.131,
-      "zone": "Neutral Zone"
+      "zone": "Neutral Zone",
+      "sma124": 999.44
     }
   }
 }
