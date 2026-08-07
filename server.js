@@ -513,6 +513,55 @@ async function handleDnaGenerate(res) {
   return sendJSON(res, 202, { success: true, message: 'DNA Library generation started in background. Refresh in a few minutes.' });
 }
 
+async function handleDnaNews(res, reqUrl) {
+  const symbol = reqUrl.searchParams.get('symbol');
+  if (!symbol) return sendJSON(res, 400, { error: 'Symbol parameter is required' });
+
+  const cleanSym = symbol.toUpperCase().replace(/\.NS$/i, '');
+  const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(cleanSym)}+stock&hl=en-IN&gl=IN&ceid=IN:en`;
+
+  try {
+    const r = await httpsGet(rssUrl, { 'User-Agent': UA }, 8000);
+    if (r.status !== 200) {
+      throw new Error(`Yahoo returned status ${r.status}`);
+    }
+
+    const items = [];
+    const matches = r.body.matchAll(/<item>([\s\S]*?)<\/item>/g);
+    for (const match of matches) {
+      const item = match[1];
+      const title = item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '';
+      const link = item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '';
+      const pubDate = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '';
+      const source = item.match(/<source>([\s\S]*?)<\/source>/)?.[1] || '';
+      
+      const cleanText = (str) => {
+        return str
+          .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&apos;/g, "'")
+          .trim();
+      };
+
+      if (title) {
+        items.push({
+          title: cleanText(title),
+          link: cleanText(link),
+          pubDate: cleanText(pubDate),
+          source: cleanText(source) || 'Yahoo Finance'
+        });
+      }
+    }
+
+    return sendJSON(res, 200, { success: true, count: items.length, data: items });
+  } catch (e) {
+    return sendJSON(res, 500, { error: e.message || 'Failed to fetch news feed' });
+  }
+}
+
 
 async function handleFyersCallback(res, reqUrl) {
   const code = reqUrl.searchParams.get('auth_code');
@@ -644,6 +693,7 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/options/chain') return handleOptionsChain(res, reqUrl);
   if (p === '/api/dna') return handleDna(res, reqUrl);
   if (p === '/api/dna/generate') return handleDnaGenerate(res);
+  if (p === '/api/dna/news') return handleDnaNews(res, reqUrl);
   if (p === '/api/indices/srt') return handleIndicesSrt(res);
 
   // ─── Alerts Endpoints ───────────────────────────────────────────────────

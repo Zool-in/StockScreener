@@ -395,8 +395,16 @@
           </div>
         </div>
 
-        <!-- Detailed score grids -->
-        <div class="detail-grid">
+        <!-- Inner View Navigation Tabs -->
+        <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+          <button id="tabQuant" class="tab-btn active">📊 Quant Stats</button>
+          <button id="tabBusiness" class="tab-btn">🧠 Business & Moat</button>
+          <button id="tabSwot" class="tab-btn">📈 SWOT & Growth</button>
+          <button id="tabNews" class="tab-btn">📰 Latest News</button>
+        </div>
+
+        <!-- Detailed score grids (Quant Tab) -->
+        <div id="panelQuant" class="detail-grid" style="display: grid;">
           <!-- Moving Average Respect -->
           <div class="detail-card">
             <h3>Moving Average Respect</h3>
@@ -533,6 +541,83 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Business Model & Competitive Moat Tab Content -->
+        <div id="panelBusiness" class="detail-grid" style="display: none;">
+          <div class="detail-card">
+            <h3>Business Model Analysis</h3>
+            <p id="businessModelText" style="line-height: 1.6; font-size: 13.5px; color: var(--text-primary);">Select a stock to view its business model.</p>
+          </div>
+          <div class="detail-card">
+            <h3>Competitive Moat Strength</h3>
+            <p id="moatText" style="line-height: 1.6; font-size: 13.5px; color: var(--text-primary);">Select a stock to inspect its industry moat.</p>
+          </div>
+          <div class="detail-card">
+            <h3>Core Competencies & Specialty</h3>
+            <p id="specialtyText" style="line-height: 1.6; font-size: 13.5px; color: var(--text-primary);">Select a stock to view its specialized competency.</p>
+          </div>
+          <div class="detail-card">
+            <h3>Key Advantages & Disadvantages</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+              <div>
+                <h4 style="margin-top: 0; color: var(--profit-color); font-size: 13px; text-transform: uppercase; border-bottom: 1px solid rgba(46,160,67,0.2); padding-bottom: 6px;">Strategic Advantages</h4>
+                <ul id="advantagesList" style="padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 8px 0 0 0;">
+                  <!-- Dynamic -->
+                </ul>
+              </div>
+              <div>
+                <h4 style="margin-top: 0; color: var(--loss-color); font-size: 13px; text-transform: uppercase; border-bottom: 1px solid rgba(248,81,73,0.2); padding-bottom: 6px;">Vulnerabilities / Risks</h4>
+                <ul id="disadvantagesList" style="padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 8px 0 0 0;">
+                  <!-- Dynamic -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SWOT & Financial Growth Tab Content -->
+        <div id="panelSwot" class="detail-grid" style="display: none;">
+          <div class="detail-card" style="grid-column: 1 / -1;">
+            <h3>SWOT Strategic Analysis Matrix</h3>
+            <div class="swot-grid">
+              <div class="swot-box swot-s">
+                <div class="swot-title" style="color: #3fb950;">🟢 Strengths</div>
+                <ul id="swotStrengths" class="swot-list"><!-- Dynamic --></ul>
+              </div>
+              <div class="swot-box swot-w">
+                <div class="swot-title" style="color: #f85149;">🔴 Weaknesses</div>
+                <ul id="swotWeaknesses" class="swot-list"><!-- Dynamic --></ul>
+              </div>
+              <div class="swot-box swot-o">
+                <div class="swot-title" style="color: #58a6ff;">🔵 Opportunities</div>
+                <ul id="swotOpportunities" class="swot-list"><!-- Dynamic --></ul>
+              </div>
+              <div class="swot-box swot-t">
+                <div class="swot-title" style="color: #f59e0b;">🟡 Threats</div>
+                <ul id="swotThreats" class="swot-list"><!-- Dynamic --></ul>
+              </div>
+            </div>
+          </div>
+          <div class="detail-card">
+            <h3>Recent Financial Growth</h3>
+            <p id="financialGrowthText" style="line-height: 1.6; font-size: 13.5px; color: var(--text-primary);"></p>
+          </div>
+          <div class="detail-card">
+            <h3>Future Growth & Outlook</h3>
+            <p id="futureGrowthText" style="line-height: 1.6; font-size: 13.5px; color: var(--text-primary);"></p>
+          </div>
+        </div>
+
+        <!-- Live News Feed Tab Content -->
+        <div id="panelNews" class="detail-card" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+            <h3 style="margin: 0; border: none; padding: 0;">Latest News & Sentiment</h3>
+            <span id="newsStatus" class="badge badge-muted">Live Feed</span>
+          </div>
+          <div id="newsFeedList" style="max-height: 500px; overflow-y: auto;">
+            <!-- Dynamically populated -->
           </div>
         </div>
       </div>

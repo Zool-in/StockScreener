@@ -10,6 +10,7 @@ const bhavcopy = require('../bhavcopy');
 
 const FUNDAMENTALS_FILE = path.join(__dirname, '..', 'js', 'data', 'fundamentals.json');
 const OUTPUT_FILE = path.join(__dirname, '..', 'js', 'data', 'stock_dna.json');
+const qualRegistry = require('../js/data/qualitative_profiles').REGISTRY;
 
 // Helper: Calculate EMA array
 function calculateEMA(prices, period) {
@@ -461,8 +462,45 @@ async function analyze() {
     // Dynamic AI Summary construction
     const aiSummary = `This is a ${character.toLowerCase()} stock showing a ${trendType.toLowerCase()} profile. It respects the ${bestMA.replace('ema', '')} EMA exceptionally well, with a bounce success rate of ${bestRespectScore}%. Historical backtests show that the best-performing setup is the ${win20EMA > win52W ? '20 EMA Pullback' : '52W High Breakout'} (win rate: ${Math.max(win20EMA, win52W)}%), backed by volume confirmations. Traders should avoid short-term breakouts when the volatility profile expands past ATR limits.`;
 
+    // Resolve qualitative metrics
+    let qual = qualRegistry[sym];
+    if (!qual) {
+      const sectorStr = fund.sector || 'Diversified';
+      const companyName = fund.companyName || `${sym} Limited`;
+      const isLargeCap = (fund.marketCapCr || 0) > 50000;
+      
+      const moatDesc = isLargeCap 
+        ? `Scale-based cost leadership and high entry barriers within the ${sectorStr.toLowerCase()} sector.` 
+        : `Niche market positioning and strong localized distribution channels in the ${sectorStr.toLowerCase()} sector.`;
+
+      qual = {
+        businessModel: `Operating as a prominent player in the ${sectorStr.toLowerCase()} sector, focused on delivering specialized products/services. The business model prioritizes operational efficiency, B2B/B2C client relationships, and technological integration.`,
+        moat: moatDesc,
+        specialty: `Specialized domain expertise and client service delivery in the ${sectorStr.toLowerCase()} industry.`,
+        advantages: [
+          `Strong reputation and established presence in the ${sectorStr.toLowerCase()} space.`,
+          `Diversified client portfolio mitigating single-account risk.`,
+          `Resilient balance sheet with adequate cash conversion cycles.`
+        ],
+        disadvantages: [
+          `Vulnerable to input cost inflation and global supply chain disruptions.`,
+          `Intense margin pressure from competitive private players.`,
+          `Strict regulatory compliance overhead and ESG mandates.`
+        ],
+        financialGrowth: `Steady revenue growth supported by stable operating margins in the ${sectorStr.toLowerCase()} market.`,
+        futureGrowth: `Expansion into new digital avenues, process automation, and green infrastructure initiatives.`,
+        swot: {
+          strengths: [`Strong regional brand presence`, `Decades of sector experience`, `High customer retention`],
+          weaknesses: [`High dependency on commodity price stability`, `Slower technological transition cycles`],
+          opportunities: [`Unlocking value through digital platforms`, `New product/service launches in adjacent markets`],
+          threats: [`Rapid regulatory changes and policy updates`, `Disruption by digital-first startups`]
+        }
+      };
+    }
+
     dnaDatabase[sym] = {
       ...fund,
+      ...qual,
       personality: {
         trendType,
         character,

@@ -26,6 +26,90 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRegen = document.getElementById('btnRegen');
   const connStatus = document.getElementById('connStatus');
 
+  // Inner Tabs and Panels
+  const tabQuant = document.getElementById('tabQuant');
+  const tabBusiness = document.getElementById('tabBusiness');
+  const tabSwot = document.getElementById('tabSwot');
+  const tabNews = document.getElementById('tabNews');
+
+  const panelQuant = document.getElementById('panelQuant');
+  const panelBusiness = document.getElementById('panelBusiness');
+  const panelSwot = document.getElementById('panelSwot');
+  const panelNews = document.getElementById('panelNews');
+
+  let activeInnerTab = 'quant';
+
+  function switchInnerTab(tabName) {
+    activeInnerTab = tabName;
+    const tabs = [tabQuant, tabBusiness, tabSwot, tabNews];
+    const panels = [panelQuant, panelBusiness, panelSwot, panelNews];
+    
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.style.display = 'none');
+    
+    if (tabName === 'quant') {
+      tabQuant.classList.add('active');
+      panelQuant.style.display = 'grid';
+    } else if (tabName === 'business') {
+      tabBusiness.classList.add('active');
+      panelBusiness.style.display = 'grid';
+    } else if (tabName === 'swot') {
+      tabSwot.classList.add('active');
+      panelSwot.style.display = 'grid';
+    } else if (tabName === 'news') {
+      tabNews.classList.add('active');
+      panelNews.style.display = 'block';
+      fetchNews(selectedSymbol);
+    }
+  }
+
+  tabQuant.addEventListener('click', () => switchInnerTab('quant'));
+  tabBusiness.addEventListener('click', () => switchInnerTab('business'));
+  tabSwot.addEventListener('click', () => switchInnerTab('swot'));
+  tabNews.addEventListener('click', () => switchInnerTab('news'));
+
+  async function fetchNews(symbol) {
+    if (!symbol) return;
+    const listEl = document.getElementById('newsFeedList');
+    const statusEl = document.getElementById('newsStatus');
+    listEl.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">Loading feed...</div>';
+    statusEl.textContent = 'Polling...';
+    
+    try {
+      const res = await fetch(`/api/dna/news?symbol=${symbol}`);
+      const data = await res.json();
+      if (data.success && data.data && data.data.length > 0) {
+        statusEl.textContent = `${data.count} items`;
+        listEl.innerHTML = '';
+        data.data.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'news-item';
+          
+          const cleanLink = item.link || '#';
+          const pubDateStr = item.pubDate ? new Date(item.pubDate).toLocaleString('en-US') : 'Recent';
+
+          row.innerHTML = `
+            <div class="news-title">
+              <a href="${cleanLink}" target="_blank" rel="noopener noreferrer">${item.title}</a>
+            </div>
+            <div class="news-meta">
+              <span>Source: ${item.source}</span>
+              <span>•</span>
+              <span>${pubDateStr}</span>
+            </div>
+          `;
+          listEl.appendChild(row);
+        });
+      } else {
+        statusEl.textContent = 'Offline';
+        listEl.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">No news available for this ticker.</div>';
+      }
+    } catch (e) {
+      statusEl.textContent = 'Error';
+      listEl.innerHTML = `<div style="color: var(--loss-color); padding: 20px; text-align: center;">Failed to load news: ${e.message}</div>`;
+    }
+  }
+
   // Toggle between Views
   btnDnaView.addEventListener('click', () => {
     activeView = 'explorer';
@@ -343,6 +427,80 @@ document.addEventListener('DOMContentLoaded', () => {
     if (srtEl) {
       srtEl.textContent = `${srtVal} (${srtZone})`;
       srtEl.style.color = srtColor;
+    }
+
+    // Populate Business & Moat Tab Content
+    document.getElementById('businessModelText').textContent = dna.businessModel || 'N/A';
+    document.getElementById('moatText').textContent = dna.moat || 'N/A';
+    document.getElementById('specialtyText').textContent = dna.specialty || 'N/A';
+
+    const advList = document.getElementById('advantagesList');
+    advList.innerHTML = '';
+    if (dna.advantages) {
+      dna.advantages.forEach(a => {
+        const li = document.createElement('li');
+        li.textContent = a;
+        advList.appendChild(li);
+      });
+    }
+
+    const disList = document.getElementById('disadvantagesList');
+    disList.innerHTML = '';
+    if (dna.disadvantages) {
+      dna.disadvantages.forEach(d => {
+        const li = document.createElement('li');
+        li.textContent = d;
+        disList.appendChild(li);
+      });
+    }
+
+    // Populate SWOT Tab Content
+    const strengthsList = document.getElementById('swotStrengths');
+    strengthsList.innerHTML = '';
+    if (dna.swot && dna.swot.strengths) {
+      dna.swot.strengths.forEach(s => {
+        const li = document.createElement('li');
+        li.textContent = s;
+        strengthsList.appendChild(li);
+      });
+    }
+
+    const weaknessesList = document.getElementById('swotWeaknesses');
+    weaknessesList.innerHTML = '';
+    if (dna.swot && dna.swot.weaknesses) {
+      dna.swot.weaknesses.forEach(w => {
+        const li = document.createElement('li');
+        li.textContent = w;
+        weaknessesList.appendChild(li);
+      });
+    }
+
+    const opportunitiesList = document.getElementById('swotOpportunities');
+    opportunitiesList.innerHTML = '';
+    if (dna.swot && dna.swot.opportunities) {
+      dna.swot.opportunities.forEach(o => {
+        const li = document.createElement('li');
+        li.textContent = o;
+        opportunitiesList.appendChild(li);
+      });
+    }
+
+    const threatsList = document.getElementById('swotThreats');
+    threatsList.innerHTML = '';
+    if (dna.swot && dna.swot.threats) {
+      dna.swot.threats.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        threatsList.appendChild(li);
+      });
+    }
+
+    document.getElementById('financialGrowthText').textContent = dna.financialGrowth || 'N/A';
+    document.getElementById('futureGrowthText').textContent = dna.futureGrowth || 'N/A';
+
+    // Auto-fetch news if current tab is active
+    if (activeInnerTab === 'news') {
+      fetchNews(dna.symbol);
     }
   }
 
