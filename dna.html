@@ -339,8 +339,21 @@
     <div id="dnaExplorerTab" class="dna-grid">
       <!-- Search & Sidebar -->
       <div class="search-panel">
-        <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);">F&O Universe</h3>
+        <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);">Stock Universe</h3>
         <input type="text" id="symbolSearch" class="search-input" placeholder="Search symbol (e.g. RELIANCE)...">
+        
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 12px; color: var(--text-secondary);">Index / Universe</label>
+          <select id="universeFilter" class="search-input" style="padding: 8px;">
+            <option value="all">All Stocks</option>
+            <option value="fno">F&O Universe</option>
+            <option value="nifty50">Nifty 50</option>
+            <option value="nifty100">Nifty 100</option>
+            <option value="nifty200">Nifty 200</option>
+            <option value="niftymidcap150">Nifty Midcap 150</option>
+            <option value="nifty500">Nifty 500</option>
+          </select>
+        </div>
         
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <label style="font-size: 12px; color: var(--text-secondary);">Filter by Strategy</label>

@@ -42,10 +42,27 @@ const STATIC_REGISTRY = {
 async function generate() {
   console.log('[Fundamentals] Starting generation...');
   
-  // 1. Get F&O list
-  const fnoLots = await lots.getLots();
-  const fnoSymbols = Object.keys(fnoLots);
-  console.log(`[Fundamentals] Loaded ${fnoSymbols.length} F&O symbols.`);
+  // 1. Get index constituent lists and construct target universe
+  const symbolsModule = require('../symbols');
+  const nifty50 = await symbolsModule.getList('nifty50');
+  const nifty100 = await symbolsModule.getList('nifty100');
+  const nifty200 = await symbolsModule.getList('nifty200');
+  const nifty500 = await symbolsModule.getList('nifty500');
+  const niftyMidcap150 = await symbolsModule.getList('niftymidcap150');
+  const niftySmallcap250 = await symbolsModule.getList('niftysmallcap250');
+  const fno = await symbolsModule.getList('fno');
+
+  const unionSet = new Set([
+    ...nifty50,
+    ...nifty100,
+    ...nifty200,
+    ...nifty500,
+    ...niftyMidcap150,
+    ...niftySmallcap250,
+    ...fno
+  ]);
+  const allTargetSymbols = Array.from(unionSet).map(s => s.toUpperCase());
+  console.log(`[Fundamentals] Target universe size: ${allTargetSymbols.length} unique symbols.`);
 
   // 2. Parse Nifty 500 list for Name and Industry
   const industryMap = {};
@@ -85,7 +102,7 @@ async function generate() {
 
   const output = {};
 
-  for (const sym of fnoSymbols) {
+  for (const sym of allTargetSymbols) {
     let base = sym.toUpperCase();
     
     // Parse name and industry
@@ -205,6 +222,16 @@ async function generate() {
     const promoterHolding = sFund.promoterHolding != null ? sFund.promoterHolding : 'Insufficient Data';
     const institutionHolding = sFund.institutionHolding != null ? sFund.institutionHolding : 'Insufficient Data';
 
+    const indicesTags = [];
+    const symUpper = base.toUpperCase();
+    if (nifty50.includes(symUpper)) indicesTags.push('nifty50');
+    if (nifty100.includes(symUpper)) indicesTags.push('nifty100');
+    if (nifty200.includes(symUpper)) indicesTags.push('nifty200');
+    if (nifty500.includes(symUpper)) indicesTags.push('nifty500');
+    if (niftyMidcap150.includes(symUpper)) indicesTags.push('niftymidcap150');
+    if (niftySmallcap250.includes(symUpper)) indicesTags.push('niftysmallcap250');
+    if (fno.includes(symUpper)) indicesTags.push('fno');
+
     output[base] = {
       symbol: base,
       companyName: name,
@@ -219,6 +246,7 @@ async function generate() {
       averageDailyVolume: avgVolume,
       averageDailyTurnoverLacs: avgTurnover,
       deliveryPct: avgDelivery,
+      indices: indicesTags
     };
   }
 

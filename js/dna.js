@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dnaComparisonTab = document.getElementById('dnaComparisonTab');
   
   const symbolSearch = document.getElementById('symbolSearch');
+  const universeFilter = document.getElementById('universeFilter');
   const strategyFilter = document.getElementById('strategyFilter');
   const personalityFilter = document.getElementById('personalityFilter');
   const stockListContainer = document.getElementById('stockListContainer');
@@ -214,11 +215,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Filtering Logic
   function applyFilters() {
     const query = symbolSearch.value.toUpperCase();
+    const universe = universeFilter.value;
     const strat = strategyFilter.value;
     const pers = personalityFilter.value;
 
     const filtered = dnaSummaryList.filter(s => {
       const matchesSymbol = s.symbol.includes(query) || s.companyName.toUpperCase().includes(query);
+      
+      const matchesUniverse = universe === 'all' || (s.indices && s.indices.includes(universe));
       
       // Since strategy lists are fully fetched only on specific selection,
       // the summary contains basic personality. We can estimate or filter based on it.
@@ -231,13 +235,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (strat === '52W High Breakout' && s.ratings.swingQuality < 7) matchesStrat = false;
       }
 
-      return matchesSymbol && matchesPers && matchesStrat;
+      return matchesSymbol && matchesUniverse && matchesPers && matchesStrat;
     });
 
     renderSidebarList(filtered);
   }
 
   symbolSearch.addEventListener('input', applyFilters);
+  universeFilter.addEventListener('change', applyFilters);
   strategyFilter.addEventListener('change', applyFilters);
   personalityFilter.addEventListener('change', applyFilters);
 

@@ -484,7 +484,8 @@ async function handleDna(res, reqUrl) {
         swingQuality: db[k].ratings.swingQuality,
         optionsLiquidity: db[k].ratings.optionsLiquidity
       },
-      srt: db[k].srt
+      srt: db[k].srt,
+      indices: db[k].indices || []
     }));
     
     return sendJSON(res, 200, { success: true, count: summary.length, data: summary });
