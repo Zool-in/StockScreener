@@ -156,6 +156,7 @@ function renderAlertsTable(rows) {
           <th style="padding: 12px 16px; color: var(--text-muted);">Strategy</th>
           <th style="padding: 12px 16px; color: var(--text-muted); text-align: right;">Price (₹)</th>
           <th style="padding: 12px 16px; color: var(--text-muted);">Reason</th>
+          <th style="padding: 12px 16px; color: var(--text-muted); text-align: center;">Auto Trade</th>
           <th style="padding: 12px 16px; color: var(--text-muted); text-align: center;">Action</th>
         </tr>
       </thead>
@@ -166,6 +167,13 @@ function renderAlertsTable(rows) {
     const timeStr = new Date(r.triggered_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const dateStr = new Date(r.triggered_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
     const isUnread = !r.is_read;
+
+    // Parse metrics_json for execution status
+    let metrics = {};
+    try {
+      metrics = typeof r.metrics_json === 'string' ? JSON.parse(r.metrics_json) : (r.metrics_json || {});
+    } catch (_) {}
+    const execStatus = metrics.execution_status || 'Pending';
 
     const stratNameMap = {
       elephant_bullish: 'Oliver Velez Elephant 🐘',
@@ -184,10 +192,29 @@ function renderAlertsTable(rows) {
       darvas: 'Darvas Box',
       smc_bullish: 'SMC Sweep Bullish',
       smc_bearish: 'SMC Sweep Bearish',
-      multi_tf: 'Multi-TF Confluence'
+      multi_tf: 'Multi-TF Confluence',
+      hm_bottom: 'HM Bottom Catch',
+      hm_top: 'HM Top Catch',
+      hm_bullish: 'HM Bullish Retrace',
+      hm_bearish: 'HM Bearish Retrace',
+      hm_chop: 'HM Chop Zone'
     };
 
     const stratLabel = stratNameMap[r.strategy_id] || r.strategy_id.toUpperCase();
+
+    // Map background color for execution status badge
+    let badgeBg = 'rgba(255,255,255,0.05)';
+    let badgeColor = 'var(--text-muted)';
+    if (execStatus.includes('SUCCESS')) {
+      badgeBg = 'rgba(34,208,138,0.15)';
+      badgeColor = '#22d08a';
+    } else if (execStatus.includes('FAILED') || execStatus.includes('REJECTED')) {
+      badgeBg = 'rgba(240,90,90,0.15)';
+      badgeColor = '#f05a5a';
+    } else if (execStatus.includes('Pending')) {
+      badgeBg = 'rgba(245,166,35,0.15)';
+      badgeColor = '#f5a623';
+    }
 
     html += `
       <tr class="alert-row" data-id="${r.id}" style="border-bottom: 1px solid var(--border); ${isUnread ? 'background: rgba(36, 180, 126, 0.05); font-weight: 500;' : ''}">
@@ -207,8 +234,13 @@ function renderAlertsTable(rows) {
         <td style="padding: 12px 16px; text-align: right; font-family: var(--mono); font-weight: 600;">
           ₹${Number(r.price).toFixed(2)}
         </td>
-        <td style="padding: 12px 16px; color: var(--text-muted); font-size: 12px; max-width: 350px;">
+        <td style="padding: 12px 16px; color: var(--text-muted); font-size: 12px; max-width: 300px;">
           ${r.reason || 'Strategy signal triggered on volume expansion.'}
+        </td>
+        <td style="padding: 12px 16px; text-align: center;">
+          <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid rgba(255,255,255,0.05);">
+            ${execStatus}
+          </span>
         </td>
         <td style="padding: 12px 16px; text-align: center;">
           <button class="btn-view-alert-detail" data-ticker="${r.ticker}" data-strategy="${r.strategy_id}" data-price="${r.price}" data-reason="${encodeURIComponent(r.reason || '')}" style="padding: 4px 10px; font-size: 11px; border-radius: 4px; background: var(--v-accent); color: #000; font-weight: 700; border: none; cursor: pointer;">

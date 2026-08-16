@@ -1,4 +1,7 @@
 // ─── Hostinger MySQL Database Module ──────────────────────────────────────────
+const { exec } = require('child_process');
+const path = require('path');
+
 let mysql = null;
 try {
   mysql = require('mysql2/promise');
@@ -238,6 +241,7 @@ let memoryAlertId = 1;
 async function insertAlert(alert) {
   const { ticker, strategy_id, timeframe = '1d', price = 0, reason = '', metrics_json = {} } = alert;
 
+  let alertId = null;
   if (pool) {
     try {
       // Check for duplicate alert in the last 2 hours
@@ -245,35 +249,95 @@ async function insertAlert(alert) {
         `SELECT id FROM strategy_alerts WHERE ticker = ? AND strategy_id = ? AND triggered_at > DATE_SUB(NOW(), INTERVAL 2 HOUR) LIMIT 1`,
         [ticker, strategy_id]
       );
-      if (existing.length > 0) return false;
+      if (existing.length > 0) return null;
 
       const sql = `INSERT INTO strategy_alerts (ticker, strategy_id, timeframe, price, reason, metrics_json) VALUES (?, ?, ?, ?, ?, ?)`;
-      await pool.query(sql, [ticker, strategy_id, timeframe, price, reason, JSON.stringify(metrics_json)]);
-      return true;
+      const [result] = await pool.query(sql, [ticker, strategy_id, timeframe, price, reason, JSON.stringify(metrics_json)]);
+      alertId = result.insertId;
     } catch (err) {
       console.error('[MySQL] Error inserting alert:', err.message);
     }
+  } else {
+    // Memory fallback logic
+    const now = Date.now();
+    const duplicate = memoryAlerts.find(a => a.ticker === ticker && a.strategy_id === strategy_id && (now - new Date(a.triggered_at).getTime()) < 2 * 3600 * 1000);
+    if (duplicate) return null;
+
+    const record = {
+      id: memoryAlertId++,
+      ticker,
+      strategy_id,
+      timeframe,
+      price,
+      reason,
+      metrics_json,
+      is_read: 0,
+      triggered_at: new Date().toISOString()
+    };
+    memoryAlerts.unshift(record);
+    if (memoryAlerts.length > 500) memoryAlerts.pop(); // Keep top 500
+    alertId = record.id;
   }
 
-  // Memory fallback logic
-  const now = Date.now();
-  const duplicate = memoryAlerts.find(a => a.ticker === ticker && a.strategy_id === strategy_id && (now - new Date(a.triggered_at).getTime()) < 2 * 3600 * 1000);
-  if (duplicate) return false;
+  if (alertId) {
+    executeOrderPython(alertId, ticker, strategy_id, price);
+  }
+  return alertId;
+}
 
-  const record = {
-    id: memoryAlertId++,
-    ticker,
-    strategy_id,
-    timeframe,
-    price,
-    reason,
-    metrics_json,
-    is_read: 0,
-    triggered_at: new Date().toISOString()
-  };
-  memoryAlerts.unshift(record);
-  if (memoryAlerts.length > 500) memoryAlerts.pop(); // Keep top 500
-  return true;
+async function updateAlertStatus(id, executionStatus) {
+  if (pool) {
+    try {
+      const [rows] = await pool.query(`SELECT metrics_json FROM strategy_alerts WHERE id = ?`, [id]);
+      if (rows.length > 0) {
+        let metrics = {};
+        try {
+          metrics = typeof rows[0].metrics_json === 'string' ? JSON.parse(rows[0].metrics_json) : (rows[0].metrics_json || {});
+        } catch (_) {}
+        metrics.execution_status = executionStatus;
+        await pool.query(`UPDATE strategy_alerts SET metrics_json = ? WHERE id = ?`, [JSON.stringify(metrics), id]);
+      }
+    } catch (err) {
+      console.error('[MySQL] Error updating alert status:', err.message);
+    }
+  } else {
+    const alert = memoryAlerts.find(a => a.id === id);
+    if (alert) {
+      const metrics = typeof alert.metrics_json === 'string' ? JSON.parse(alert.metrics_json) : (alert.metrics_json || {});
+      metrics.execution_status = executionStatus;
+      alert.metrics_json = metrics;
+    }
+  }
+}
+
+function executeOrderPython(alertId, ticker, strategyId, price) {
+  const scriptPath = path.join(__dirname, 'scripts', 'execute_order.py');
+  const cmd = `python3 "${scriptPath}" "${ticker}" "${strategyId}" "${price}" 1`;
+  console.log(`[Automated Trade] Spawning Python order placement: ${cmd}`);
+  
+  updateAlertStatus(alertId, 'Pending execution...');
+  
+  exec(cmd, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`[Automated Trade Error] Python script failed: ${error.message}`);
+      updateAlertStatus(alertId, `FAILED (Script error: ${error.message})`);
+      return;
+    }
+    const logOutput = stdout.trim();
+    console.log(`[Automated Trade Log] Python stdout: ${logOutput}`);
+    
+    if (logOutput.includes('[SUCCESS]')) {
+      const match = logOutput.match(/Order ID: (\S+)/);
+      const orderId = match ? match[1] : 'Executed';
+      updateAlertStatus(alertId, `SUCCESS (Order: ${orderId})`);
+    } else if (logOutput.includes('[SKIP]')) {
+      updateAlertStatus(alertId, 'SKIPPED (Non-trading strategy)');
+    } else {
+      const match = logOutput.match(/Rejected by Fyers: (.*)/);
+      const errMsg = match ? match[1] : 'Rejected by broker';
+      updateAlertStatus(alertId, `REJECTED (${errMsg})`);
+    }
+  });
 }
 
 async function getAlerts(limit = 100, strategyId = null) {
@@ -337,6 +401,7 @@ module.exports = {
   upsertStock,
   queryStrategy,
   insertAlert,
+  updateAlertStatus,
   getAlerts,
   markAlertsAsRead,
   clearAlerts,
