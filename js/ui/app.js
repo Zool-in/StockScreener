@@ -1100,8 +1100,9 @@ async function runScan() {
           const strategiesWithTuner = [
             'minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 
             'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70',
-            'rsi70_monthly', 'weinstein', 'wyckoff', 'xtrender_bullish', 'xtrender_bearish',
-            'ha_donchian_bullish', 'ha_donchian_bearish'
+            'rsi70_monthly', 'weinstein', 'wyckoff'
+            // Note: B-Xtrender and HA Donchian use their own built-in signal logic.
+            // Tuner controls are visible for optional manual use but NOT auto-applied.
           ];
           
           const tunerPassed = !strategiesWithTuner.includes(strategyId) || applyTunerFilters(data, AppState.tunerParams);
