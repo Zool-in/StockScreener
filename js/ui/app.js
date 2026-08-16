@@ -1072,8 +1072,14 @@ async function runScan() {
           let res = null;
           let matchedStrategies = [];
 
-          // Evaluate Interactive Tuner Parameters
-          const tunerPassed = applyTunerFilters(data, AppState.tunerParams);
+          // Evaluate Interactive Tuner Parameters (Only for Swing/Breakout strategies where the tuner is visible)
+          const strategiesWithTuner = [
+            'minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 
+            'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70',
+            'rsi70_monthly', 'weinstein', 'wyckoff'
+          ];
+          
+          const tunerPassed = !strategiesWithTuner.includes(strategyId) || applyTunerFilters(data, AppState.tunerParams);
 
           if (!tunerPassed) {
             res = { isMatch: false };

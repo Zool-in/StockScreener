@@ -2,7 +2,8 @@
 import sys
 import os
 import json
-import requests
+import urllib.request
+import urllib.error
 
 # Paths
 ENV_FILE = '/Volumes/Workspace/Projects/2026/StockScan/.env'
@@ -102,23 +103,30 @@ def execute_trade(symbol, strategy_id, price, qty=1):
     log_message(f"[INFO] Dispatching {side_str} order for {qty} share(s) of {fyers_symbol} via Fyers API...")
     
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=10)
-        res_data = response.json()
+        data_bytes = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(url, data=data_bytes, headers=headers, method='POST')
         
-        if response.status_code == 200 and res_data.get('s') == 'ok':
-            order_id = res_data.get('id')
-            log_message(f"[SUCCESS] Order Executed Successfully! Order ID: {order_id}")
-            return True
-        else:
-            msg = res_data.get('message', 'Unknown Fyers error')
-            log_message(f"[FAILURE] Order Rejected by Fyers: {msg} (Payload: {res_data})")
-            return False
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_body = response.read().decode('utf-8')
+            res_data = json.loads(res_body)
+            
+            if response.status == 200 and res_data.get('s') == 'ok':
+                order_id = res_data.get('id')
+                log_message(f"[SUCCESS] Order Executed Successfully! Order ID: {order_id}")
+                return True
+            else:
+                msg = res_data.get('message', 'Unknown Fyers error')
+                log_message(f"[FAILURE] Order Rejected by Fyers: {msg} (Payload: {res_data})")
+                return False
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode('utf-8')
+        log_message(f"[ERROR] HTTP Request failed with code {e.code}: {err_body}")
+        return False
     except Exception as e:
-        log_message(f"[ERROR] HTTP Request failed: {e}")
+        log_message(f"[ERROR] Request failed: {e}")
         return False
 
 if __name__ == "__main__":
-    # Expecting: python3 execute_order.py <ticker> <strategy_id> <price> [qty]
     if len(sys.argv) < 4:
         log_message("[USAGE] python3 execute_order.py <ticker> <strategy_id> <price> [qty]")
         sys.exit(1)
