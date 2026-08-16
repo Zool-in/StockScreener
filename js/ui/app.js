@@ -538,7 +538,32 @@ function initStrategyTuner() {
     });
   }
 
+  // Apply strategy-specific tuner presets on initial load
+  // (same logic runs on pill click — keeps checkboxes consistent across hard refreshes)
+  applyStrategyTunerPreset(AppState.strategy || 'all');
   updateTunerVisibility(AppState.strategy || 'all');
+}
+
+// ─── Strategy-aware Tuner Preset ──────────────────────────────────────────────
+// Disables conflicting tuner filters for strategies that have their own
+// built-in signal detection (e.g. B-Xtrender uses T3 pivot logic, not RSI>=70).
+// Called on both pill click and page init to ensure consistent default state.
+function applyStrategyTunerPreset(strategyId) {
+  const isXtrender   = strategyId === 'xtrender_bullish' || strategyId === 'xtrender_bearish';
+  const isDonchian   = strategyId === 'ha_donchian_bullish' || strategyId === 'ha_donchian_bearish';
+  const needsReset   = isXtrender || isDonchian;
+
+  if (needsReset) {
+    // These strategies use their own pivot/signal logic — disable all auto-filters
+    // so the tuner starts clean. User can manually re-enable any filter they want.
+    if (chkUseRsi)       { chkUseRsi.checked       = false; AppState.setTunerParam('useRsi',       false); }
+    if (chkUseSt)        { chkUseSt.checked         = false; AppState.setTunerParam('useSt',        false); }
+    if (chkUseStBearish) { chkUseStBearish.checked  = false; AppState.setTunerParam('useStBearish', false); }
+    if (chkUseVol)       { chkUseVol.checked         = false; AppState.setTunerParam('useVol',       false); }
+    if (chkUseMacd)      { chkUseMacd.checked        = false; AppState.setTunerParam('useMacd',      false); }
+    if (chkUseSma10)     { chkUseSma10.checked       = false; AppState.setTunerParam('useSma10',     false); }
+    if (chkUseSma10Res)  { chkUseSma10Res.checked   = false; AppState.setTunerParam('useSma10Res',  false); }
+  }
 }
 
 // ─── Autocomplete / Auto Suggestions ──────────────────────────────────────────
@@ -814,23 +839,8 @@ async function init() {
     updateTunerVisibility(strategyVal);
     updateTimeframeLock(strategyVal);
 
-    // ── Strategy-aware tuner presets ─────────────────────────────────────────
-    // B-Xtrender signals fire when T3 pivots in oversold/overbought territory.
-    // RSI >= 70 and SuperTrend green are INCOMPATIBLE with bullish B-Xtrender
-    // (which triggers at RSI ~30-50) so we disable those conflicting filters.
-    // For B-Xtrender Bearish, RSI <= 40 and SuperTrend Bearish are also not
-    // required since the pivot-above-0 rule is self-sufficient.
-    const isXtrender = strategyVal === 'xtrender_bullish' || strategyVal === 'xtrender_bearish';
-    if (isXtrender) {
-      // Disable RSI, SuperTrend, and Volume filters — let pivot logic decide
-      if (chkUseRsi)       { chkUseRsi.checked       = false; AppState.setTunerParam('useRsi', false); }
-      if (chkUseSt)        { chkUseSt.checked         = false; AppState.setTunerParam('useSt', false); }
-      if (chkUseStBearish) { chkUseStBearish.checked  = false; AppState.setTunerParam('useStBearish', false); }
-      if (chkUseVol)       { chkUseVol.checked         = false; AppState.setTunerParam('useVol', false); }
-      if (chkUseMacd)      { chkUseMacd.checked        = false; AppState.setTunerParam('useMacd', false); }
-      if (chkUseSma10)     { chkUseSma10.checked       = false; AppState.setTunerParam('useSma10', false); }
-      if (chkUseSma10Res)  { chkUseSma10Res.checked   = false; AppState.setTunerParam('useSma10Res', false); }
-    }
+    // Apply strategy-specific tuner defaults (e.g. uncheck RSI for B-Xtrender)
+    applyStrategyTunerPreset(strategyVal);
 
     if (DOM.lookbackWrapper) {
       DOM.lookbackWrapper.style.display = strategyVal === 'multi_tf' ? 'block' : 'none';
@@ -1100,9 +1110,10 @@ async function runScan() {
           const strategiesWithTuner = [
             'minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 
             'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70',
-            'rsi70_monthly', 'weinstein', 'wyckoff'
-            // Note: B-Xtrender and HA Donchian use their own built-in signal logic.
-            // Tuner controls are visible for optional manual use but NOT auto-applied.
+            'rsi70_monthly', 'weinstein', 'wyckoff',
+            // B-Xtrender & HA Donchian: included so manually-checked tuner filters ARE applied.
+            // Default checkboxes auto-unchecked via applyStrategyTunerPreset() — see below.
+            'xtrender_bullish', 'xtrender_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'
           ];
           
           const tunerPassed = !strategiesWithTuner.includes(strategyId) || applyTunerFilters(data, AppState.tunerParams);
