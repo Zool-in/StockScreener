@@ -38,21 +38,29 @@ function bottomCatch(rsiArr, ema3Arr, vwma21Arr, data) {
   const n = data.closes.length;
   const curRSI = rsiArr[n - 1];
   const curVWMA = vwma21Arr[n - 1];
-  const prevVWMA = vwma21Arr[n - 2];
-  
-  // WMA crosses back above 50 reference centerline
-  const wmaCrossAbove = curVWMA > 50 && (prevVWMA <= 50 || vwma21Arr[n - 3] <= 50);
-  // RSI confirms bullish momentum strength zone
+
+  // Chop Filter Check
+  const last7VWMA = vwma21Arr.slice(-7);
+  const isFlat = last7VWMA.every(v => v >= 47.5 && v <= 52.5);
+  const isChop = isFlat && (curVWMA >= 47.5 && curVWMA <= 52.5);
+
+  // Trigger: Green line crosses above Red line OR Red line crosses above 50 (with memory)
+  const emaCrossAbove = (ema3Arr[n - 1] > vwma21Arr[n - 1] && ema3Arr[n - 2] <= vwma21Arr[n - 2]) ||
+                        (ema3Arr[n - 2] > vwma21Arr[n - 2] && ema3Arr[n - 3] <= vwma21Arr[n - 3]);
+  const wmaCrossAbove = (vwma21Arr[n - 1] > 50 && vwma21Arr[n - 2] <= 50) ||
+                        (vwma21Arr[n - 1] > 50 && vwma21Arr[n - 3] <= 50) ||
+                        (vwma21Arr[n - 1] > 50 && vwma21Arr[n - 4] <= 50);
+
+  const buyTrigger = emaCrossAbove || wmaCrossAbove;
   const rsiAbove = curRSI > 50;
-  // Candle confirmation: current close above previous high
   const candleConfirm = data.closes[n - 1] > data.highs[n - 2];
 
-  if (wmaCrossAbove && rsiAbove && candleConfirm) {
+  if (buyTrigger && rsiAbove && candleConfirm && !isChop) {
     const entryPrice = data.closes[n - 1];
     const sl = data.lows[n - 1];
     return {
       isMatch: true,
-      reason: 'HM Bottom Catch: 21-VWMA crossed above 50 with RSI > 50 and close confirming above previous candle high.',
+      reason: 'HM Bottom Catch: Green line crossed above Red line or 50-line with RSI > 50 and breakout confirmation.',
       entry: entryPrice,
       risk: Math.max(entryPrice * 0.02, entryPrice - sl),
       metrics: [
@@ -67,7 +75,7 @@ function bottomCatch(rsiArr, ema3Arr, vwma21Arr, data) {
 
 /**
  * 2. Top Catch (Bearish Crossover / Top entry):
- * - WMA (21-VWMA) crosses decisively below 50
+ * - Green line (EMA 3) crosses below Red line (WMA 21) OR Red line crosses below 50
  * - RSI is below 50
  * - Confirmation candle: Current close < previous low
  */
@@ -75,22 +83,30 @@ function topCatch(rsiArr, ema3Arr, vwma21Arr, data) {
   const n = data.closes.length;
   const curRSI = rsiArr[n - 1];
   const curVWMA = vwma21Arr[n - 1];
-  const prevVWMA = vwma21Arr[n - 2];
 
-  // WMA crosses back below 50 reference centerline
-  const wmaCrossBelow = curVWMA < 50 && (prevVWMA >= 50 || vwma21Arr[n - 3] >= 50);
-  // RSI confirms bearish momentum strength zone
+  // Chop Filter Check
+  const last7VWMA = vwma21Arr.slice(-7);
+  const isFlat = last7VWMA.every(v => v >= 47.5 && v <= 52.5);
+  const isChop = isFlat && (curVWMA >= 47.5 && curVWMA <= 52.5);
+
+  // Trigger: Green line crosses below Red line OR Red line crosses below 50 (with memory)
+  const emaCrossBelow = (ema3Arr[n - 1] < vwma21Arr[n - 1] && ema3Arr[n - 2] >= vwma21Arr[n - 2]) ||
+                        (ema3Arr[n - 2] < vwma21Arr[n - 2] && ema3Arr[n - 3] >= vwma21Arr[n - 3]);
+  const wmaCrossBelow = (vwma21Arr[n - 1] < 50 && vwma21Arr[n - 2] >= 50) ||
+                        (vwma21Arr[n - 1] < 50 && vwma21Arr[n - 3] >= 50) ||
+                        (vwma21Arr[n - 1] < 50 && vwma21Arr[n - 4] >= 50);
+
+  const sellTrigger = emaCrossBelow || wmaCrossBelow;
   const rsiBelow = curRSI < 50;
-  // Candle confirmation: current close below previous low
   const candleConfirm = data.closes[n - 1] < data.lows[n - 2];
 
-  if (wmaCrossBelow && rsiBelow && candleConfirm) {
+  if (sellTrigger && rsiBelow && candleConfirm && !isChop) {
     const entryPrice = data.closes[n - 1];
     const sl = data.highs[n - 1];
     return {
       isMatch: true,
       isShort: true,
-      reason: 'HM Top Catch: 21-VWMA crossed below 50 with RSI < 50 and close confirming below previous candle low.',
+      reason: 'HM Top Catch: Green line crossed below Red line or 50-line with RSI < 50 and breakdown confirmation.',
       entry: entryPrice,
       risk: Math.max(entryPrice * 0.02, sl - entryPrice),
       metrics: [

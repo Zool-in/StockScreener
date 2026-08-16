@@ -1640,6 +1640,23 @@ function renderResults(results) {
         tagsHtml = `<span class="setup-tag tag-breakout">${setupName}</span>`;
       }
 
+      // Add Hilega Milega Action Badges
+      if ((r.matches && r.matches.includes('hm_bottom')) || AppState.strategy === 'hm_bottom') {
+        tagsHtml += `<span class="tag green" style="background:#22d08a; color:#fff; font-weight:700; border:none; padding: 4px 8px; border-radius: 4px;">🟢 HM BUY</span>`;
+      }
+      if ((r.matches && r.matches.includes('hm_top')) || AppState.strategy === 'hm_top') {
+        tagsHtml += `<span class="tag red" style="background:#f05a5a; color:#fff; font-weight:700; border:none; padding: 4px 8px; border-radius: 4px;">🔴 HM SELL</span>`;
+      }
+      if ((r.matches && r.matches.includes('hm_bullish')) || AppState.strategy === 'hm_bullish') {
+        tagsHtml += `<span class="tag green" style="background:rgba(34,208,138,0.2); color:#22d08a; font-weight:700; padding: 4px 8px; border-radius: 4px;">🟢 HM RE-BUY</span>`;
+      }
+      if ((r.matches && r.matches.includes('hm_bearish')) || AppState.strategy === 'hm_bearish') {
+        tagsHtml += `<span class="tag red" style="background:rgba(240,90,90,0.2); color:#f05a5a; font-weight:700; padding: 4px 8px; border-radius: 4px;">🔴 HM RE-SELL</span>`;
+      }
+      if ((r.matches && r.matches.includes('hm_chop')) || AppState.strategy === 'hm_chop') {
+        tagsHtml += `<span class="tag orange" style="background:rgba(245,166,35,0.2); color:#f5a623; font-weight:700; padding: 4px 8px; border-radius: 4px;">⚠️ HM CHOP</span>`;
+      }
+
       // Add Dynamic Warning / Alert Tags
       if (r.rsiVal > 70) tagsHtml += `<span class="tag orange">RSI Overbought</span>`;
       if (r.rsiVal < 30) tagsHtml += `<span class="tag green">RSI Oversold</span>`;
