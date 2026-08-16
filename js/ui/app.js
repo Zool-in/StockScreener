@@ -287,8 +287,8 @@ function updateTunerVisibility(strategyId) {
     hm_chop: ['volume'],
     smc_bullish: ['volume', 'confluence'],
     smc_bearish: ['volume', 'downside'],
-    xtrender_bullish: ['confluence'],
-    xtrender_bearish: ['downside'],
+    xtrender_bullish: ['rsi', 'supertrend-bullish', 'volume', 'confluence'],
+    xtrender_bearish: ['supertrend-bearish', 'volume', 'downside'],
     ha_donchian_bullish: ['volume', 'confluence'],
     ha_donchian_bearish: ['volume', 'downside'],
     all: ['rsi', 'supertrend-bullish', 'supertrend-bearish', 'volume', 'downside', 'elephant', 'ohl', 'vcp', 'confluence']
@@ -1082,7 +1082,8 @@ async function runScan() {
           const strategiesWithTuner = [
             'minervini', 'darvas', 'rs', 'crsi', 'xmomentum', 
             'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70',
-            'rsi70_monthly', 'weinstein', 'wyckoff'
+            'rsi70_monthly', 'weinstein', 'wyckoff', 'xtrender_bullish', 'xtrender_bearish',
+            'ha_donchian_bullish', 'ha_donchian_bearish'
           ];
           
           const tunerPassed = !strategiesWithTuner.includes(strategyId) || applyTunerFilters(data, AppState.tunerParams);
