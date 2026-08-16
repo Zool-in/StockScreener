@@ -316,7 +316,12 @@ function updateTimeframeLock(strategyVal) {
     ohl_bullish: '15m',      // Open = Low is strictly 15m
     ohl_bearish: '15m',      // Open = High is strictly 15m
     gap_momentum: '15m',     // Gap Expansion Momentum is strictly 15m
-    intraday_retest: '15m'   // SMC Sweep & Retest is strictly 15m
+    intraday_retest: '15m',  // SMC Sweep & Retest is strictly 15m
+    hm_bottom: '1d',         // Hilega Milega is strictly Daily EOD
+    hm_top: '1d',
+    hm_bullish: '1d',
+    hm_bearish: '1d',
+    hm_chop: '1d'
   };
 
   const requiredTf = strictTimeframes[strategyVal];
