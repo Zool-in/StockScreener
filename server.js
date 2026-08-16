@@ -342,7 +342,19 @@ function serveStatic(res, pathname) {
   fs.readFile(filePath, (err, data) => {
     if (err) return sendText(res, 404, 'Not found');
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+    
+    const headers = {
+      'Content-Type': MIME[ext] || 'application/octet-stream'
+    };
+    
+    // Disable caching for code/data files to ensure live updates are loaded immediately
+    if (['.html', '.js', '.css', '.json'].includes(ext)) {
+      headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      headers['Pragma'] = 'no-cache';
+      headers['Expires'] = '0';
+    }
+    
+    res.writeHead(200, headers);
     res.end(data);
   });
 }
