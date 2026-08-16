@@ -224,6 +224,7 @@ async function fetchChart(symbol, interval = '1d', range = '3mo') {
   let days = 90; // Default 3mo
   if (range === '60d') days = 60;
   if (range === '1y') days = 365;
+  if (range === '2y') days = 365 * 2;
   if (range === '5y') days = 365 * 5;
   if (range === '10y') days = 365 * 10;
   const from = to - (days * 24 * 60 * 60);
