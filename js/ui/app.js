@@ -814,6 +814,24 @@ async function init() {
     updateTunerVisibility(strategyVal);
     updateTimeframeLock(strategyVal);
 
+    // ── Strategy-aware tuner presets ─────────────────────────────────────────
+    // B-Xtrender signals fire when T3 pivots in oversold/overbought territory.
+    // RSI >= 70 and SuperTrend green are INCOMPATIBLE with bullish B-Xtrender
+    // (which triggers at RSI ~30-50) so we disable those conflicting filters.
+    // For B-Xtrender Bearish, RSI <= 40 and SuperTrend Bearish are also not
+    // required since the pivot-above-0 rule is self-sufficient.
+    const isXtrender = strategyVal === 'xtrender_bullish' || strategyVal === 'xtrender_bearish';
+    if (isXtrender) {
+      // Disable RSI, SuperTrend, and Volume filters — let pivot logic decide
+      if (chkUseRsi)       { chkUseRsi.checked       = false; AppState.setTunerParam('useRsi', false); }
+      if (chkUseSt)        { chkUseSt.checked         = false; AppState.setTunerParam('useSt', false); }
+      if (chkUseStBearish) { chkUseStBearish.checked  = false; AppState.setTunerParam('useStBearish', false); }
+      if (chkUseVol)       { chkUseVol.checked         = false; AppState.setTunerParam('useVol', false); }
+      if (chkUseMacd)      { chkUseMacd.checked        = false; AppState.setTunerParam('useMacd', false); }
+      if (chkUseSma10)     { chkUseSma10.checked       = false; AppState.setTunerParam('useSma10', false); }
+      if (chkUseSma10Res)  { chkUseSma10Res.checked   = false; AppState.setTunerParam('useSma10Res', false); }
+    }
+
     if (DOM.lookbackWrapper) {
       DOM.lookbackWrapper.style.display = strategyVal === 'multi_tf' ? 'block' : 'none';
     }
