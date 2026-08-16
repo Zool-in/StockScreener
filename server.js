@@ -226,15 +226,18 @@ async function handleChart(res, reqUrl) {
   // Check if NSE market is currently active
   const isMarketOpen = isNSEMarketHours();
 
-  // OFF-MARKET FAST LOCK: If market is closed and we have a cached copy, serve it immediately for 100% result stability
+  // OFF-MARKET FAST LOCK: If market is closed and we have a fresh cached copy (less than 12 hours old), serve it immediately
   if (!isMarketOpen) {
-    const offMarketCache = readCache(symbol, interval, range);
-    if (offMarketCache) {
-      res.writeHead(200, {
-        'Content-Type': 'application/json; charset=utf-8',
-        'X-Data-Source': 'cache-offmarket-lock',
-      });
-      return res.end(offMarketCache);
+    const age = cacheAge(symbol, interval, range);
+    if (age < 12 * 60 * 60 * 1000) {
+      const offMarketCache = readCache(symbol, interval, range);
+      if (offMarketCache) {
+        res.writeHead(200, {
+          'Content-Type': 'application/json; charset=utf-8',
+          'X-Data-Source': 'cache-offmarket-lock',
+        });
+        return res.end(offMarketCache);
+      }
     }
   }
 
