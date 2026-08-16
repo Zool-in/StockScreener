@@ -639,3 +639,26 @@ export function vwapSeries(ts, highs, lows, closes, volumes) {
   return result;
 }
 
+// Tillson T3 Moving Average (Series)
+export function t3Series(arr, period) {
+  if (arr.length === 0) return [];
+  const xe1 = emaSeries(arr, period);
+  const xe2 = emaSeries(xe1, period);
+  const xe3 = emaSeries(xe2, period);
+  const xe4 = emaSeries(xe3, period);
+  const xe5 = emaSeries(xe4, period);
+  const xe6 = emaSeries(xe5, period);
+  
+  const b = 0.7;
+  const c1 = -b * b * b;
+  const c2 = 3 * b * b + 3 * b * b * b;
+  const c3 = -6 * b * b - 3 * b - 3 * b * b * b;
+  const c4 = 1 + 3 * b + b * b * b + 3 * b * b;
+  
+  const out = new Array(arr.length).fill(0);
+  for (let i = 0; i < arr.length; i++) {
+    out[i] = c1 * xe6[i] + c2 * xe5[i] + c3 * xe4[i] + c4 * xe3[i];
+  }
+  return out;
+}
+

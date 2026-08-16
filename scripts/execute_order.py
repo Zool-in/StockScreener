@@ -45,8 +45,8 @@ def load_session():
 
 def get_trade_side(strategy_id):
     strategy_id = strategy_id.lower()
-    buy_strats = ['hm_bottom', 'hm_bullish', 'ohl_bullish', 'elephant_bullish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'smc_bullish', 'ha_donchian_bullish']
-    sell_strats = ['hm_top', 'hm_bearish', 'ohl_bearish', 'elephant_bearish', 'mast_breakdown', 'mast_rally_short', 'smc_bearish', 'ha_donchian_bearish']
+    buy_strats = ['hm_bottom', 'hm_bullish', 'ohl_bullish', 'elephant_bullish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'smc_bullish', 'ha_donchian_bullish', 'xtrender_bullish']
+    sell_strats = ['hm_top', 'hm_bearish', 'ohl_bearish', 'elephant_bearish', 'mast_breakdown', 'mast_rally_short', 'smc_bearish', 'ha_donchian_bearish', 'xtrender_bearish']
     
     if any(b in strategy_id for b in buy_strats):
         return 1  # BUY

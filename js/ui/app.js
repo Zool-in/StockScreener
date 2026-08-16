@@ -16,6 +16,7 @@ import * as hmStrats from '../strategies/hm.js?v=2';
 import * as smcStrats from '../strategies/smc.js?v=1';
 import * as haDonchianStrats from '../strategies/ha_donchian.js?v=1';
 import * as futuresComboStrats from '../strategies/futures_combo.js?v=1';
+import * as xtrenderStrats from '../strategies/xtrender.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
 import { scriptLibrary } from '../data/scripts.js';
 import { initAlerts } from './alerts.js?v=1';
@@ -1084,7 +1085,7 @@ async function runScan() {
           if (!tunerPassed) {
             res = { isMatch: false };
           } else if (strategyId === 'all') {
-            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'rsi70_monthly', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish'];
+            const allStrategies = ['ttm_orb', 'intraday_retest', 'ohl_bullish', 'ohl_bearish', 'elephant_bullish', 'elephant_bearish', 'gap_momentum', 'mast_breakout', 'mast_dip', 'mast_breakdown', 'mast_rally_short', 'supertrend_rsi70', 'xmomentum', 'minervini', 'darvas', 'rs', 'crsi', 'bps', 'strangle', 'iv_crush', 'csp', 'cc', 'btst', 'rsi70_monthly', 'weinstein', 'wyckoff', 'vcp_down', 'bear_call', 'hm_bottom', 'hm_top', 'hm_bullish', 'hm_bearish', 'hm_chop', 'smc_bullish', 'smc_bearish', 'ha_donchian_bullish', 'ha_donchian_bearish', 'xtrender_bullish', 'xtrender_bearish'];
             let combinedReasons = [];
             for (const s of allStrategies) {
               let tempRes = null;
@@ -1097,6 +1098,7 @@ async function runScan() {
               else if (s.startsWith('hm_')) tempRes = hmStrats.run(s, data);
               else if (s.startsWith('smc_')) tempRes = smcStrats.run(s, data);
               else if (s.startsWith('ha_donchian_')) tempRes = haDonchianStrats.run(s, data, AppState.timeframe);
+              else if (s.startsWith('xtrender_')) tempRes = xtrenderStrats.run(s, data);
 
               if (tempRes && tempRes.isMatch) {
                 matchedStrategies.push(s);
@@ -1119,6 +1121,7 @@ async function runScan() {
             else if (strategyId.startsWith('hm_')) res = hmStrats.run(strategyId, data);
             else if (strategyId.startsWith('smc_')) res = smcStrats.run(strategyId, data);
             else if (strategyId.startsWith('ha_donchian_')) res = haDonchianStrats.run(strategyId, data, AppState.timeframe);
+            else if (strategyId.startsWith('xtrender_')) res = xtrenderStrats.run(strategyId, data);
             else if (strategyId === 'futures_combo') {
               res = futuresComboStrats.run(strategyId, { daily: data, hourly: hourlyData });
             }
@@ -1217,7 +1220,7 @@ async function runScan() {
             const prevClose = data.closes[n - 2] || curr;
             const entry = res.entry || prevClose;
 
-            const SHORT_STRATEGIES = ['ohl_bearish', 'vcp_down', 'bear_call', 'hm_top', 'hm_bearish', 'smc_bearish', 'ha_donchian_bearish'];
+            const SHORT_STRATEGIES = ['ohl_bearish', 'vcp_down', 'bear_call', 'hm_top', 'hm_bearish', 'smc_bearish', 'ha_donchian_bearish', 'xtrender_bearish'];
             const isShort = Boolean(res.isShort) || SHORT_STRATEGIES.includes(strategyId) || SHORT_STRATEGIES.includes(AppState.strategy);
 
             let stop = res.stop;
@@ -1631,7 +1634,9 @@ function renderResults(results) {
         hm_chop: 'HM Chop',
         xmomentum: 'Fresh Momentum',
         csp: 'Cash Secured Put',
-        cc: 'Covered Call'
+        cc: 'Covered Call',
+        xtrender_bullish: 'B-Xtrender Bullish',
+        xtrender_bearish: 'B-Xtrender Bearish'
       };
 
       let tagsHtml = '';
@@ -1661,6 +1666,14 @@ function renderResults(results) {
       }
       if ((r.matches && r.matches.includes('hm_chop')) || AppState.strategy === 'hm_chop') {
         tagsHtml += `<span class="tag orange" style="background:rgba(245,166,35,0.2); color:#f5a623; font-weight:700; padding: 4px 8px; border-radius: 4px;">⚠️ HM CHOP</span>`;
+      }
+
+      // Add B-Xtrender Action Badges
+      if ((r.matches && r.matches.includes('xtrender_bullish')) || AppState.strategy === 'xtrender_bullish') {
+        tagsHtml += `<span class="tag green" style="background:#22d08a; color:#fff; font-weight:700; border:none; padding: 4px 8px; border-radius: 4px;">🟢 XT BUY</span>`;
+      }
+      if ((r.matches && r.matches.includes('xtrender_bearish')) || AppState.strategy === 'xtrender_bearish') {
+        tagsHtml += `<span class="tag red" style="background:#f05a5a; color:#fff; font-weight:700; border:none; padding: 4px 8px; border-radius: 4px;">🔴 XT SELL</span>`;
       }
 
       // Add Dynamic Warning / Alert Tags
