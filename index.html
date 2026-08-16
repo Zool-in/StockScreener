@@ -408,6 +408,70 @@
               </label>
             </div>
           </div>
+
+          <!-- ── Universal Confirmation Filters (apply to ALL strategies) ── -->
+          <div id="universalFiltersRow" style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); padding-top: 12px;">
+            <div style="font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;">
+              🔬 Universal Confirmation Filters <span style="font-weight:400; text-transform:none; letter-spacing:0;">(optional — stack on any strategy)</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 12px;">
+
+              <!-- ADX Trend Strength -->
+              <div style="background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500;" title="ADX [Average Directional Index] measures trend strength regardless of direction. ADX > 25 means a strong trending stock.">
+                    <input type="checkbox" id="chkUseAdx" style="accent-color: var(--amber);">
+                    ADX Trend Strength
+                  </label>
+                  <span id="lblAdxVal" style="font-weight: 700; color: var(--amber); font-size: 12px;">&gt; 25</span>
+                </div>
+                <input type="range" id="rngAdx" min="15" max="40" step="1" value="25" style="width: 100%; accent-color: var(--amber); cursor: pointer;">
+              </div>
+
+              <!-- MACD Crossover -->
+              <div style="background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500;" title="MACD [Moving Average Convergence Divergence] crossover: bullish strategies require MACD Line to cross above Signal. Bearish strategies require MACD Line to cross below Signal.">
+                  <input type="checkbox" id="chkUseMacdCross" style="accent-color: var(--purple);">
+                  MACD Crossover <span style="font-size:10px; color:var(--text-muted);">(auto ↑↓)</span>
+                </label>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">
+                  Bullish: Line ↗ Signal &nbsp;|&nbsp; Bearish: Line ↘ Signal
+                </div>
+              </div>
+
+              <!-- CCI Momentum -->
+              <div style="background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500;" title="CCI [Commodity Channel Index] > 100 confirms strong bullish momentum. CCI < -100 confirms strong bearish momentum.">
+                  <input type="checkbox" id="chkUseCci" style="accent-color: var(--accent-light);">
+                  CCI Momentum <span style="font-size:10px; color:var(--text-muted);">&gt;100 / &lt;-100</span>
+                </label>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">
+                  Bullish: CCI &gt; 100 &nbsp;|&nbsp; Bearish: CCI &lt; -100
+                </div>
+              </div>
+
+              <!-- SMA Alignment -->
+              <div style="background: rgba(0,0,0,0.2); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-weight: 500; margin-bottom: 8px; color: var(--text-primary);">Price vs SMA <span style="font-size:10px; color:var(--text-muted);">(above/below auto)</span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="chkUseSma20" style="accent-color: var(--green);">
+                    <span>SMA 20 <span style="color:var(--text-muted); font-size:10px;">(short-term trend)</span></span>
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="chkUseSma50" style="accent-color: var(--green);">
+                    <span>SMA 50 <span style="color:var(--text-muted); font-size:10px;">(mid-term trend)</span></span>
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="chkUseSma200" style="accent-color: var(--green);">
+                    <span>SMA 200 <span style="color:var(--text-muted); font-size:10px;">(institutional trend)</span></span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
 
         <!-- Execution Row -->

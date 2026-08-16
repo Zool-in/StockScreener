@@ -383,6 +383,16 @@ function initStrategyTuner() {
   const rngRsiBearish = document.getElementById('rngRsiBearish');
   const lblRsiBearishVal = document.getElementById('lblRsiBearishVal');
 
+  // Universal filter DOM refs
+  const chkUseAdx   = document.getElementById('chkUseAdx');
+  const rngAdx      = document.getElementById('rngAdx');
+  const lblAdxVal   = document.getElementById('lblAdxVal');
+  const chkUseMacdCross = document.getElementById('chkUseMacdCross');
+  const chkUseCci   = document.getElementById('chkUseCci');
+  const chkUseSma20  = document.getElementById('chkUseSma20');
+  const chkUseSma50  = document.getElementById('chkUseSma50');
+  const chkUseSma200 = document.getElementById('chkUseSma200');
+
   const rngElephantBody = document.getElementById('rngElephantBody');
   const lblElephantBodyVal = document.getElementById('lblElephantBodyVal');
   const rngOhlWick = document.getElementById('rngOhlWick');
@@ -520,6 +530,59 @@ function initStrategyTuner() {
     });
   }
 
+  // ── ADX slider
+  if (rngAdx && lblAdxVal) {
+    rngAdx.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      lblAdxVal.textContent = `> ${val}`;
+      AppState.setTunerParam('adxThreshold', val);
+      triggerTunerScan();
+    });
+  }
+  if (chkUseAdx) {
+    chkUseAdx.addEventListener('change', (e) => {
+      AppState.setTunerParam('useAdx', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  // ── MACD Crossover checkbox
+  if (chkUseMacdCross) {
+    chkUseMacdCross.addEventListener('change', (e) => {
+      AppState.setTunerParam('useMacdCross', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  // ── CCI checkbox
+  if (chkUseCci) {
+    chkUseCci.addEventListener('change', (e) => {
+      AppState.setTunerParam('useCci', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+  // ── SMA alignment checkboxes
+  if (chkUseSma20) {
+    chkUseSma20.addEventListener('change', (e) => {
+      AppState.setTunerParam('useSma20', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+  if (chkUseSma50) {
+    chkUseSma50.addEventListener('change', (e) => {
+      AppState.setTunerParam('useSma50', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+  if (chkUseSma200) {
+    chkUseSma200.addEventListener('change', (e) => {
+      AppState.setTunerParam('useSma200', e.target.checked);
+      triggerTunerScan();
+    });
+  }
+
+
   if (btnResetTuner) {
     btnResetTuner.addEventListener('click', () => {
       if (rngRsi) { rngRsi.value = 70; lblRsiVal.textContent = '>= 70'; AppState.setTunerParam('rsiThreshold', 70); }
@@ -534,9 +597,18 @@ function initStrategyTuner() {
       if (chkUseSma10) { chkUseSma10.checked = true; AppState.setTunerParam('useSma10', true); }
       if (chkUseSma10Res) { chkUseSma10Res.checked = true; AppState.setTunerParam('useSma10Res', true); }
       if (rngRsiBearish) { rngRsiBearish.value = 40; lblRsiBearishVal.textContent = '<= 40'; AppState.setTunerParam('rsiBearishLimit', 40); }
+      // Reset universal filters (all off by default)
+      if (rngAdx)         { rngAdx.value = 25; lblAdxVal.textContent = '> 25'; AppState.setTunerParam('adxThreshold', 25); }
+      if (chkUseAdx)      { chkUseAdx.checked = false;       AppState.setTunerParam('useAdx',      false); }
+      if (chkUseMacdCross){ chkUseMacdCross.checked = false;  AppState.setTunerParam('useMacdCross', false); }
+      if (chkUseCci)      { chkUseCci.checked = false;        AppState.setTunerParam('useCci',       false); }
+      if (chkUseSma20)    { chkUseSma20.checked = false;      AppState.setTunerParam('useSma20',     false); }
+      if (chkUseSma50)    { chkUseSma50.checked = false;      AppState.setTunerParam('useSma50',     false); }
+      if (chkUseSma200)   { chkUseSma200.checked = false;     AppState.setTunerParam('useSma200',    false); }
       triggerTunerScan();
     });
   }
+
 
   // Apply strategy-specific tuner presets on initial load
   // (same logic runs on pill click — keeps checkboxes consistent across hard refreshes)
@@ -1003,6 +1075,73 @@ function applyTunerFilters(data, tuner) {
     const low = lows[n - 1];
     const rangePct = (high - low) / low * 100;
     if (rangePct > tuner.vcpMaxRange) return false;
+  }
+
+  // ── Universal Confirmation Filters ────────────────────────────────────────
+  // Detect strategy direction for direction-aware filters (MACD, CCI, SMA)
+  const stratId = AppState.strategy || '';
+  const isBearishStrategy = stratId.includes('bearish') || stratId.includes('breakdown') ||
+                            stratId.includes('rally_short') || stratId.includes('short') ||
+                            stratId.includes('sell');
+
+  // 12. ADX Trend Strength [measures trend strength regardless of direction]
+  if (tuner.useAdx) {
+    try {
+      const adxVal = adx(highs, lows, closes, 14);
+      const threshold = tuner.adxThreshold != null ? Number(tuner.adxThreshold) : 25;
+      if (!adxVal || adxVal.adx < threshold) return false;
+    } catch(e) { /* skip if insufficient data */ }
+  }
+
+  // 13. MACD Crossover [direction-aware: bullish = line crosses above signal, bearish = below]
+  if (tuner.useMacdCross) {
+    try {
+      const mData = macd(closes);
+      const mDataPrev = macd(closes.slice(0, -1));
+      if (!mData || !mDataPrev) return false;
+      if (isBearishStrategy) {
+        // Bearish: MACD line just crossed BELOW signal (histogram flipped negative)
+        const crossedBelow = mDataPrev.hist >= 0 && mData.hist < 0;
+        if (!crossedBelow) return false;
+      } else {
+        // Bullish: MACD line just crossed ABOVE signal (histogram flipped positive)
+        const crossedAbove = mDataPrev.hist <= 0 && mData.hist > 0;
+        if (!crossedAbove) return false;
+      }
+    } catch(e) { /* skip if insufficient data */ }
+  }
+
+  // 14. CCI Momentum [CCI > 100 = strong bullish, CCI < -100 = strong bearish]
+  if (tuner.useCci) {
+    try {
+      const cciVal = cci(highs, lows, closes, 20);
+      if (isBearishStrategy) {
+        if (cciVal == null || cciVal > -100) return false;
+      } else {
+        if (cciVal == null || cciVal < 100) return false;
+      }
+    } catch(e) { /* skip if insufficient data */ }
+  }
+
+  // 15. SMA 20 alignment [bullish = price above SMA20, bearish = below]
+  if (tuner.useSma20) {
+    const sma20Arr = smaSeries(closes, 20);
+    const sma20 = sma20Arr[n - 1];
+    if (isBearishStrategy ? cmp > sma20 : cmp < sma20) return false;
+  }
+
+  // 16. SMA 50 alignment [bullish = price above SMA50, bearish = below]
+  if (tuner.useSma50) {
+    const sma50Arr = smaSeries(closes, 50);
+    const sma50 = sma50Arr[n - 1];
+    if (isBearishStrategy ? cmp > sma50 : cmp < sma50) return false;
+  }
+
+  // 17. SMA 200 alignment [institutional trend filter]
+  if (tuner.useSma200) {
+    const sma200Arr = smaSeries(closes, 200);
+    const sma200 = sma200Arr[n - 1];
+    if (isBearishStrategy ? cmp > sma200 : cmp < sma200) return false;
   }
 
   return true;
