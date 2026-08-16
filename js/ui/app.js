@@ -1,6 +1,6 @@
 // ─── Main App Entry Point ───────────────────────────────────────────────────
 import { AppState } from '../core/state.js?v=6';
-import { fetchOHLCV } from '../core/api.js?v=8';
+import { fetchOHLCV } from '../core/api.js?v=9';
 import { ema, rsi, adx, macd, cci, supertrend, smaSeries } from '../core/math.js?v=7';
 import { runBacktest } from '../core/backtest.js?v=4';
 import { openStrategyTester } from './backtester_ui.js?v=1';

@@ -44,6 +44,19 @@ const livequote = require('./livequote');
 const lots = require('./lots');
 const db = require('./db');
 
+function isNSEMarketHours() {
+  const options = { timeZone: 'Asia/Kolkata', hour12: false };
+  const d = new Date();
+  const weekdayStr = d.toLocaleDateString('en-US', { ...options, weekday: 'short' });
+  const timeStr = d.toLocaleTimeString('en-US', { ...options, hour: '2-digit', minute: '2-digit' });
+  
+  if (weekdayStr === 'Sat' || weekdayStr === 'Sun') return false;
+  
+  const [hrs, mins] = timeStr.split(':').map(Number);
+  const timeVal = hrs * 100 + mins;
+  return timeVal >= 915 && timeVal <= 1530;
+}
+
 const PORT = process.env.PORT || 5173;
 const ROOT = __dirname;
 
@@ -211,12 +224,7 @@ async function handleChart(res, reqUrl) {
   }
 
   // Check if NSE market is currently active
-  const now = new Date();
-  const day = now.getDay();
-  const hrs = now.getHours();
-  const mins = now.getMinutes();
-  const timeVal = hrs * 100 + mins;
-  const isMarketOpen = (day >= 1 && day <= 5 && timeVal >= 915 && timeVal <= 1530);
+  const isMarketOpen = isNSEMarketHours();
 
   // OFF-MARKET FAST LOCK: If market is closed and we have a cached copy, serve it immediately for 100% result stability
   if (!isMarketOpen) {
@@ -827,13 +835,7 @@ function startBackgroundAlertScanner() {
   
   const alertScannerLoop = async () => {
     try {
-      const now = new Date();
-      const day = now.getDay();
-      const hrs = now.getHours();
-      const mins = now.getMinutes();
-      const timeVal = hrs * 100 + mins;
-      
-      const isMarketHours = (day >= 1 && day <= 5 && timeVal >= 915 && timeVal <= 1530);
+      const isMarketHours = isNSEMarketHours();
       if (!isMarketHours) {
         console.log('[Alert Scanner] Outside market hours — running EOD alert check...');
       } else {
