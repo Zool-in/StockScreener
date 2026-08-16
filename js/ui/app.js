@@ -142,28 +142,28 @@ const STRATEGY_INFO = {
   },
   hm_bottom: {
     name: 'Hilega Milega: Bottom Catch',
-    desc: 'Catches early upside reversals when the RSI and 3-EMA cross back above the 21-VWMA from an oversold condition.',
-    example: '<img src="/assets/hm_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Buy early reversal.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock has been beaten down (RSI < 50), but momentum suddenly shifts. The RSI and EMA cross above the VWMA volume line. Buy early before the trend becomes obvious.</span>'
+    desc: 'Catches early bullish reversals. Triggered when the 21-VWMA (red line) crosses above the 50 centerline, confirmed by RSI > 50, and a green candle closing above the previous candle\'s high.',
+    example: '<img src="/assets/hm_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy on close of the confirmation candle.<br><strong>Stop Loss:</strong> Low of the entry candle.<br><strong>Trailing Exit:</strong> Exit when WMA crosses back below 50.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock has been in a downtrend (WMA < 50), but momentum shifts. WMA crosses above 50, RSI is above 50, and the price breaks the previous high.</span>'
   },
   hm_top: {
     name: 'Hilega Milega: Top Catch',
-    desc: 'Catches early downside reversals when the RSI and 3-EMA cross below the 21-VWMA from an overbought condition.',
-    example: '<img src="/assets/hm_top_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is over-extended (RSI > 50), but momentum dies. The RSI and EMA cross below the VWMA volume line, indicating a top.</span>'
+    desc: 'Catches early bearish reversals or short entries. Triggered when the 21-VWMA (red line) crosses below the 50 centerline, confirmed by RSI < 50, and a red candle closing below the previous candle\'s low.',
+    example: '<img src="/assets/hm_top_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short on close of the confirmation candle.<br><strong>Stop Loss:</strong> High of the entry candle.<br><strong>Trailing Exit:</strong> Exit when WMA crosses back above 50.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock has been in an uptrend (WMA > 50), but momentum dies. WMA crosses below 50, RSI is below 50, and price breaks the previous low.</span>'
   },
   hm_bullish: {
-    name: 'Hilega Milega: Bullish Trend',
-    desc: 'Identifies strong upward momentum where the RSI > 50, and lines are stacked perfectly: RSI > 3-EMA > 21-VWMA.',
-    example: '<img src="/assets/hm_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Buy breakout/trend continuation.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume and price are pushing higher. The green line is above the blue, which is above the red, confirming a very safe and strong uptrend.</span>'
+    name: 'Hilega Milega: Bullish Trend (Retracement)',
+    desc: 'Triggered when the stock is in a confirmed uptrend (WMA > 50, RSI > 50), the 21-VWMA pulls back close to the 50 centerline (holding above 48), hooks back up, and a candle closes above the previous candle\'s high.',
+    example: '<img src="/assets/hm_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Buy on confirmation candle close.<br><strong>Stop Loss:</strong> Low of the pullback candle.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Active uptrend. WMA drops toward 50 but hooks back up at 49. Price breaks the previous candle\'s high, signaling a continuation entry.</span>'
   },
   hm_bearish: {
-    name: 'Hilega Milega: Bearish Breakdown',
-    desc: 'Identifies strong downward momentum where the RSI < 50, and lines are stacked perfectly for a drop: 21-VWMA > 3-EMA > RSI.',
-    example: '<img src="/assets/hm_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Short or Buy Puts.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Volume is accelerating to the downside. The red volume line sits heavily on top of the blue and green lines, suppressing price.</span>'
+    name: 'Hilega Milega: Bearish Breakdown (Retracement)',
+    desc: 'Triggered when the stock is in a confirmed downtrend (WMA < 50, RSI < 50), the 21-VWMA rallies close to the 50 centerline (holding below 52), hooks back down, and a candle closes below the previous candle\'s low.',
+    example: '<img src="/assets/hm_bearish_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Entry:</strong> Short on confirmation candle close.<br><strong>Stop Loss:</strong> High of the pullback candle.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., Active downtrend. WMA rallies toward 50 but hooks back down at 51. Price breaks the previous candle\'s low, signaling a continuation short.</span>'
   },
   hm_chop: {
-    name: 'Hilega Milega: Consolidation',
-    desc: 'Identifies when the RSI, EMA, and VWMA are tangled together tightly near the 50 centerline, indicating no clear trend (Chop).',
-    example: '<img src="/assets/hm_chop_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> Avoid or watch for a squeeze breakout.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> E.g., The stock is bouncing sideways. The indicators are flat-lining on top of each other. Do not trade this until it breaks out into a trend.</span>'
+    name: 'Hilega Milega: Consolidation (No-Trade)',
+    desc: 'Flags high-whipsaw, low-momentum zones. Triggered when the 21-VWMA flatlines and oscillates tightly inside the 47.5 - 52.5 range for 7 consecutive candles.',
+    example: '<img src="/assets/hm_chop_diagram.png" style="width:100%; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1);"><strong>Action:</strong> NO-TRADE zone. Skip signals and wait for WMA to break out decisively above 52.5 or below 47.5.<br><br><span style="color:var(--text-muted)"><strong>Context:</strong> Avoid trading when lines tangle tightly near the center; this filters out sideways consolidations that repeatedly trigger false signals.</span>'
   },
   weinstein: {
     name: 'Stan Weinstein Stage 2',
