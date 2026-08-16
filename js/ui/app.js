@@ -284,8 +284,13 @@ function updateTunerVisibility(strategyId) {
     hm_top: ['downside'],
     hm_bullish: ['volume', 'confluence'],
     hm_bearish: ['volume', 'downside'],
+    hm_chop: ['volume'],
     smc_bullish: ['volume', 'confluence'],
     smc_bearish: ['volume', 'downside'],
+    xtrender_bullish: ['confluence'],
+    xtrender_bearish: ['downside'],
+    ha_donchian_bullish: ['volume', 'confluence'],
+    ha_donchian_bearish: ['volume', 'downside'],
     all: ['rsi', 'supertrend-bullish', 'supertrend-bearish', 'volume', 'downside', 'elephant', 'ohl', 'vcp', 'confluence']
   };
 
