@@ -662,3 +662,100 @@ export function t3Series(arr, period) {
   return out;
 }
 
+// ─── Relative Cycle Graph (RRG) Formulas ────────────────────────────────────
+// Normalizes Relative Strength into RS-Ratio (Trend) and RS-Momentum (Rate of Change)
+export function calculateRRG(assetCloses, assetTs, benchmarkCloses, benchTs, period = 14) {
+  // Align by timestamp
+  const alignedAsset = [];
+  const alignedBench = [];
+  
+  let aIdx = 0;
+  let bIdx = 0;
+  
+  // We only care about dates where BOTH exist, OR we forward-fill the asset if it's missing a day/week 
+  // but benchmark traded. But for simplicity and robustness, we will find the intersection of dates, 
+  // or forward fill asset if benchmark exists.
+  
+  // We'll create a map for fast lookup of asset prices by timestamp
+  // Since time might have slight intraday offsets, we align by day string
+  const getDayKey = (ts) => {
+    const d = new Date(ts * 1000);
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  };
+  
+  const assetMap = new Map();
+  for (let i = 0; i < assetCloses.length; i++) {
+    if (assetTs[i]) assetMap.set(getDayKey(assetTs[i]), assetCloses[i]);
+  }
+  
+  let lastKnownAssetClose = assetCloses.length > 0 ? assetCloses[0] : 1;
+  
+  for (let i = 0; i < benchmarkCloses.length; i++) {
+    const bClose = benchmarkCloses[i];
+    const bTs = benchTs[i];
+    if (!bTs) continue;
+    
+    const dayKey = getDayKey(bTs);
+    let aClose = assetMap.get(dayKey);
+    
+    if (aClose !== undefined) {
+      lastKnownAssetClose = aClose;
+    } else {
+      aClose = lastKnownAssetClose; // Forward fill if missing
+    }
+    
+    alignedAsset.push(aClose);
+    alignedBench.push(bClose);
+  }
+
+  const minLen = alignedAsset.length;
+
+  if (minLen < period * 2) return [];
+
+  // 1. Calculate RS (Relative Strength)
+  const rs = [];
+  for (let i = 0; i < minLen; i++) {
+    rs.push(alignedBench[i] ? alignedAsset[i] / alignedBench[i] : 1);
+  }
+
+  // Helper to calculate rolling Z-score
+  const getZScore = (dataArray, idx, p) => {
+    const window = dataArray.slice(idx - p + 1, idx + 1);
+    const mean = window.reduce((sum, val) => sum + val, 0) / p;
+    const variance = window.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / p;
+    const stdDev = Math.sqrt(variance) || 0.0001;
+    return (dataArray[idx] - mean) / stdDev;
+  };
+
+  // 2. Calculate RS-Ratio = 100 + Z-score of RS * 10
+  const rsRatio = new Array(minLen).fill(100);
+  for (let i = period - 1; i < minLen; i++) {
+    rsRatio[i] = 100 + (getZScore(rs, i, period) * 10);
+  }
+
+  // Smooth the RS-Ratio slightly (3-period SMA) to prevent erratic jagged lines
+  const smoothedRatio = new Array(minLen).fill(100);
+  for (let i = period + 2; i < minLen; i++) {
+    smoothedRatio[i] = (rsRatio[i] + rsRatio[i - 1] + rsRatio[i - 2]) / 3;
+  }
+
+  // 3. Calculate RS-Momentum = 100 + Z-score of smoothed RS-Ratio * 10
+  const rsMom = new Array(minLen).fill(100);
+  for (let i = (period * 2) - 1; i < minLen; i++) {
+    rsMom[i] = 100 + (getZScore(smoothedRatio, i, period) * 10);
+  }
+
+  // Return the last 20 points (tail for the scatter plot)
+  const tailLength = 20;
+  const result = [];
+  for (let i = minLen - tailLength; i < minLen; i++) {
+    if (i >= 0) {
+      result.push({
+        x: Number(smoothedRatio[i].toFixed(2)),
+        y: Number(rsMom[i].toFixed(2))
+      });
+    }
+  }
+
+  return result;
+}

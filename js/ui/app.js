@@ -1,6 +1,6 @@
 // ─── Main App Entry Point ───────────────────────────────────────────────────
 import { AppState } from '../core/state.js?v=6';
-import { fetchOHLCV } from '../core/api.js?v=9';
+import { fetchOHLCV } from '../core/api.js?v=10';
 import { ema, rsi, adx, macd, cci, supertrend, smaSeries } from '../core/math.js?v=7';
 import { runBacktest } from '../core/backtest.js?v=4';
 import { openStrategyTester } from './backtester_ui.js?v=1';
@@ -19,8 +19,7 @@ import * as futuresComboStrats from '../strategies/futures_combo.js?v=1';
 import * as xtrenderStrats from '../strategies/xtrender.js?v=1';
 import { renderOptionCards } from './options_render.js?v=1';
 import { scriptLibrary } from '../data/scripts.js';
-import { initAlerts } from './alerts.js?v=1';
-
+import { initAlerts, onAlertsTabActivated } from './alerts.js?v=1';
 const DOM = {
   tickerInput: document.getElementById('tickerInput'),
   universePills: document.getElementById('universePills'),
@@ -780,30 +779,67 @@ async function init() {
   initStrategyTuner();
 
   // Tab Switching
-  const tabScreener = document.getElementById('tabScreener');
-  const tabScripts = document.getElementById('tabScripts');
   const screenerView = document.getElementById('screener-view');
   const scriptsView = document.getElementById('scripts-view');
+  const alertsView = document.getElementById('alerts-view');
+
+  const tabScreener = document.getElementById('tabScreener');
+  const tabScripts = document.getElementById('tabScripts');
+  const tabAlerts = document.getElementById('tabAlerts');
+  
+  const btView = document.getElementById('bt-view');
 
   const tabs = [
-    { button: tabScreener, view: screenerView },
-    { button: tabScripts, view: scriptsView, onSelect: () => renderScripts() }
+    { button: tabScreener, view: screenerView, id: 'screener' },
+    { button: tabScripts, view: scriptsView, id: 'scripts', onSelect: () => renderScripts() },
+    { button: tabAlerts, view: alertsView, id: 'alerts', onSelect: () => onAlertsTabActivated() }
   ];
 
+  function switchTab(targetId) {
+    const target = tabs.find(t => t.id === targetId) || tabs[0];
+    
+    // Hide all views and reset tab colors
+    tabs.forEach(t => {
+      if (t.button) {
+        t.button.style.color = 'var(--text-muted)';
+        t.button.classList.remove('active');
+      }
+      if (t.view) t.view.style.display = 'none';
+    });
+    
+    // Show active view
+    if (target.button) {
+      target.button.style.color = 'var(--text-main)';
+      target.button.classList.add('active');
+    }
+    if (target.view) target.view.style.display = 'block';
+    
+    // Update hash silently if needed
+    if (window.location.hash !== `#${target.id}`) {
+      history.pushState(null, null, `#${target.id}`);
+    }
+    
+    if (target.onSelect) target.onSelect();
+  }
+
+  // Attach click listeners to all tab buttons
   tabs.forEach(t => {
-    if (t.button && t.view) {
+    if (t.button) {
       t.button.addEventListener('click', (e) => {
         e.preventDefault();
-        tabs.forEach(x => {
-          if (x.button) x.button.style.color = 'var(--text-muted)';
-          if (x.view) x.view.style.display = 'none';
-        });
-        t.button.style.color = 'var(--text-main)';
-        t.view.style.display = 'block';
-        if (t.onSelect) t.onSelect();
+        switchTab(t.id);
       });
     }
   });
+
+  // Handle auto-routing on load
+  const currentHash = window.location.hash.replace('#', '');
+  if (currentHash && tabs.some(t => t.id === currentHash)) {
+    setTimeout(() => switchTab(currentHash), 100);
+  } else {
+    setTimeout(() => switchTab('screener'), 100);
+  }
+
 
   // Setup Universe Pills
   const assetToggle = document.getElementById('assetToggle');

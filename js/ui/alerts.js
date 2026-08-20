@@ -1,328 +1,163 @@
-// ─── Live Alerts Manager Module ──────────────────────────────────────────────
-let knownAlertIds = new Set();
-let activeFilter = 'all';
-
 export function initAlerts() {
-  const tabAlerts = document.getElementById('tabAlerts');
-  const alertsView = document.getElementById('alerts-view');
-  const screenerView = document.getElementById('screener-view');
-  const scriptsView = document.getElementById('scripts-view');
-  const btView = document.getElementById('bt-view');
-
-  // Navigation tab click handler
-  if (tabAlerts) {
-    tabAlerts.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      // Reset tab active styles
-      document.querySelectorAll('.nav-tab').forEach(t => t.style.color = 'var(--text-muted)');
-      tabAlerts.style.color = 'var(--text-main)';
-
-      // Hide other views
-      if (screenerView) screenerView.style.display = 'none';
-      if (scriptsView) scriptsView.style.display = 'none';
-      if (btView) btView.style.display = 'none';
-      if (alertsView) alertsView.style.display = 'block';
-
-      // Mark alerts as read
-      markAlertsAsRead();
-      fetchAlerts();
-    });
-  }
-
-  // Header controls handlers
-  const filterSelect = document.getElementById('alertStrategyFilter');
-  if (filterSelect) {
-    filterSelect.addEventListener('change', (e) => {
-      activeFilter = e.target.value;
-      fetchAlerts();
-    });
-  }
-
+  const btnMarkRead = document.getElementById('btnMarkReadAlerts');
   const btnClear = document.getElementById('btnClearAlerts');
+  const btnTestAlert = document.getElementById('btnTestAlert');
+  const filterSelect = document.getElementById('alertStrategyFilter');
+
+  if (btnMarkRead) {
+    btnMarkRead.addEventListener('click', async () => {
+      try {
+        await fetch('/api/alerts/read', { method: 'POST' });
+        loadAlerts();
+        const tab = document.getElementById('tabAlerts');
+        if (tab) tab.innerHTML = `Live Alerts 🔴`;
+      } catch (e) {
+        console.error('Error marking alerts read:', e);
+      }
+    });
+  }
+
   if (btnClear) {
     btnClear.addEventListener('click', async () => {
-      if (confirm('Are you sure you want to clear all historical alerts?')) {
+      if (!confirm('Are you sure you want to clear all alerts?')) return;
+      try {
         await fetch('/api/alerts/clear', { method: 'POST' });
-        knownAlertIds.clear();
-        fetchAlerts();
+        loadAlerts();
+        const tab = document.getElementById('tabAlerts');
+        if (tab) tab.innerHTML = `Live Alerts 🔴`;
+      } catch (e) {
+        console.error('Error clearing alerts:', e);
       }
     });
   }
 
-  const btnTest = document.getElementById('btnTestAlert');
-  if (btnTest) {
-    btnTest.addEventListener('click', async () => {
-      const sampleTickers = ['RELIANCE', 'TCS', 'INFY', 'SBIN', 'TATAMOTORS', 'BHARTIARTL', 'HAL', 'MCX'];
-      const sampleStrats = ['mast_breakout', 'mast_dip', 'elephant_bullish', 'gap_momentum', 'ohl_bullish'];
-      const ticker = sampleTickers[Math.floor(Math.random() * sampleTickers.length)];
-      const strat = sampleStrats[Math.floor(Math.random() * sampleStrats.length)];
-      const price = (Math.random() * 2000 + 500).toFixed(2);
-
-      await fetch('/api/alerts/trigger', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticker,
-          strategy_id: strat,
-          timeframe: '15m',
-          price: parseFloat(price),
-          reason: `⚡ Test Live Signal: ${strat.toUpperCase()} triggered on ${ticker} @ ₹${price} with 2.8x volume expansion.`
-        })
-      });
-      fetchAlerts();
-    });
-  }
-
-  const btnMarkRead = document.getElementById('btnMarkReadAlerts');
-  if (btnMarkRead) {
-    btnMarkRead.addEventListener('click', () => {
-      markAlertsAsRead();
-    });
-  }
-
-  // Poll alerts every 15 seconds
-  fetchAlerts();
-  setInterval(fetchAlerts, 15000);
-}
-
-export async function fetchAlerts() {
-  try {
-    const res = await fetch(`/api/alerts?strategy=${activeFilter}&limit=100`);
-    if (!res.ok) return;
-    const data = await res.json();
-    if (!data.success) return;
-
-    const { rows = [], unreadCount = 0 } = data;
-
-    // Update unread badge
-    const badge = document.getElementById('alertBadge');
-    if (badge) {
-      if (unreadCount > 0) {
-        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
+  if (btnTestAlert) {
+    btnTestAlert.addEventListener('click', async () => {
+      try {
+        await fetch('/api/alerts/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ticker: 'TEST_STOCK',
+            strategy_id: 'elephant_bullish',
+            timeframe: '15m',
+            price: 150.25,
+            reason: '🐘 Test Alert: This is a simulated alert to test the local storage system.'
+          })
+        });
+        loadAlerts();
+      } catch (e) {
+        console.error('Error triggering test alert:', e);
       }
+    });
+  }
+
+  if (filterSelect) {
+    filterSelect.addEventListener('change', () => {
+      loadAlerts();
+    });
+  }
+
+  // Auto-refresh every 30 seconds if tab is active
+  setInterval(() => {
+    const alertsView = document.getElementById('alerts-view');
+    if (alertsView && alertsView.style.display !== 'none') {
+      loadAlerts();
     }
-
-    // Check for newly triggered alerts to show toast
-    rows.forEach(alert => {
-      if (!knownAlertIds.has(alert.id)) {
-        knownAlertIds.add(alert.id);
-        if (knownAlertIds.size > rows.length) {
-          showToastAlert(alert);
-        }
-      }
-    });
-
-    renderAlertsTable(rows);
-  } catch (err) {
-    console.error('Error fetching alerts:', err);
-  }
+  }, 30000);
 }
 
-async function markAlertsAsRead() {
-  try {
-    await fetch('/api/alerts/read', { method: 'POST' });
-    const badge = document.getElementById('alertBadge');
-    if (badge) badge.classList.add('hidden');
-  } catch (e) {
-    console.error('Error marking alerts read:', e);
-  }
+export function onAlertsTabActivated() {
+  loadAlerts();
 }
 
-function renderAlertsTable(rows) {
+async function loadAlerts() {
   const container = document.getElementById('alertsTableContainer');
   if (!container) return;
 
-  if (rows.length === 0) {
+  const filterSelect = document.getElementById('alertStrategyFilter');
+  const strategyId = filterSelect ? filterSelect.value : 'all';
+
+  try {
+    const res = await fetch(`/api/alerts?limit=100&strategy=${strategyId}`);
+    if (!res.ok) throw new Error('Failed to fetch alerts');
+    const data = await res.json();
+    
+    // Update unread count badge on tab
+    const tab = document.getElementById('tabAlerts');
+    if (tab) {
+      if (data.unreadCount > 0) {
+        tab.innerHTML = `Live Alerts <span class="badge badge-red" style="padding:2px 6px; margin-left:6px; font-size:11px;">${data.unreadCount}</span>`;
+      } else {
+        tab.innerHTML = `Live Alerts 🔴`;
+      }
+    }
+
+    renderAlertsTable(data.rows || []);
+  } catch (err) {
+    console.error('Failed to load alerts:', err);
+    container.innerHTML = `<div style="padding:20px; color:var(--red);">Error loading alerts: ${err.message}</div>`;
+  }
+}
+
+function renderAlertsTable(alerts) {
+  const container = document.getElementById('alertsTableContainer');
+  if (!container) return;
+
+  if (alerts.length === 0) {
     container.innerHTML = `
-      <div style="padding: 40px; text-align: center; color: var(--text-muted);">
-        <div style="font-size: 32px; margin-bottom: 12px;">🔔</div>
-        <div style="font-size: 16px; font-weight: 600;">No Alerts Triggered Yet</div>
-        <div style="font-size: 13px; margin-top: 4px; opacity: 0.7;">Background engine automatically scans strategies during market hours. Signals will appear here in real-time.</div>
+      <div style="padding: 40px 20px; text-align: center; color: var(--text-muted);">
+        <div style="font-size: 32px; margin-bottom: 12px;">📭</div>
+        <h3 style="margin: 0 0 8px 0; color: var(--text-main);">No recent alerts</h3>
+        <p style="margin: 0; font-size: 13px;">Background scanner is running. Signals will appear here when strategies trigger.</p>
       </div>
     `;
     return;
   }
 
-  let html = `
-    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-      <thead>
-        <tr style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border);">
-          <th style="padding: 12px 16px; color: var(--text-muted);">Time</th>
-          <th style="padding: 12px 16px; color: var(--text-muted);">Scrip</th>
-          <th style="padding: 12px 16px; color: var(--text-muted);">Strategy</th>
-          <th style="padding: 12px 16px; color: var(--text-muted); text-align: right;">Price (₹)</th>
-          <th style="padding: 12px 16px; color: var(--text-muted);">Reason</th>
-          <th style="padding: 12px 16px; color: var(--text-muted); text-align: center;">Auto Trade</th>
-          <th style="padding: 12px 16px; color: var(--text-muted); text-align: center;">Action</th>
-        </tr>
-      </thead>
-      <tbody>
+  const thead = `
+    <thead>
+      <tr>
+        <th style="width:120px;">Time</th>
+        <th style="width:100px;">Scrip</th>
+        <th style="width:80px;">Price</th>
+        <th>Trigger Reason</th>
+      </tr>
+    </thead>
   `;
 
-  rows.forEach(r => {
-    const timeStr = new Date(r.triggered_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const dateStr = new Date(r.triggered_at).toLocaleDateString([], { month: 'short', day: 'numeric' });
-    const isUnread = !r.is_read;
-
-    // Parse metrics_json for execution status
-    let metrics = {};
-    try {
-      metrics = typeof r.metrics_json === 'string' ? JSON.parse(r.metrics_json) : (r.metrics_json || {});
-    } catch (_) {}
-    const execStatus = metrics.execution_status || 'Pending';
-
-    const stratNameMap = {
-      elephant_bullish: 'Oliver Velez Elephant 🐘',
-      elephant_bearish: 'Oliver Velez Elephant 🐘 (Short)',
-      gap_momentum: 'Gap Expansion ⚡',
-      mast_breakout: 'MAST Breakout 🚀',
-      mast_dip: 'MAST Buy-on-Dip 🎯',
-      mast_breakdown: 'MAST Breakdown 💥',
-      mast_rally_short: 'MAST Sell-on-Rally 🔻',
-      rsi70_monthly: 'Monthly RSI > 70 🚀',
-      supertrend_rsi70: 'SuperTrend Green + RSI > 70 ⚡',
-      ohl_bullish: 'Open = Low',
-      ohl_bearish: 'Open = High',
-      ttm_orb: 'TTM Squeeze + ORB',
-      minervini: 'Minervini VCP',
-      darvas: 'Darvas Box',
-      smc_bullish: 'SMC Sweep Bullish',
-      smc_bearish: 'SMC Sweep Bearish',
-      multi_tf: 'Multi-TF Confluence',
-      hm_bottom: 'HM Bottom Catch',
-      hm_top: 'HM Top Catch',
-      hm_bullish: 'HM Bullish Retrace',
-      hm_bearish: 'HM Bearish Retrace',
-      hm_chop: 'HM Chop Zone'
-    };
-
-    const stratLabel = stratNameMap[r.strategy_id] || r.strategy_id.toUpperCase();
-
-    // Map background color for execution status badge
-    let badgeBg = 'rgba(255,255,255,0.05)';
-    let badgeColor = 'var(--text-muted)';
-    if (execStatus.includes('SUCCESS')) {
-      badgeBg = 'rgba(34,208,138,0.15)';
-      badgeColor = '#22d08a';
-    } else if (execStatus.includes('FAILED') || execStatus.includes('REJECTED')) {
-      badgeBg = 'rgba(240,90,90,0.15)';
-      badgeColor = '#f05a5a';
-    } else if (execStatus.includes('Pending')) {
-      badgeBg = 'rgba(245,166,35,0.15)';
-      badgeColor = '#f5a623';
+  const tbody = alerts.map(a => {
+    const date = new Date(a.triggered_at);
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const isUnread = a.is_read === 0;
+    
+    // Parse JSON metrics if present for debugging/advanced views
+    let extraHTML = '';
+    if (a.metrics_json) {
+      try {
+        const metrics = typeof a.metrics_json === 'string' ? JSON.parse(a.metrics_json) : a.metrics_json;
+        if (metrics.execution_status) {
+           extraHTML = `<div style="margin-top:4px; font-size:11px; color:var(--accent);">${metrics.execution_status}</div>`;
+        }
+      } catch (e) {}
     }
 
-    html += `
-      <tr class="alert-row" data-id="${r.id}" style="border-bottom: 1px solid var(--border); ${isUnread ? 'background: rgba(36, 180, 126, 0.05); font-weight: 500;' : ''}">
-        <td style="padding: 12px 16px; font-family: var(--mono); color: var(--text-muted); font-size: 12px;">
-          ${timeStr} <span style="opacity: 0.6; font-size: 11px;">(${dateStr})</span>
+    return `
+      <tr style="background: ${isUnread ? 'rgba(59, 130, 246, 0.08)' : 'transparent'};">
+        <td style="color:var(--text-muted); font-size:12px; white-space:nowrap;">
+          <div>${dateStr}</div>
+          <div>${timeStr} ${isUnread ? '<span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--v-accent); margin-left:2px;" title="New"></span>' : ''}</div>
         </td>
-        <td style="padding: 12px 16px; font-weight: 700;">
-          <a href="https://in.tradingview.com/chart/?symbol=NSE%3A${r.ticker}" target="_blank" style="color: var(--v-accent); text-decoration: none; border-bottom: 1px dashed var(--border);">
-            ${r.ticker} ↗
-          </a>
-        </td>
-        <td style="padding: 12px 16px;">
-          <span style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: var(--surface-hover); border: 1px solid var(--border);">
-            ${stratLabel}
-          </span>
-        </td>
-        <td style="padding: 12px 16px; text-align: right; font-family: var(--mono); font-weight: 600;">
-          ₹${Number(r.price).toFixed(2)}
-        </td>
-        <td style="padding: 12px 16px; color: var(--text-muted); font-size: 12px; max-width: 300px;">
-          ${r.reason || 'Strategy signal triggered on volume expansion.'}
-        </td>
-        <td style="padding: 12px 16px; text-align: center;">
-          <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid rgba(255,255,255,0.05);">
-            ${execStatus}
-          </span>
-        </td>
-        <td style="padding: 12px 16px; text-align: center;">
-          <button class="btn-view-alert-detail" data-ticker="${r.ticker}" data-strategy="${r.strategy_id}" data-price="${r.price}" data-reason="${encodeURIComponent(r.reason || '')}" style="padding: 4px 10px; font-size: 11px; border-radius: 4px; background: var(--v-accent); color: #000; font-weight: 700; border: none; cursor: pointer;">
-            Details ℹ
-          </button>
+        <td><strong>${a.ticker}</strong></td>
+        <td>₹${a.price.toFixed(2)}</td>
+        <td style="font-size:13px; color:var(--text-main); line-height:1.4;">
+          ${a.reason}
+          ${extraHTML}
         </td>
       </tr>
     `;
-  });
+  }).join('');
 
-  html += `</tbody></table>`;
-  container.innerHTML = html;
-
-  // Attach click listener for detail buttons
-  container.querySelectorAll('.btn-view-alert-detail').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const ticker = btn.dataset.ticker;
-      const strategyId = btn.dataset.strategy;
-      const price = btn.dataset.price;
-      const reason = decodeURIComponent(btn.dataset.reason || '');
-
-      const modalTitle = document.getElementById('modalTitle');
-      const modalDesc = document.getElementById('modalDescription');
-      const modalEx = document.getElementById('modalExample');
-      const modal = document.getElementById('strategyModal');
-
-      if (modalTitle && modalDesc && modal) {
-        modalTitle.innerHTML = `${ticker} — Alert Details (${strategyId.toUpperCase()})`;
-        modalDesc.innerHTML = `<b>Triggered Signal:</b> ${reason}`;
-        if (modalEx) {
-          modalEx.innerHTML = `
-            <div style="background: rgba(0,0,0,0.2); padding: 14px; border-radius: 6px; border: 1px solid var(--border); margin-top: 10px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span>Ticker: <b>${ticker}</b></span>
-                <span>Signal Price: <b style="color: var(--green);">₹${Number(price).toFixed(2)}</b></span>
-              </div>
-              <div style="margin-bottom: 12px; font-size: 12px; color: var(--text-muted);">
-                TradingView Link: <a href="https://in.tradingview.com/chart/?symbol=NSE%3A${ticker}" target="_blank" style="color: var(--v-accent);">NSE:${ticker} Live Chart ↗</a>
-              </div>
-              <div style="color: var(--v-accent); font-weight: 600; font-size: 12px;">💡 Recommended Action: Verify volume breakout on 15m/Daily chart before entering position.</div>
-            </div>
-          `;
-        }
-        modal.classList.remove('hidden');
-      }
-    });
-  });
-}
-
-function showToastAlert(alert) {
-  let toastContainer = document.getElementById('toastContainer');
-  if (!toastContainer) {
-    toastContainer = document.createElement('div');
-    toastContainer.id = 'toastContainer';
-    toastContainer.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
-    document.body.appendChild(toastContainer);
-  }
-
-  const toast = document.createElement('div');
-  toast.style.cssText = 'background: #18181b; border: 1px solid var(--v-accent); border-radius: 8px; padding: 12px 16px; width: 320px; color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.5); pointer-events: auto; font-size: 13px;';
-  
-  toast.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-      <span style="font-weight: 700; color: var(--v-accent); display: flex; align-items: center; gap: 6px;">
-        🔔 Strategy Alert
-      </span>
-      <span style="font-size: 11px; opacity: 0.6;">Just now</span>
-    </div>
-    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">
-      ${alert.ticker} — ₹${Number(alert.price).toFixed(2)}
-    </div>
-    <div style="font-size: 12px; color: var(--text-muted);">
-      ${alert.reason || alert.strategy_id}
-    </div>
-  `;
-
-  toastContainer.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transition = 'opacity 0.5s ease-out';
-    setTimeout(() => toast.remove(), 500);
-  }, 6000);
+  container.innerHTML = `<table class="screener-table">${thead}<tbody>${tbody}</tbody></table>`;
 }

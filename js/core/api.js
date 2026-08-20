@@ -16,9 +16,8 @@ function isNSEMarketOpen() {
 }
 
 export async function fetchOHLCV(ticker, timeframe = '1d', signal = null) {
-  // Support appending .BO for BSE stocks if not NSE
   let sym = ticker.trim().toUpperCase();
-  if (!sym.endsWith('.NS') && !sym.endsWith('.BO')) {
+  if (!sym.startsWith('^') && !sym.endsWith('.NS') && !sym.endsWith('.BO')) {
     sym += '.NS'; // Default to NSE
   }
 

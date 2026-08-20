@@ -43,6 +43,8 @@ const symbols = require('./symbols');
 const livequote = require('./livequote');
 const lots = require('./lots');
 const db = require('./db');
+const alertsStore = require('./alerts_store');
+alertsStore.initDb();
 
 function isNSEMarketHours() {
   const options = { timeZone: 'Asia/Kolkata', hour12: false };
@@ -57,7 +59,7 @@ function isNSEMarketHours() {
   return timeVal >= 915 && timeVal <= 1530;
 }
 
-const PORT = process.env.PORT || 5173;
+const PORT = 5174;
 const ROOT = __dirname;
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
@@ -720,12 +722,12 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/dna/news') return handleDnaNews(res, reqUrl);
   if (p === '/api/indices/srt') return handleIndicesSrt(res);
 
-  // ─── Alerts Endpoints ───────────────────────────────────────────────────
+  // ─── Local Alerts Endpoints ─────────────────────────────────────────────
   if (p === '/api/alerts' && req.method === 'GET') {
     try {
       const limit = parseInt(reqUrl.searchParams.get('limit')) || 100;
       const strategyId = reqUrl.searchParams.get('strategy') || 'all';
-      const data = await db.getAlerts(limit, strategyId);
+      const data = alertsStore.getAlerts(limit, strategyId);
       return sendJSON(res, 200, { success: true, ...data });
     } catch (e) {
       return sendJSON(res, 500, { error: e.message });
@@ -734,7 +736,7 @@ const server = http.createServer(async (req, res) => {
 
   if (p === '/api/alerts/read' && req.method === 'POST') {
     try {
-      await db.markAlertsAsRead();
+      alertsStore.markAlertsAsRead();
       return sendJSON(res, 200, { success: true });
     } catch (e) {
       return sendJSON(res, 500, { error: e.message });
@@ -743,7 +745,7 @@ const server = http.createServer(async (req, res) => {
 
   if (p === '/api/alerts/clear' && req.method === 'POST') {
     try {
-      await db.clearAlerts();
+      alertsStore.clearAlerts();
       return sendJSON(res, 200, { success: true });
     } catch (e) {
       return sendJSON(res, 500, { error: e.message });
@@ -753,18 +755,17 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/alerts/trigger' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
-    req.on('end', async () => {
+    req.on('end', () => {
       try {
         const payload = JSON.parse(body);
-        const inserted = await db.insertAlert(payload);
-        return sendJSON(res, 200, { success: true, inserted });
+        const insertedId = alertsStore.insertAlert(payload);
+        return sendJSON(res, 200, { success: true, insertedId });
       } catch (e) {
         return sendJSON(res, 500, { error: e.message });
       }
     });
     return;
   }
-
 
   if (p === '/fyers/status') {
     const s = fyers.status();
@@ -833,7 +834,7 @@ server.on('error', err => {
 
 // ─── Background Strategy Alert Scanner ─────────────────────────────────────
 function startBackgroundAlertScanner() {
-  console.log('[Alert Scanner] Background strategy alert engine activated ✓');
+  console.log('[Alert Scanner] Local background strategy alert engine activated ✓');
   const scanIntervalMs = 3 * 60 * 1000; // 3 minutes
   
   const alertScannerLoop = async () => {
@@ -917,7 +918,6 @@ function startBackgroundAlertScanner() {
         return [];
       };
 
-      // Split into 2 batches
       const batch1 = topActiveSymbols.slice(0, 13);
       const batch2 = topActiveSymbols.slice(13);
       
@@ -929,7 +929,6 @@ function startBackgroundAlertScanner() {
       console.log(`[Alert Scanner] Fetched ${yahooQuotes.length} full quotes from Yahoo. Evaluating strategies...`);
 
       // 3. Evaluate strategies
-      // Evaluate SRT Buying Zone and Minervini for all stocks using Google Finance prices
       for (const ticker of symbols) {
         const price = allLiveLtps[ticker];
         if (!price) continue;
@@ -941,7 +940,7 @@ function startBackgroundAlertScanner() {
         const sma124 = dna.srt ? dna.srt.sma124 : null;
         if (sma124 && sma124 > 0 && price / sma124 <= 0.90) {
           const srtVal = (price / sma124).toFixed(3);
-          await db.insertAlert({
+          alertsStore.insertAlert({
             ticker,
             strategy_id: 'srt_buying_zone',
             timeframe: '1d',
@@ -954,7 +953,7 @@ function startBackgroundAlertScanner() {
         if (dna.cmp && dna.cmp > 0) {
           const chgPct = ((price - dna.cmp) / dna.cmp) * 100;
           if (dna.ratings && dna.ratings.trendStrength >= 8 && chgPct > 2.0 && dna.personality.character === 'Breakout Machine') {
-            await db.insertAlert({
+            alertsStore.insertAlert({
               ticker,
               strategy_id: 'minervini',
               timeframe: '1d',
@@ -965,7 +964,6 @@ function startBackgroundAlertScanner() {
         }
       }
 
-      // Evaluate Open/High/Low/Gap/SMC strategies for top active symbols using Yahoo quotes
       for (const quote of yahooQuotes) {
         if (!quote.symbol) continue;
         const ticker = quote.symbol.replace('.NS', '');
@@ -986,23 +984,9 @@ function startBackgroundAlertScanner() {
         const bodyPct = open > 0 ? (body / open) * 100 : 0;
         const chgPct = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
 
-        // Strategy A: SRT Buying Zone (Undervalued)
-        // Condition: current price / 124-day SMA <= 0.90
-        const sma124 = dna.srt ? dna.srt.sma124 : null;
-        if (sma124 && sma124 > 0 && price / sma124 <= 0.90) {
-          const srtVal = (price / sma124).toFixed(3);
-          await db.insertAlert({
-            ticker,
-            strategy_id: 'srt_buying_zone',
-            timeframe: '1d',
-            price: parseFloat(price.toFixed(2)),
-            reason: `🟢 SRT Buying Zone: ${ticker} is trading at ₹${price.toFixed(2)}, which is below its 124-day SMA (₹${sma124}) with an undervalued SRT score of ${srtVal}.`
-          });
-        }
-
         // Strategy B: Open = Low (ohl_bullish)
         if (Math.abs(open - low) / open < 0.0005 && chgPct >= 1.2) {
-          await db.insertAlert({
+          alertsStore.insertAlert({
             ticker,
             strategy_id: 'ohl_bullish',
             timeframe: '15m',
@@ -1013,7 +997,7 @@ function startBackgroundAlertScanner() {
 
         // Strategy C: Open = High (ohl_bearish)
         if (Math.abs(open - high) / open < 0.0005 && chgPct <= -1.2) {
-          await db.insertAlert({
+          alertsStore.insertAlert({
             ticker,
             strategy_id: 'ohl_bearish',
             timeframe: '15m',
@@ -1026,7 +1010,7 @@ function startBackgroundAlertScanner() {
         const isGreen = price > open;
         const closeNearHigh = range > 0 ? (high - price) / range < 0.15 : false;
         if (isGreen && bodyPct >= 3.0 && closeNearHigh) {
-          await db.insertAlert({
+          alertsStore.insertAlert({
             ticker,
             strategy_id: 'elephant_bullish',
             timeframe: '15m',
@@ -1039,7 +1023,7 @@ function startBackgroundAlertScanner() {
         const isRed = price < open;
         const closeNearLow = range > 0 ? (price - low) / range < 0.15 : false;
         if (isRed && bodyPct >= 3.0 && closeNearLow) {
-          await db.insertAlert({
+          alertsStore.insertAlert({
             ticker,
             strategy_id: 'elephant_bearish',
             timeframe: '15m',
@@ -1050,7 +1034,7 @@ function startBackgroundAlertScanner() {
 
         // Strategy F: Gap Expansion Momentum (gap_momentum)
         if (open > prevClose * 1.015 && price > open) {
-          await db.insertAlert({
+          alertsStore.insertAlert({
             ticker,
             strategy_id: 'gap_momentum',
             timeframe: '15m',
@@ -1059,20 +1043,9 @@ function startBackgroundAlertScanner() {
           });
         }
 
-        // Strategy G: Minervini VCP (minervini)
-        if (dna.ratings && dna.ratings.trendStrength >= 8 && chgPct > 2.0 && dna.personality.character === 'Breakout Machine') {
-          await db.insertAlert({
-            ticker,
-            strategy_id: 'minervini',
-            timeframe: '1d',
-            price: parseFloat(price.toFixed(2)),
-            reason: `📈 Minervini VCP Trend: High momentum constituent ${ticker} is showing VCP breakout characteristics, up +${chgPct.toFixed(2)}% at ₹${price.toFixed(2)}.`
-          });
-        }
-
         // Strategy H: SMC Sweep Bullish (smc_bullish)
         if (low < open * 0.985 && price > open && chgPct > 0.5) {
-          await db.insertAlert({
+          alertsStore.insertAlert({
             ticker,
             strategy_id: 'smc_bullish',
             timeframe: '15m',
@@ -1093,6 +1066,7 @@ function startBackgroundAlertScanner() {
   // Then run every 3 minutes
   setInterval(alertScannerLoop, scanIntervalMs);
 }
+
 
 server.listen(PORT, () => {
   console.log(`\n  NSE Swing Screener running on ${PORT}\n`);

@@ -154,13 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="hud-nav-container">
       <div class="hud-menu">
         <a href="index.html#screener" id="tabScreener" class="nav-tab ${isActive('index.html') || path === '/' ? 'active' : ''}">Stock Screener</a>
-        <a href="index.html#alerts" id="tabAlerts" class="nav-tab" style="display: inline-flex; align-items: center; gap: 6px;">
-          🔔 Live Alerts
-          <span id="alertBadge" class="badge badge-red hidden" style="padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; height: auto;">0</span>
-        </a>
         <a href="options.html" class="nav-tab ${isActive('options.html') ? 'active' : ''}">Options (Gamma)</a>
         <a href="dna.html" class="nav-tab ${isActive('dna.html') ? 'active' : ''}">🧬 Stock DNA</a>
         <a href="index.html#scripts" id="tabScripts" class="nav-tab">Scripts</a>
+        <a href="index.html#alerts" id="tabAlerts" class="nav-tab">Live Alerts 🔴</a>
       </div>
       <div class="hud-stats">
         <a href="lots.html?v=2" class="badge badge-amber ${isActive('lots.html') ? 'active' : ''}" style="text-decoration:none;">F&O Lot Sizes</a>

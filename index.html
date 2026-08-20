@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/theme.css?v=7">
   <link rel="stylesheet" href="css/components.css?v=7">
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://unpkg.com/echarts@5.5.0/dist/echarts.min.js"></script>
   <style>
     /* Backtester Modal Specific Styles - Premium Glassmorphism Bottom Panel */
     #backtesterModal {
@@ -565,6 +566,8 @@
               <!-- Scripts injected via JS -->
             </tbody>
           </table>
+        </div>
+      </div>
     </div>
     <!-- End Scripts View -->
 
@@ -573,7 +576,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <div>
           <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0;">🔔 Live Strategy Signals & Alert Hub</h2>
-          <div style="font-size: 13px; color: var(--text-muted);">Real-time background signals triggered across Oliver Velez Elephant, OHL, Gap Momentum, TTM, SMC, and Minervini strategies.</div>
+          <div style="font-size: 13px; color: var(--text-muted);">Real-time background signals triggered across multiple strategies. (Local Storage)</div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
           <select id="alertStrategyFilter" style="background: var(--surface); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; font-size: 13px;">
@@ -597,6 +600,7 @@
       <div id="alertsTableContainer" class="table-container" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; min-height: 200px;">
       </div>
     </div>
+
 
   </main>
 
@@ -699,7 +703,7 @@
 
   <script src="js/ui/header.js?v=2"></script>
   <!-- Entry point for UI routing and execution -->
-  <script type="module" src="js/ui/app.js?v=94" defer></script>
+  <script type="module" src="js/ui/app.js?v=96" defer></script>
 </body>
 
 </html>
